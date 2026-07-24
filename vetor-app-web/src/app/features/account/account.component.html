@@ -1,0 +1,72 @@
+<div class="tabs">
+  <button (click)="setTab('cadastro')" class="tab-btn" [style.border-bottom-color]="tab() === 'cadastro' ? 'var(--brand)' : 'transparent'" [style.color]="tab() === 'cadastro' ? 'var(--brand)' : 'var(--mut)'">Cadastro</button>
+  <button (click)="setTab('integracoes')" class="tab-btn" [style.border-bottom-color]="tab() === 'integracoes' ? 'var(--brand)' : 'transparent'" [style.color]="tab() === 'integracoes' ? 'var(--brand)' : 'var(--mut)'">Integrações</button>
+</div>
+
+@if (tab() === 'cadastro') {
+  <div class="card" style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:17px;margin:0">Dados da empresa e do administrador</h2>
+      <p style="margin:0;color:var(--mut);font-size:13px">Essas informações aparecem nos relatórios exportados.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <label class="field">Razão social <input [(ngModel)]="form.empresa"></label>
+      <label class="field">CNPJ <input [(ngModel)]="form.cnpj" class="mono"></label>
+      <label class="field">Nome do administrador <input [(ngModel)]="form.nome"></label>
+      <label class="field">E-mail de acesso <input type="email" [(ngModel)]="form.email"></label>
+      <label class="field">Telefone <input [(ngModel)]="form.fone" class="mono"></label>
+    </div>
+    <div style="display:flex;justify-content:flex-end;border-top:1px solid var(--line);padding-top:16px">
+      <button (click)="salvarConta()" class="btn btn-primary">Salvar alterações</button>
+    </div>
+  </div>
+}
+
+@if (tab() === 'integracoes') {
+  <div class="card" style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:17px;margin:0">Rastreamento — Hapolo</h2>
+        <p style="margin:0;color:var(--mut);font-size:13px;line-height:1.55;max-width:480px">Telemetria e hodômetro dos veículos vêm da Hapolo. Cadastre o token de integração da sua empresa — ele é gerado no painel Hapolo em Conta → API → Tokens.</p>
+      </div>
+      <span style="display:flex;align-items:center;gap:7px;border-radius:6px;padding:4px 10px;font-size:11.5px;font-weight:600;white-space:nowrap"
+        [style.background]="store.hapoloStatus() === 'conectado' ? 'var(--ok-bg)' : 'var(--warn-bg)'"
+        [style.color]="store.hapoloStatus() === 'conectado' ? 'var(--ok)' : 'var(--warn)'">
+        <span style="width:6px;height:6px;border-radius:50%" [style.background]="store.hapoloStatus() === 'conectado' ? 'var(--ok)' : 'var(--warn)'"></span>
+        {{ store.hapoloStatus() === 'conectado' ? 'conectada' : 'sem token' }}
+      </span>
+    </div>
+
+    @if (store.hapoloStatus() === 'conectado') {
+      <div style="display:flex;flex-direction:column;gap:10px;background:var(--surf2);border:1px solid var(--line);border-radius:10px;padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <span class="mono" style="font-size:13px">hap_live_ ····· ····· {{ store.hapoloTokenTail() }}</span>
+          <div style="display:flex;gap:10px">
+            <button (click)="hapTestar()" class="btn btn-ghost">Testar conexão</button>
+            <button (click)="hapRemover()" class="btn btn-ghost" style="color:var(--crit)">Remover token</button>
+          </div>
+        </div>
+        <span class="mono" style="font-size:11.5px;color:var(--dim)">conectado desde 04 mar 2026 · última leitura 09:12 · 8 veículos reportando</span>
+      </div>
+    } @else {
+      <div style="display:flex;flex-direction:column;gap:12px">
+        @if (hapErr()) {
+          <div role="alert" class="form-error">
+            <span class="material-symbols-outlined" style="color:var(--crit);font-size:18px;flex-shrink:0">error</span>
+            <span>{{ hapErr() }}</span>
+          </div>
+        }
+        <label class="field">Token de integração
+          <div style="display:flex;gap:10px">
+            <input [(ngModel)]="hapToken" placeholder="hap_live_..." class="mono" style="flex:1">
+            <button (click)="hapConectar()" [disabled]="store.hapoloValidating()" class="btn btn-primary" style="display:flex;align-items:center;gap:8px;white-space:nowrap">
+              @if (store.hapoloValidating()) { <span class="spinner"></span> }
+              {{ store.hapoloValidating() ? 'Validando…' : 'Conectar' }}
+            </button>
+          </div>
+        </label>
+        <p class="mono" style="font-size:11.5px;color:var(--dim);margin:0">o token dá acesso somente-leitura à telemetria · a validação leva alguns segundos</p>
+      </div>
+    }
+  </div>
+}

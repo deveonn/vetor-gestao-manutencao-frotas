@@ -1,0 +1,217 @@
+@switch (dataState()) {
+
+@case ('carregando') {
+  <span class="mono" style="font-size:12px;color:var(--dim)">aquecendo instrumentos…</span>
+  <div class="kpi-grid">
+    @for (s of skel4; track s) {
+      <div class="card" style="display:flex;flex-direction:column;gap:14px">
+        <div class="skeleton" style="height:11px;width:55%;border-radius:4px"></div>
+        <div class="skeleton" style="height:32px;width:70%;border-radius:6px"></div>
+        <div class="tick-track" style="height:10px;opacity:.5"></div>
+      </div>
+    }
+  </div>
+  <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px">
+    <div class="card" style="height:260px"></div>
+    <div class="card" style="height:260px"></div>
+  </div>
+}
+
+@case ('erro') {
+  <div class="card" style="max-width:520px;margin:48px auto;display:flex;flex-direction:column;gap:12px;text-align:center;align-items:center;border-radius:16px;padding:32px">
+    <span class="material-symbols-outlined" style="color:var(--crit);font-size:34px">error</span>
+    <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:19px;margin:0">Não foi possível carregar os dados da frota</h2>
+    <p style="color:var(--mut);font-size:13.5px;line-height:1.6;margin:0">O servidor de dados não respondeu (erro 504). Seus registros locais estão seguros. Verifique a conexão e tente de novo — se persistir, acione o suporte pelo chat.</p>
+    <button (click)="retry()" class="btn btn-primary" style="padding:10px 20px;font-weight:600">Tentar novamente</button>
+  </div>
+}
+
+@case ('vazio') {
+  <div class="card" style="max-width:520px;margin:48px auto;display:flex;flex-direction:column;gap:14px;text-align:center;align-items:center;border-radius:16px;padding:32px">
+    <div style="width:180px;height:12px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 8px)"></div>
+    <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:19px;margin:0">Sua frota ainda não tem veículos</h2>
+    <p style="color:var(--mut);font-size:13.5px;line-height:1.6;margin:0">Adicione o primeiro e os instrumentos começam a ler: custo, km/L, trocas e pneus, tudo num relance.</p>
+    <button (click)="abrirVeicForm()" class="btn btn-primary" style="padding:10px 20px;font-weight:600">Adicionar veículo</button>
+  </div>
+}
+
+@case ('normal') {
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+    <p style="margin:0;font-size:14.5px;line-height:1.55;max-width:640px">
+      <strong>Resumo da semana:</strong> a frota gastou <strong>{{ kCusto() }}</strong> — 16% acima da anterior, puxado por manutenção corretiva.
+      <span style="color:var(--mut)">{{ kDisp() }} de {{ store.kpiTargets().totalVeiculos }} veículos rodando, consumo médio dentro da meta.</span>
+    </p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      @if (criticalMaintenance(); as m) {
+        <button (click)="irAcao('manutencao')" class="alert-cta">
+          <span class="material-symbols-outlined" style="color:var(--crit);font-size:16px">error</span>Resolver troca vencida — {{ m.v }}
+        </button>
+      }
+      @if (criticalTire(); as p) {
+        <button (click)="irAcao('pneus')" class="alert-cta">
+          <span class="material-symbols-outlined" style="color:var(--crit);font-size:16px">error</span>Ver pneu sinalizado — {{ p.v }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="card kpi-card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <span class="mono kpi-label"><span class="material-symbols-outlined" style="font-size:15px">payments</span>custo do período</span>
+        <span class="mono" style="font-size:11px;color:var(--dim)">13–19 jul</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+        <span class="kpi-value tabular">{{ kCusto() }}</span>
+        <span class="kpi-delta" style="background:var(--warn-bg);color:var(--warn)">+16,2%</span>
+      </div>
+      <vetor-instrument-bar [pct]="86" color="var(--warn)" [markerPct]="74" />
+      <span class="mono" style="font-size:11.5px;color:var(--dim)">semana anterior R$ 15.890 · +R$ 2.572</span>
+    </div>
+
+    <div class="card kpi-card">
+      <span class="mono kpi-label"><span class="material-symbols-outlined" style="font-size:15px">speed</span>km/L médio da frota</span>
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span class="kpi-value tabular">{{ kKml() }}</span>
+        <span class="kpi-delta" style="background:var(--ok-bg);color:var(--ok)">▲ 0,3</span>
+      </div>
+      <vetor-instrument-bar [pct]="58" color="var(--brand)" [markerPct]="60" />
+      <span class="mono" style="font-size:11.5px;color:var(--dim)">meta 9,0 km/L</span>
+    </div>
+
+    <div class="card kpi-card">
+      <span class="mono kpi-label"><span class="material-symbols-outlined" style="font-size:15px">garage</span>disponibilidade</span>
+      <div style="display:flex;align-items:baseline;gap:8px">
+        <span class="kpi-value tabular">{{ kDisp() }}/{{ store.kpiTargets().totalVeiculos }}</span>
+        <span style="font-size:12.5px;color:var(--mut)">veículos aptos</span>
+      </div>
+      <div style="display:flex;gap:4px">
+        @for (s of dispSegments(); track $index) {
+          <span style="flex:1;height:10px;border-radius:2px" [style.background]="s.ok ? 'var(--ok)' : 'var(--warn)'"></span>
+        }
+      </div>
+      <span class="mono" style="font-size:11.5px;color:var(--dim)">{{ store.dispCounts().manutencao }} veículo(s) em manutenção</span>
+    </div>
+
+    <div class="card kpi-card">
+      <span class="mono kpi-label"><span class="material-symbols-outlined" style="font-size:15px">notifications</span>alertas ativos</span>
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span class="kpi-value tabular">{{ kAlertas() }}</span>
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--crit);box-shadow:0 0 10px var(--crit);animation:pulse 1.8s infinite"></span>
+      </div>
+      <div style="display:flex;gap:12px;font-size:12px;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:4px;color:var(--crit)"><span class="material-symbols-outlined" style="font-size:14px">error</span>{{ alertCritCount() }} críticos</span>
+        <span style="display:flex;align-items:center;gap:4px;color:var(--warn)"><span class="material-symbols-outlined" style="font-size:14px">warning</span>{{ alertAtencaoCount() }} atenção</span>
+        <span style="display:flex;align-items:center;gap:4px;color:var(--brand)"><span class="material-symbols-outlined" style="font-size:14px">info</span>{{ alertInfoCount() }} info</span>
+      </div>
+      <span class="mono" style="font-size:11.5px;color:var(--dim)">{{ alertCritCount() }} exigem ação hoje</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:start">
+    <div class="card" style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+        <h2 class="panel-title" style="display:flex;align-items:center;gap:8px">
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--brand)">monitoring</span>Custo e eficiência por semana
+        </h2>
+        <span style="display:flex;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--dim)">
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:2px;background:var(--brand)"></span>custo</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:var(--ok)"></span>km/L</span>
+        </span>
+      </div>
+      <div style="position:relative;height:238px">
+        <vetor-chart [build]="trendChart()" />
+      </div>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:14px">
+      <h2 class="panel-title" style="display:flex;align-items:center;gap:8px">
+        <span class="material-symbols-outlined" style="font-size:18px;color:var(--brand)">donut_large</span>Disponibilidade da frota
+      </h2>
+      <div style="position:relative;height:238px">
+        <vetor-chart [build]="dispChart()" />
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:start">
+    <div class="card" style="display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px">
+        <h2 class="panel-title">O que fez gastar mais que a semana passada</h2>
+        <span class="mono" style="font-size:11px;color:var(--dim)">vs 6–12 jul</span>
+      </div>
+      @for (c of store.categoriesWithDelta(); track c.n) {
+        <div style="display:grid;grid-template-columns:96px 1fr 76px 52px;gap:14px;align-items:center;padding:11px 0;border-top:1px solid var(--line)">
+          <span style="font-size:13px">{{ c.n }}</span>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div class="tick-track" style="height:9px">
+              <div style="position:absolute;top:0;bottom:0;left:0;border-radius:2px;background:var(--brand);opacity:.85" [style.width.%]="c.pctAtu"></div>
+            </div>
+            <div style="position:relative;height:4px">
+              <div style="position:absolute;top:0;bottom:0;left:0;border-radius:2px;background:var(--dim);opacity:.5" [style.width.%]="c.pctAnt"></div>
+            </div>
+          </div>
+          <span class="mono tabular" style="font-size:12.5px;text-align:right">{{ c.atuF }}</span>
+          <span style="font-size:12.5px;font-weight:600;text-align:right" [style.color]="c.dCor">{{ c.delta }}</span>
+        </div>
+      }
+      <p style="margin:10px 0 0;padding:12px 14px;background:var(--surf2);border-radius:10px;font-size:13px;line-height:1.55;color:var(--mut)">
+        <strong style="color:var(--txt)">Manutenção puxou a alta:</strong> +R$ 1.380 em corretivas, sendo R$ 1.180 nos freios da SBF-6A03. Combustível subiu com o diesel a R$ 6,21 (+R$ 0,14).
+      </p>
+    </div>
+
+    <div class="card" style="display:flex;flex-direction:column;gap:2px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px">
+        <h2 class="panel-title">O que precisa de atenção</h2>
+        <span class="mono" style="font-size:11px;color:var(--dim)">{{ store.alertsEnriched().length }} alertas</span>
+      </div>
+      @for (a of store.alertsEnriched(); track $index) {
+        <div (click)="irAcao(a.acao)" class="alert-row">
+          <span class="alert-row-icon" [style.background]="a.bg" [style.color]="a.cor">
+            <span class="material-symbols-outlined" style="font-size:14px">{{ a.glifo }}</span>
+          </span>
+          <div style="display:flex;flex-direction:column;gap:3px;flex:1">
+            <span style="font-size:13px;line-height:1.4">{{ a.t }}</span>
+            <span class="mono" style="font-size:11px;color:var(--dim)">{{ a.v }} · {{ a.nvLbl }}</span>
+          </div>
+          <button (click)="irAcao(a.acao); $event.stopPropagation()" style="background:none;border:none;color:var(--brand);font-size:12.5px;padding:2px">ver →</button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <h2 class="panel-title">Frota agora</h2>
+        <span style="font-size:12px;color:var(--dim)">clique num veículo para abrir a ficha completa</span>
+      </div>
+      <a routerLink="/veiculos" style="background:none;border:none;color:var(--brand);font-size:12.5px">ver todos →</a>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      @for (v of store.vehiclesEnriched(); track v.id) {
+        <button (click)="irVeiculo(v.placa)" class="fleet-row">
+          <span class="fleet-row-icon" [style.color]="v.stCor">
+            <span class="material-symbols-outlined" style="font-size:19px">{{ v.tipoIcon }}</span>
+          </span>
+          <div style="display:flex;flex-direction:column;gap:1px;min-width:0">
+            <span class="mono" style="font-size:13px;font-weight:500">{{ v.placa }}</span>
+            <span style="font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.modelo }}</span>
+          </div>
+          <span style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--mut);min-width:0">
+            <span class="material-symbols-outlined" style="font-size:15px;color:var(--dim)">person</span>
+            <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.motTxt }}</span>
+          </span>
+          <span style="display:flex;align-items:center;gap:12px;justify-self:end">
+            <span class="mono tabular" style="font-size:12px;color:var(--mut)">{{ v.kmHojeF }} km hoje</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--mut);width:118px">
+              <span style="width:7px;height:7px;border-radius:50%" [style.background]="v.stCor"></span>{{ v.stLabel }}
+            </span>
+          </span>
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--dim);justify-self:end">chevron_right</span>
+        </button>
+      }
+    </div>
+  </div>
+}
+
+}

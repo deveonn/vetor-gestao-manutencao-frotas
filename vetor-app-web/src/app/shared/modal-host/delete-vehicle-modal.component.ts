@@ -1,0 +1,35 @@
+import { Component, computed, inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { FleetStore } from '../../core/fleet.store';
+import { ModalService } from '../../core/modal.service';
+
+@Component({
+  selector: 'vetor-delete-vehicle-modal',
+  template: `
+    <div class="modal-backdrop">
+      <div class="modal-dialog" role="dialog" aria-modal="true" style="max-width:430px">
+        <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:18px;margin:0">Excluir o veículo {{ placa() }}?</h2>
+        <p style="color:var(--mut);font-size:13.5px;line-height:1.6;margin:0">O veículo sai da frota e para de receber telemetria. O histórico de abastecimentos, manutenções e vistorias fica arquivado por 90 dias antes da exclusão definitiva.</p>
+        <div style="display:flex;justify-content:flex-end;gap:10px">
+          <button class="btn btn-ghost" (click)="modal.close()">Cancelar</button>
+          <button class="btn" style="background:var(--crit);color:#fff;font-weight:600" (click)="confirmar()">Excluir veículo</button>
+        </div>
+      </div>
+    </div>
+  `,
+})
+export class DeleteVehicleModalComponent {
+  modal = inject(ModalService);
+  private store = inject(FleetStore);
+  private router = inject(Router);
+
+  placa = computed(() => this.modal.context() ?? '');
+
+  confirmar(): void {
+    const placa = this.placa();
+    if (!placa) return;
+    this.store.deleteVehicle(placa);
+    this.modal.close();
+    this.router.navigate(['/veiculos']);
+  }
+}

@@ -1,0 +1,17 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: fadeup .3s ease both;
+}
+
+.btn-conclude {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 5px 10px;
+  color: var(--mut);
+  font-size: 12px;
+
+  &:hover { border-color: var(--ok); color: var(--ok); }
+}

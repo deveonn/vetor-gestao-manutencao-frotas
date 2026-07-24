@@ -1,0 +1,63 @@
+<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+  <input [(ngModel)]="q" placeholder="Buscar por placa, modelo ou motorista"
+    style="flex:1;min-width:220px;max-width:360px;background:var(--surf);border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:13.5px;color:var(--txt)">
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    @for (c of chips; track c.id) {
+      <button (click)="setFiltro(c.id)" class="chip"
+        [style.background]="filtro() === c.id ? 'var(--brand-bg)' : 'transparent'"
+        [style.color]="filtro() === c.id ? 'var(--brand)' : 'var(--mut)'"
+        [style.border-color]="filtro() === c.id ? 'var(--brand)' : 'var(--line)'">{{ c.label }}</button>
+    }
+  </div>
+  <div style="flex:1"></div>
+  <button (click)="abrirVeicForm()" class="btn btn-primary">
+    <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;margin-right:6px">add</span>Adicionar veículo
+  </button>
+</div>
+
+@if (vList().length > 0) {
+  <div class="card" style="padding:8px 20px 12px;overflow-x:auto">
+    <div class="col-head mono">
+      <span></span><span>veículo</span><span>motorista</span><span>combustível</span><span>km/L</span><span>próxima troca</span><span>pneus</span><span></span>
+    </div>
+    @for (v of vList(); track v.id) {
+      <div (click)="abrir(v.placa)" class="row">
+        <span class="row-icon" [style.color]="v.stCor">
+          <span class="material-symbols-outlined" style="font-size:21px">{{ v.tipoIcon }}</span>
+        </span>
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="mono" style="font-size:14px;font-weight:500">{{ v.placa }}</span>
+            <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mut)">
+              <span style="width:6px;height:6px;border-radius:50%" [style.background]="v.stCor"></span>{{ v.stLabel }}
+            </span>
+          </div>
+          <span style="font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.modelo }}</span>
+        </div>
+        <span style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--mut);min-width:0">
+          <span class="material-symbols-outlined" style="font-size:16px;color:var(--dim)">person</span>
+          <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.motTxt }}</span>
+        </span>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--dim)" class="mono"><span>nível</span><span>{{ v.comb }}%</span></div>
+          <vetor-instrument-bar [pct]="v.comb" [color]="v.combCor" />
+        </div>
+        <span class="mono tabular" style="font-size:13px">{{ v.kmlF }}</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:12.5px" [style.color]="v.trocaCor">
+          <span class="material-symbols-outlined" style="font-size:15px">build</span>{{ v.trocaTxt }}
+        </span>
+        <div style="display:flex;gap:5px">
+          @for (p of v.pneuDots; track p.pos) {
+            <span [title]="p.nome + ' — ' + p.lbl" style="width:10px;height:10px;border-radius:2px" [style.background]="p.cor"></span>
+          }
+        </div>
+        <span class="material-symbols-outlined" style="font-size:18px;color:var(--dim);justify-self:end">chevron_right</span>
+      </div>
+    }
+  </div>
+} @else {
+  <div style="max-width:480px;margin:40px auto;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center">
+    <div style="width:160px;height:12px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 8px)"></div>
+    <p style="color:var(--mut);font-size:13.5px;margin:0">Nenhum veículo corresponde à busca ou aos filtros. Limpe os filtros ou confira a grafia da placa.</p>
+  </div>
+}

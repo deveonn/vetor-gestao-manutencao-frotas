@@ -1,0 +1,24 @@
+<div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+  <p style="margin:0;color:var(--mut);font-size:13.5px">
+    {{ resumo().total }} motoristas · {{ resumo().vinculados }} vinculados a veículos · {{ resumo().vencendo }} CNHs vencem em até 90 dias
+  </p>
+  <button (click)="abrirMot()" class="btn btn-primary">
+    <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;margin-right:6px">person_add</span>Cadastrar motorista
+  </button>
+</div>
+
+<div class="card" style="overflow-x:auto">
+  <div class="col-head mono">
+    <span>nome</span><span>CNH</span><span>validade</span><span>situação</span><span>veículo</span><span>vínculo</span>
+  </div>
+  @for (m of store.driversEnriched(); track m.nome) {
+    <div class="row">
+      <span style="font-weight:500">{{ m.nome }}</span>
+      <span class="mono" style="font-size:12.5px">{{ m.cat }}</span>
+      <span class="mono tabular" style="font-size:12.5px;color:var(--mut)">{{ m.val }}</span>
+      <span style="justify-self:start;border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:600" [style.background]="m.cnhBg" [style.color]="m.cnhCor">{{ m.cnhTxt }}</span>
+      <span class="mono" style="font-size:12.5px;color:var(--mut)">{{ m.vTxt }}</span>
+      <span class="mono" style="font-size:11.5px;color:var(--dim)">{{ m.desdeTxt }}</span>
+    </div>
+  }
+</div>

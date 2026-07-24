@@ -1,0 +1,51 @@
+<div class="card">
+  <h2 class="panel-title" style="margin:0 0 12px">Pneus sinalizados para troca</h2>
+  <div class="flagged-grid">
+    @for (p of store.flaggedTiresEnriched(); track $index) {
+      <div style="display:flex;gap:14px;background:var(--surf2);border:1px solid var(--line);border-radius:12px;padding:14px">
+        <div class="photo-placeholder">
+          <span class="mono" style="font-size:9.5px;color:var(--dim);line-height:1.4">foto da<br>vistoria</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;flex:1">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span class="mono" style="font-size:12.5px">{{ p.v }}</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:600" [style.background]="p.bg" [style.color]="p.cor">
+              <span class="material-symbols-outlined" style="font-size:14px">{{ p.glifo }}</span>{{ p.nvLbl }}
+            </span>
+          </div>
+          <span style="font-size:13px;font-weight:600">{{ p.pos }}</span>
+          <p style="margin:0;font-size:12.5px;color:var(--mut);line-height:1.5">{{ p.obs }}</p>
+          <span class="mono" style="font-size:11px;color:var(--dim)">vistoria de {{ p.vist }}</span>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px">
+    <h2 class="panel-title">Vistorias recebidas do app</h2>
+    <span class="mono" style="font-size:11px;color:var(--dim)">últimos 7 dias</span>
+  </div>
+  <div class="insp-grid">
+    @for (vi of store.inspectionsEnriched(); track $index) {
+      <div style="display:flex;flex-direction:column;gap:10px;background:var(--surf2);border:1px solid var(--line);border-radius:12px;padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span class="mono" style="font-size:12.5px;font-weight:500">{{ vi.v }}</span>
+          <span class="mono" style="font-size:11px;color:var(--dim)">{{ vi.data }}</span>
+        </div>
+        <span style="font-size:12.5px;color:var(--mut)">por {{ vi.mot }}</span>
+        <div style="display:flex;flex-direction:column;gap:1px">
+          @for (it of vi.itens; track it.n) {
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12.5px">
+              <span>{{ it.n }}</span>
+              <span style="display:flex;align-items:center;gap:6px" [style.color]="it.cor">
+                <span class="material-symbols-outlined" style="font-size:15px">{{ it.glifo }}</span>{{ it.lbl }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

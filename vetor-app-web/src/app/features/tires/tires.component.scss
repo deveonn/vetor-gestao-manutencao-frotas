@@ -1,0 +1,31 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: fadeup .3s ease both;
+}
+
+.flagged-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.insp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.photo-placeholder {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid var(--line2);
+  background: repeating-linear-gradient(45deg, var(--surf) 0 6px, var(--surf2) 6px 12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}

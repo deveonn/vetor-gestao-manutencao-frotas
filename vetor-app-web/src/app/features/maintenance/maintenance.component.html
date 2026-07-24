@@ -1,0 +1,53 @@
+<div class="card">
+  <h2 class="panel-title" style="margin:0 0 8px">Próximas do vencimento</h2>
+  @if (store.maintenanceEnriched().length > 0) {
+    @for (m of store.maintenanceEnriched(); track m.id) {
+      <div class="upcoming-row">
+        <span class="material-symbols-outlined" [style.color]="m.cor" style="font-size:16px">{{ m.glifo }}</span>
+        <span class="mono" style="font-size:12.5px">{{ m.v }}</span>
+        <span style="font-size:13px">{{ m.item }}</span>
+        <vetor-instrument-bar [pct]="m.pct" [color]="m.cor" [height]="9" />
+        <span class="mono" style="font-size:12px" [style.color]="m.cor">{{ m.prazo }}</span>
+        <button (click)="concluir(m.id)" class="btn-conclude">Marcar como feita</button>
+      </div>
+    }
+  } @else {
+    <p style="color:var(--mut);font-size:13.5px;border-top:1px solid var(--line);padding-top:14px;margin:0">Nenhuma manutenção próxima do vencimento — a frota está em dia com o plano.</p>
+  }
+</div>
+
+<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start">
+  <div class="card">
+    <h2 class="panel-title" style="margin:0 0 10px">Histórico com custos</h2>
+    <div class="hist-head mono">
+      <span>data</span><span>veículo</span><span>serviço</span><span>oficina</span><span style="text-align:right">custo</span>
+    </div>
+    @for (h of store.maintenanceHistoryEnriched(); track $index) {
+      <div class="hist-row">
+        <span class="mono" style="font-size:12px;color:var(--dim)">{{ h.data }}</span>
+        <span class="mono" style="font-size:12.5px">{{ h.v }}</span>
+        <span style="color:var(--mut)">{{ h.item }}</span>
+        <span style="color:var(--dim);font-size:12.5px">{{ h.ofi }}</span>
+        <span class="mono tabular" style="font-size:12.5px;text-align:right">{{ h.custoF }}</span>
+      </div>
+    }
+  </div>
+
+  <div class="card" style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <h2 class="panel-title">Plano por tipo de veículo</h2>
+      <span class="mono" style="font-size:11px;color:var(--dim)">configurável</span>
+    </div>
+    @for (pl of store.plans(); track pl.tipo) {
+      <div style="display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line);padding-top:12px">
+        <span style="font-size:13px;font-weight:600;padding-bottom:4px">{{ pl.tipo }}</span>
+        @for (it of pl.itens; track it.item) {
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0">
+            <span style="color:var(--mut)">{{ it.item }}</span>
+            <span class="mono" style="font-size:11.5px;color:var(--dim)">{{ it.km }} · {{ it.tempo }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

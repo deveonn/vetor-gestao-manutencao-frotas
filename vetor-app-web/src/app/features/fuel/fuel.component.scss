@@ -1,0 +1,38 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: fadeup .3s ease both;
+}
+
+$cols: 56px 84px 1fr 62px 84px 84px;
+
+.col-head {
+  display: grid;
+  grid-template-columns: $cols;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line2);
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: $cols;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.sort-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  text-align: left;
+}

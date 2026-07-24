@@ -1,0 +1,220 @@
+@if (relatorioGerado() === null) {
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="card" style="flex-direction:row;display:flex;align-items:flex-start;gap:12px;padding:14px 18px">
+      <span class="material-symbols-outlined" style="font-size:20px;color:var(--brand);margin-top:1px">bolt</span>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:13.5px;font-weight:600">Geração sob demanda</span>
+        <span style="font-size:12.5px;color:var(--mut);line-height:1.5">Os relatórios são processados só quando você pede — escolha um tipo abaixo para economizar recursos da frota.</span>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span class="mono" style="font-size:11px;color:var(--dim)">abrangência</span>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button (click)="setEscopo('frota')" class="escopo-btn"
+          [style.background]="escopo() === 'frota' ? 'var(--brand-bg)' : 'var(--surf)'"
+          [style.border-color]="escopo() === 'frota' ? 'var(--brand)' : 'var(--line)'"
+          [style.color]="escopo() === 'frota' ? 'var(--brand)' : 'var(--mut)'">
+          <span class="material-symbols-outlined" style="font-size:18px">grid_view</span>Frota inteira
+        </button>
+        <button (click)="setEscopo('veiculo')" class="escopo-btn"
+          [style.background]="escopo() === 'veiculo' ? 'var(--brand-bg)' : 'var(--surf)'"
+          [style.border-color]="escopo() === 'veiculo' ? 'var(--brand)' : 'var(--line)'"
+          [style.color]="escopo() === 'veiculo' ? 'var(--brand)' : 'var(--mut)'">
+          <span class="material-symbols-outlined" style="font-size:18px">local_shipping</span>Veículo específico
+        </button>
+      </div>
+      @if (escopo() === 'veiculo') {
+        <button (click)="abrirBuscaVeic()" class="veic-picker-btn">
+          <span style="display:flex;align-items:center;gap:9px;font-size:13px">
+            <span class="material-symbols-outlined" style="font-size:18px;color:var(--brand)">search</span>
+            @if (veiculoSelecionado()) {
+              <span class="mono" style="font-size:13px">{{ veiculoSelecionado() }}</span>
+            } @else {
+              <span style="color:var(--mut)">Procurar veículo…</span>
+            }
+          </span>
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--dim)">expand_more</span>
+        </button>
+      }
+    </div>
+
+    <div class="tipo-grid">
+      @for (t of reportDefs(); track t.id) {
+        <button (click)="escolherTipo(t.id)" class="tipo-card"
+          [style.background]="t.id === tipoSelecionado() ? 'var(--brand-bg)' : 'var(--surf)'"
+          [style.border-color]="t.id === tipoSelecionado() ? 'var(--brand)' : 'var(--line)'">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <span class="tipo-icon" [style.color]="t.id === tipoSelecionado() ? 'var(--brand)' : 'var(--mut)'">
+              <span class="material-symbols-outlined" style="font-size:23px">{{ t.icon }}</span>
+            </span>
+            @if (t.id === tipoSelecionado()) {
+              <span style="width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center">
+                <span class="material-symbols-outlined" style="font-size:15px">check</span>
+              </span>
+            }
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <span style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px">{{ t.titulo }}</span>
+            <span style="font-size:12.5px;color:var(--mut);line-height:1.5">{{ t.desc }}</span>
+          </div>
+          <div class="mono" style="display:flex;gap:8px;margin-top:2px;font-size:11px;color:var(--dim)">
+            <span style="display:flex;align-items:center;gap:4px"><span class="material-symbols-outlined" style="font-size:14px">calendar_month</span>{{ t.periodo }}</span>
+            <span style="display:flex;align-items:center;gap:4px"><span class="material-symbols-outlined" style="font-size:14px">table_rows</span>{{ t.linhas }}</span>
+          </div>
+        </button>
+      }
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:14px">
+      <span style="font-size:12.5px;color:var(--dim)">Relatório selecionado será processado agora.</span>
+      <button (click)="gerar()" class="btn" style="background:var(--brand);color:#fff;font-weight:600;padding:11px 20px;display:flex;align-items:center;gap:8px">
+        @if (gerando()) {
+          <span class="material-symbols-outlined" style="font-size:17px;animation:spin 1s linear infinite">progress_activity</span>
+        } @else {
+          <span class="material-symbols-outlined" style="font-size:17px">play_arrow</span>
+        }
+        Gerar relatório
+      </button>
+    </div>
+  </div>
+} @else {
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button (click)="trocar()" title="Escolher outro relatório" class="back-btn">
+          <span class="material-symbols-outlined" style="font-size:19px">arrow_back</span>
+        </button>
+        <span style="width:38px;height:38px;border-radius:9px;background:var(--brand-bg);color:var(--brand);display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="font-size:21px">{{ relDef().icon }}</span>
+        </span>
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:17px;margin:0">{{ relDef().titulo }}</h2>
+          <span class="mono" style="font-size:11.5px;color:var(--dim)">{{ relDef().periodo }} · {{ escopoLabel() }} · gerado 20 jul 2026</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button (click)="exportCsv()" class="btn btn-ghost"><span class="material-symbols-outlined" style="font-size:15px;vertical-align:-3px;margin-right:6px">download</span>Exportar CSV</button>
+        <button (click)="exportPdf()" class="btn btn-primary"><span class="material-symbols-outlined" style="font-size:15px;vertical-align:-3px;margin-right:6px">picture_as_pdf</span>Exportar PDF</button>
+      </div>
+    </div>
+
+    @if (relatorioGerado() === 'comparativo') {
+      <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:16px;align-items:start">
+        <div class="card" style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px">
+            <h2 class="panel-title">Custo por categoria</h2>
+            <span class="mono" style="display:flex;gap:12px;font-size:10.5px;color:var(--dim)">
+              <span style="color:var(--dim)">— jun</span><span style="color:var(--brand)">— jul</span>
+            </span>
+          </div>
+          @for (c of store.reportCategoriesEnriched(); track c.n) {
+            <div style="display:grid;grid-template-columns:96px 1fr 84px;gap:14px;align-items:center;padding:12px 0;border-top:1px solid var(--line)">
+              <span style="font-size:13px">{{ c.n }}</span>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div class="tick-track" style="height:9px"><div style="position:absolute;top:0;bottom:0;left:0;background:var(--brand);opacity:.85;border-radius:2px" [style.width.%]="c.pctJul"></div></div>
+                <div style="position:relative;height:4px"><div style="position:absolute;top:0;bottom:0;left:0;background:var(--dim);opacity:.5;border-radius:2px" [style.width.%]="c.pctJun"></div></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px;text-align:right" class="mono tabular">
+                <span style="font-size:12.5px">{{ c.julF }}</span>
+                <span style="font-size:11px;color:var(--dim)">{{ c.junF }}</span>
+              </div>
+            </div>
+          }
+          <p style="margin:10px 0 0;padding:12px 14px;background:var(--surf2);border-radius:10px;font-size:12.5px;line-height:1.55;color:var(--mut)">Julho projeta fechar 4% abaixo de junho se o ritmo se mantiver — combustível é o principal fator da queda.</p>
+        </div>
+        <div class="card" style="overflow-x:auto">
+          <h2 class="panel-title" style="margin:0 0 10px">Custo por veículo — julho</h2>
+          <div class="mono" style="display:grid;grid-template-columns:100px 1fr 90px 90px;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:11px;color:var(--dim)">
+            <span>veículo</span><span>km rodados</span><span style="text-align:right">custo</span><span style="text-align:right">R$/km</span>
+          </div>
+          @for (r of relFilt(); track r.placa) {
+            <div style="display:grid;grid-template-columns:100px 1fr 90px 90px;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:13px">
+              <span class="mono" style="font-size:12.5px">{{ r.placa }}</span>
+              <span class="mono tabular" style="font-size:12px;color:var(--mut)">{{ r.kmF }} km</span>
+              <span class="mono tabular" style="font-size:12.5px;text-align:right">{{ r.custoF }}</span>
+              <span class="mono tabular" style="font-size:12.5px;text-align:right;color:var(--mut)">{{ r.ckmF }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (relatorioGerado() === 'veiculo') {
+      <div class="card" style="overflow-x:auto">
+        <div class="mono" style="display:grid;grid-template-columns:120px 1fr 110px 110px;gap:14px;padding:8px 4px;border-bottom:1px solid var(--line2);min-width:520px;font-size:11px;color:var(--dim)">
+          <span>veículo</span><span>km rodados</span><span style="text-align:right">custo total</span><span style="text-align:right">R$/km</span>
+        </div>
+        @for (r of relFilt(); track r.placa) {
+          <div style="display:grid;grid-template-columns:120px 1fr 110px 110px;gap:14px;align-items:center;padding:12px 4px;border-top:1px solid var(--line);min-width:520px">
+            <span class="mono" style="display:flex;align-items:center;gap:8px;font-size:13px"><span class="material-symbols-outlined" style="font-size:16px;color:var(--dim)">local_shipping</span>{{ r.placa }}</span>
+            <span class="mono tabular" style="font-size:12.5px;color:var(--mut)">{{ r.kmF }} km</span>
+            <span class="mono tabular" style="font-size:13px;text-align:right">{{ r.custoF }}</span>
+            <span class="mono tabular" style="font-size:13px;text-align:right;color:var(--mut)">{{ r.ckmF }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (relatorioGerado() === 'consumo') {
+      <div class="card">
+        <div class="mono" style="display:grid;grid-template-columns:150px 1fr 96px 96px;gap:14px;padding:8px 4px;border-bottom:1px solid var(--line2);font-size:11px;color:var(--dim)">
+          <span>veículo</span><span>eficiência</span><span style="text-align:right">km/L</span><span style="text-align:right">situação</span>
+        </div>
+        @for (v of relConsumo(); track v.placa) {
+          <div style="display:grid;grid-template-columns:150px 1fr 96px 96px;gap:14px;align-items:center;padding:12px 4px;border-top:1px solid var(--line)">
+            <div style="display:flex;flex-direction:column;gap:1px;min-width:0">
+              <span class="mono" style="font-size:12.5px">{{ v.placa }}</span>
+              <span style="font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.modelo }}</span>
+            </div>
+            <div class="tick-track" style="height:9px"><div style="position:absolute;top:0;bottom:0;left:0;border-right:2px solid;border-radius:2px" [style.width.%]="v.pct" [style.background]="v.cor" [style.border-color]="v.cor"></div></div>
+            <span class="mono tabular" style="font-size:13.5px;text-align:right">{{ v.kmlF }}</span>
+            <span style="font-size:12px;text-align:right" [style.color]="v.cor">{{ v.lbl }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (relatorioGerado() === 'disponibilidade') {
+      <div style="display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start">
+        <div class="card" style="display:flex;flex-direction:column;gap:14px">
+          <h2 class="panel-title">Distribuição</h2>
+          <div style="position:relative;height:210px">
+            <vetor-chart [build]="dispChart()" />
+          </div>
+        </div>
+        <div class="card">
+          <div class="mono" style="display:grid;grid-template-columns:40px 1fr 70px 80px;gap:14px;padding:8px 4px;border-bottom:1px solid var(--line2);font-size:11px;color:var(--dim)">
+            <span></span><span>estado</span><span style="text-align:right">veículos</span><span style="text-align:right">% frota</span>
+          </div>
+          @for (d of relDisp(); track d.k) {
+            <div style="display:grid;grid-template-columns:40px 1fr 70px 80px;gap:14px;align-items:center;padding:14px 4px;border-top:1px solid var(--line)">
+              <span style="width:34px;height:34px;border-radius:9px;background:var(--surf2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center" [style.color]="d.cor">
+                <span class="material-symbols-outlined" style="font-size:19px">{{ d.icon }}</span>
+              </span>
+              <span style="font-size:13.5px">{{ d.k }}</span>
+              <span class="mono tabular" style="font-size:15px;text-align:right">{{ d.n }}</span>
+              <span class="mono tabular" style="font-size:13px;text-align:right;color:var(--mut)">{{ d.pct }}%</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (relatorioGerado() === 'manutencao') {
+      <div class="card">
+        <div class="mono" style="display:grid;grid-template-columns:100px 1fr 150px 120px;gap:14px;padding:8px 4px;border-bottom:1px solid var(--line2);font-size:11px;color:var(--dim)">
+          <span>veículo</span><span>serviço</span><span>referência</span><span style="text-align:right">prazo</span>
+        </div>
+        @for (m of manFilt(); track m.id) {
+          <div style="display:grid;grid-template-columns:100px 1fr 150px 120px;gap:14px;align-items:center;padding:13px 4px;border-top:1px solid var(--line)">
+            <span class="mono" style="font-size:12.5px">{{ m.v }}</span>
+            <span style="display:flex;align-items:center;gap:8px;font-size:13px"><span class="material-symbols-outlined" style="font-size:16px" [style.color]="m.cor">build</span>{{ m.item }}</span>
+            <div class="tick-track" style="height:8px"><div style="position:absolute;top:0;bottom:0;left:0;border-right:2px solid;border-radius:2px" [style.width.%]="m.pct" [style.background]="m.cor" [style.border-color]="m.cor"></div></div>
+            <span class="mono tabular" style="font-size:12.5px;text-align:right" [style.color]="m.cor">{{ m.prazo }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

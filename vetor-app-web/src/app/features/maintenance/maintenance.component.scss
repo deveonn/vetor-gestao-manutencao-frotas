@@ -1,0 +1,46 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: fadeup .3s ease both;
+}
+
+.upcoming-row {
+  display: grid;
+  grid-template-columns: 22px 90px 1fr 220px 150px auto;
+  gap: 14px;
+  align-items: center;
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+}
+
+.hist-head {
+  display: grid;
+  grid-template-columns: 56px 90px 1fr 110px 84px;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line2);
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.hist-row {
+  display: grid;
+  grid-template-columns: 56px 90px 1fr 110px 84px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.btn-conclude {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 6px 12px;
+  color: var(--mut);
+  font-size: 12.5px;
+
+  &:hover { border-color: var(--ok); color: var(--ok); }
+}

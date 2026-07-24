@@ -1,0 +1,28 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: fadeup .3s ease both;
+}
+
+$cols: 1fr 60px 130px 130px 110px 110px;
+
+.col-head {
+  display: grid;
+  grid-template-columns: $cols;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line2);
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: $cols;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
