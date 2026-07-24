@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Saira:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0&display=block" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#0d1320;--surf:#151d2c;--surf2:#1c2638;--line:#26334a;--line2:#33425f;--txt:#e9eef7;--mut:#8fa0b8;--dim:#5f7089;--brand:#5cb3ff;--brand-bg:rgba(92,179,255,.13);--ok:#46c98f;--ok-bg:rgba(70,201,143,.12);--warn:#f2b13d;--warn-bg:rgba(242,177,61,.13);--crit:#f16a5c;--crit-bg:rgba(241,106,92,.14);--tick:rgba(233,238,247,.14);--shadow:0 16px 40px rgba(3,8,18,.5);--side-bg:#0f3f7a;--side-fg:#eaf3ff;--side-dim:rgba(234,243,255,.62);--side-active:rgba(255,255,255,.15);--side-line:rgba(255,255,255,.14);--side-accent:#bcdcff}
+[data-theme="light"]{--bg:#eceff5;--surf:#ffffff;--surf2:#f3f6fb;--line:#d9e0eb;--line2:#c4cfdf;--txt:#17212f;--mut:#57687f;--dim:#8494aa;--brand:#1873c4;--brand-bg:rgba(24,115,196,.1);--ok:#178a5d;--ok-bg:rgba(23,138,93,.1);--warn:#a36e08;--warn-bg:rgba(163,110,8,.12);--crit:#c2412f;--crit-bg:rgba(194,65,47,.1);--tick:rgba(23,33,47,.16);--shadow:0 16px 40px rgba(23,33,47,.12);--side-bg:#1873c4;--side-fg:#f4f9ff;--side-dim:rgba(244,249,255,.72);--side-active:rgba(255,255,255,.2);--side-line:rgba(255,255,255,.2);--side-accent:#ffffff}
+html,body{margin:0;padding:0}
+.material-symbols-outlined{line-height:1;display:inline-block}
+a{color:var(--brand,#5cb3ff);text-decoration:none}
+a:hover{color:var(--txt,#e9eef7)}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;color:inherit;box-sizing:border-box}
+:focus-visible{outline:2px solid var(--brand,#5cb3ff);outline-offset:2px;border-radius:4px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes slidein{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001s !important;animation-iteration-count:1 !important;transition-duration:.001s !important}}
+@media (max-width: 980px){[data-shell]{grid-template-columns:64px 1fr !important}[data-navlabel],[data-sidefoot]{display:none !important}[data-monogram]{display:inline !important}[data-login]{grid-template-columns:1fr !important}}
+</style>
+</helmet>
+<div data-theme="{{ theme }}" style="min-height:100vh;background:var(--bg);color:var(--txt);font-family:'IBM Plex Sans',sans-serif;font-size:14px">
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Login" data-login="1" style="min-height:100vh;display:grid;grid-template-columns:1.15fr 1fr">
+  <div data-loginbrand="1" style="position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:56px 64px;background:linear-gradient(155deg,#0d1320,#111c31);overflow:hidden;color:#e9eef7">
+    <div style="position:absolute;left:0;right:0;bottom:0;height:140px;background:repeating-linear-gradient(90deg,rgba(233,238,247,.09) 0 2px,transparent 2px 28px);mask-image:linear-gradient(180deg,transparent,black)"></div>
+    <div style="display:flex;align-items:baseline;gap:10px">
+      <span style="font-family:'Saira',sans-serif;font-weight:700;font-size:26px;letter-spacing:.16em">VETOR</span>
+      <span style="color:#8fa0b8;font-size:13px">gestão de frotas</span>
+    </div>
+    <div style="max-width:520px;display:flex;flex-direction:column;gap:18px">
+      <h1 style="font-family:'Saira',sans-serif;font-weight:600;font-size:46px;line-height:1.1;margin:0;text-wrap:pretty">A frota inteira, lida como um instrumento.</h1>
+      <p style="color:#8fa0b8;font-size:15.5px;line-height:1.6;margin:0">Telemetria, combustível, manutenção e pneus num painel só — números que se sentem medidos, não digitados.</p>
+      <div style="display:flex;gap:26px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#8fa0b8">
+        <span style="display:flex;align-items:center;gap:8px"><span style="width:7px;height:7px;border-radius:50%;background:#46c98f;box-shadow:0 0 10px #46c98f;animation:pulse 2.4s infinite"></span>7 veículos rodando</span>
+        <span>1.284 km hoje</span>
+        <span>sincronizado 09:12</span>
+      </div>
+    </div>
+    <div style="position:relative;height:34px">
+      <div style="position:absolute;inset:12px 0 12px 0;background:repeating-linear-gradient(90deg,rgba(233,238,247,.22) 0 1px,transparent 1px 9px);border-radius:2px"></div>
+      <div style="position:absolute;top:6px;bottom:6px;left:62%;width:2px;background:#5cb3ff;box-shadow:0 0 12px #5cb3ff"></div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:center;background:var(--surf);padding:48px 32px">
+    <div style="width:100%;max-width:352px;display:flex;flex-direction:column;gap:18px">
+      <div>
+        <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:24px;margin:0 0 6px">Entrar na sua conta</h2>
+        <p style="color:var(--mut);margin:0;font-size:13.5px">Acesso do administrador da empresa</p>
+      </div>
+      <sc-if value="{{ credErr }}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="display:flex;gap:10px;background:var(--crit-bg);border:1px solid var(--crit);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.5">
+          <span class="material-symbols-outlined" style="color:var(--crit);font-size:18px;flex-shrink:0">error</span>
+          <span>Credenciais inválidas — confira o e-mail e a senha. Após 5 tentativas seguidas, o acesso fica bloqueado por 10 minutos.</span>
+        </div>
+      </sc-if>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--mut)">E-mail
+        <input type="email" value="{{ email }}" onChange="{{ setEmail }}" placeholder="voce@suaempresa.com.br" style="background:var(--bg);border:1px solid {{ emailBorda }};border-radius:10px;padding:12px 14px;font-size:14px;color:var(--txt)">
+        <sc-if value="{{ temEmailErr }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:4px;color:var(--crit);font-size:12.5px"><span class="material-symbols-outlined" style="font-size:14px">error</span>{{ emailErr }}</span></sc-if>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--mut)">Senha
+        <input type="password" value="{{ pass }}" onChange="{{ setPass }}" placeholder="••••••••" style="background:var(--bg);border:1px solid {{ passBorda }};border-radius:10px;padding:12px 14px;font-size:14px;color:var(--txt)">
+        <sc-if value="{{ temPassErr }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:4px;color:var(--crit);font-size:12.5px"><span class="material-symbols-outlined" style="font-size:14px">error</span>{{ passErr }}</span></sc-if>
+      </label>
+      <button onClick="{{ entrar }}" disabled="{{ auth }}" style="display:flex;align-items:center;justify-content:center;gap:10px;background:var(--brand);color:#0d1320;border:none;border-radius:10px;padding:13px;font-size:14.5px;font-weight:600" style-hover="filter:brightness(1.1)">
+        <sc-if value="{{ auth }}" hint-placeholder-val="{{ false }}"><span style="width:14px;height:14px;border:2px solid rgba(13,19,32,.3);border-top-color:#0d1320;border-radius:50%;animation:spin .7s linear infinite"></span></sc-if>
+        {{ entrarLbl }}
+      </button>
+      <a href="#recuperar" style="font-size:13px;text-align:center">Esqueci minha senha</a>
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim);line-height:1.6;border-top:1px solid var(--line);padding-top:14px;margin:0">protótipo: qualquer e-mail + senha "demo" entra. Outra senha demonstra o estado de credencial inválida.</p>
+    </div>
+  </div>
+</div>
+</sc-if>
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<div data-shell="1" style="display:grid;grid-template-columns:236px 1fr;height:100vh">
+  <aside style="border-right:1px solid var(--side-line);background:var(--side-bg);color:var(--side-fg);display:flex;flex-direction:column;padding:20px 12px;gap:2px;overflow-y:auto">
+    <div style="display:flex;align-items:baseline;gap:8px;padding:0 12px 18px">
+      <span data-navlabel="1" style="font-family:'Saira',sans-serif;font-weight:700;font-size:18px;letter-spacing:.14em">VETOR</span>
+      <span data-monogram="1" style="display:none;font-family:'Saira',sans-serif;font-weight:700;font-size:18px">V</span>
+    </div>
+    <sc-for list="{{ nav }}" as="n" hint-placeholder-count="7">
+      <button onClick="{{ n.go }}" style="display:flex;align-items:center;gap:10px;background:{{ n.bg }};color:{{ n.fg }};border:none;border-radius:9px;padding:10px 12px;font-size:13.5px;font-weight:500;text-align:left" style-hover="color:var(--side-fg)">
+        <span style="width:3px;height:14px;border-radius:2px;background:{{ n.bar }}"></span><span class="material-symbols-outlined" style="font-size:19px">{{ n.icon }}</span>
+        <span data-navlabel="1">{{ n.label }}</span>
+      </button>
+    </sc-for>
+    <div style="flex:1"></div>
+    <div data-sidefoot="1" style="display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--side-line);padding:14px 12px 4px">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:13px;font-weight:600">Transportes Almeida</span>
+        <span style="font-size:12px;color:var(--side-dim)">admin · Rui Almeida</span>
+      </div>
+      <a href="#root" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--side-dim)">acesso do provedor ↗</a>
+    </div>
+  </aside>
+  <main ref="{{ mainRef }}" style="overflow-y:auto;display:flex;flex-direction:column">
+    <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 28px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5">
+      <h1 style="font-family:'Saira',sans-serif;font-weight:600;font-size:20px;margin:0">{{ screenTitle }}</h1>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--dim);display:flex;align-items:center;gap:7px"><span style="width:6px;height:6px;border-radius:50%;background:{{ syncCor }}"></span>{{ syncLbl }}</span>
+        <button style="background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:12.5px;color:var(--mut)" style-hover="border-color:var(--line2)"><span class="material-symbols-outlined" style="font-size:15px;vertical-align:-3px;margin-right:6px">calendar_month</span>Semana · 13–19 jul ▾</button>
+        <button onClick="{{ irPainel }}" style="display:flex;align-items:center;gap:7px;background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:12.5px;color:var(--warn)" style-hover="border-color:var(--warn)"><span class="material-symbols-outlined" style="font-size:15px;animation:pulse 2.2s infinite">warning</span>6 alertas</button>
+        <div style="position:relative">
+          <button onClick="{{ toggleMenu }}" aria-haspopup="true" style="display:flex;align-items:center;gap:8px;background:var(--surf);border:1px solid {{ menuBorda }};border-radius:8px;padding:6px 10px;font-size:12.5px;color:var(--txt)" style-hover="border-color:var(--line2)">
+            <span style="width:24px;height:24px;border-radius:50%;background:var(--brand-bg);color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px">RA</span>
+            <span>Rui Almeida</span>
+            <span style="color:var(--dim);font-size:9px">▾</span>
+          </button>
+          <sc-if value="{{ menuAberto }}" hint-placeholder-val="{{ false }}">
+            <div role="menu" style="position:absolute;right:0;top:calc(100% + 6px);min-width:210px;background:var(--surf2);border:1px solid var(--line2);border-radius:10px;padding:6px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:2px;z-index:60;animation:fadeup .15s ease">
+              <div style="padding:8px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:1px">
+                <span style="font-size:13px;font-weight:600">Rui Almeida</span>
+                <span style="font-size:11.5px;color:var(--dim)">rui@transportesalmeida.com.br</span>
+              </div>
+              <button role="menuitem" onClick="{{ irConta }}" style="background:none;border:none;border-radius:7px;padding:9px 10px;text-align:left;font-size:13px;color:var(--txt)" style-hover="background:var(--brand-bg);color:var(--brand)"><span class="material-symbols-outlined" style="font-size:17px;vertical-align:-3px;margin-right:8px">settings</span>Configurações da conta</button>
+              <button role="menuitem" onClick="{{ sair }}" style="background:none;border:none;border-radius:7px;padding:9px 10px;text-align:left;font-size:13px;color:var(--crit)" style-hover="background:var(--crit-bg)"><span class="material-symbols-outlined" style="font-size:17px;vertical-align:-3px;margin-right:8px">logout</span>Sair da conta</button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </header>
+    <sc-if value="{{ off }}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="display:flex;gap:10px;align-items:flex-start;margin:16px 28px 0;background:var(--warn-bg);border:1px solid var(--warn);border-radius:10px;padding:12px 16px;font-size:13px;line-height:1.5">
+        <span class="material-symbols-outlined" style="color:var(--warn);font-size:18px;flex-shrink:0">cloud_off</span>
+        <span><strong>Rastreamento indisponível</strong> — a plataforma de telemetria não responde desde 14:32. Hodômetro e posição estão pausados na última leitura; combustível, manutenção e vistorias seguem operando. Reconexão automática em andamento.</span>
+      </div>
+    </sc-if>
+    <div style="padding:24px 28px 40px;display:flex;flex-direction:column;gap:20px;flex:1">
+      <sc-if value="{{ sPainel }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Dashboard" style="display:flex;flex-direction:column;gap:20px;animation:fadeup .3s ease both">
+        <sc-if value="{{ dsLoading }}" hint-placeholder-val="{{ false }}">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--dim)">aquecendo instrumentos…</span>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px">
+            <sc-for list="{{ skel4 }}" as="s" hint-placeholder-count="4">
+              <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:14px">
+                <div style="height:11px;width:55%;border-radius:4px;background:linear-gradient(90deg,var(--surf2) 25%,var(--line) 50%,var(--surf2) 75%);background-size:200% 100%;animation:shimmer 1.6s infinite"></div>
+                <div style="height:32px;width:70%;border-radius:6px;background:linear-gradient(90deg,var(--surf2) 25%,var(--line) 50%,var(--surf2) 75%);background-size:200% 100%;animation:shimmer 1.6s infinite"></div>
+                <div style="height:10px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 6px);opacity:.5"></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px">
+            <div style="height:260px;background:var(--surf);border:1px solid var(--line);border-radius:14px"></div>
+            <div style="height:260px;background:var(--surf);border:1px solid var(--line);border-radius:14px"></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ dsErro }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:520px;margin:48px auto;background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:12px;text-align:center;align-items:center">
+            <span class="material-symbols-outlined" style="color:var(--crit);font-size:34px">error</span>
+            <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:19px;margin:0">Não foi possível carregar os dados da frota</h2>
+            <p style="color:var(--mut);font-size:13.5px;line-height:1.6;margin:0">O servidor de dados não respondeu (erro 504). Seus registros locais estão seguros. Verifique a conexão e tente de novo — se persistir, acione o suporte pelo chat.</p>
+            <button onClick="{{ retry }}" style="background:var(--brand);color:#0d1320;border:none;border-radius:9px;padding:10px 20px;font-weight:600;font-size:13.5px">Tentar novamente</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ dsVazio }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:520px;margin:48px auto;background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:14px;text-align:center;align-items:center">
+            <div style="width:180px;height:12px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 8px)"></div>
+            <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:19px;margin:0">Sua frota ainda não tem veículos</h2>
+            <p style="color:var(--mut);font-size:13.5px;line-height:1.6;margin:0">Adicione o primeiro e os instrumentos começam a ler: custo, km/L, trocas e pneus, tudo num relance.</p>
+            <button onClick="{{ abrirVeicForm }}" style="background:var(--brand);color:#0d1320;border:none;border-radius:9px;padding:10px 20px;font-weight:600;font-size:13.5px">Adicionar veículo</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ dsNormal }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:16px 20px">
+          <p style="margin:0;font-size:14.5px;line-height:1.55;max-width:640px"><strong>Resumo da semana:</strong> a frota gastou <strong>R$ 18.462</strong> — 16% acima da anterior, puxado por manutenção corretiva. <span style="color:var(--mut)">7 de 8 veículos rodando, consumo médio dentro da meta.</span></p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button onClick="{{ irManutencao }}" style="display:flex;align-items:center;gap:8px;background:var(--crit-bg);border:1px solid var(--crit);border-radius:9px;padding:9px 14px;color:var(--txt);font-size:12.5px" style-hover="filter:brightness(1.15)"><span class="material-symbols-outlined" style="color:var(--crit);font-size:16px">error</span>Resolver troca vencida — SQP-7D45</button>
+            <button onClick="{{ irPneus }}" style="display:flex;align-items:center;gap:8px;background:var(--crit-bg);border:1px solid var(--crit);border-radius:9px;padding:9px 14px;color:var(--txt);font-size:12.5px" style-hover="filter:brightness(1.15)"><span class="material-symbols-outlined" style="color:var(--crit);font-size:16px">error</span>Ver pneu sinalizado — SQP-7D45</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px">
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;color:var(--dim);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:15px">payments</span>custo do período</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">13–19 jul</span></div>
+            <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <span style="font-family:'Saira',sans-serif;font-weight:600;font-size:32px;line-height:1;font-variant-numeric:tabular-nums">{{ kCusto }}</span>
+              <span style="background:var(--warn-bg);color:var(--warn);border-radius:6px;padding:2px 7px;font-size:12px;font-weight:600">+16,2%</span>
+            </div>
+            <div style="position:relative;height:10px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 6px)">
+              <div style="position:absolute;top:0;bottom:0;left:0;width:86%;background:linear-gradient(90deg,transparent 30%,var(--warn));border-right:2px solid var(--warn)"></div>
+              <div style="position:absolute;top:-3px;bottom:-3px;left:74%;width:2px;background:var(--dim)"></div>
+            </div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim)">semana anterior R$ 15.890 · +R$ 2.572</span>
+          </div>
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;color:var(--dim);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:15px">speed</span>km/L médio da frota</span>
+            <div style="display:flex;align-items:baseline;gap:10px">
+              <span style="font-family:'Saira',sans-serif;font-weight:600;font-size:32px;line-height:1;font-variant-numeric:tabular-nums">{{ kKml }}</span>
+              <span style="background:var(--ok-bg);color:var(--ok);border-radius:6px;padding:2px 7px;font-size:12px;font-weight:600">▲ 0,3</span>
+            </div>
+            <div style="position:relative;height:10px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 6px)">
+              <div style="position:absolute;top:0;bottom:0;left:0;width:58%;background:linear-gradient(90deg,transparent 30%,var(--brand));border-right:2px solid var(--brand)"></div>
+              <div style="position:absolute;top:-3px;bottom:-3px;left:60%;width:2px;background:var(--dim)"></div>
+            </div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim)">meta 9,0 km/L</span>
+          </div>
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;color:var(--dim);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:15px">garage</span>disponibilidade</span>
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <span style="font-family:'Saira',sans-serif;font-weight:600;font-size:32px;line-height:1;font-variant-numeric:tabular-nums">{{ kDisp }}/8</span>
+              <span style="font-size:12.5px;color:var(--mut)">veículos aptos</span>
+            </div>
+            <div style="display:flex;gap:4px">
+              <sc-for list="{{ dispSegs }}" as="s" hint-placeholder-count="8"><span style="flex:1;height:10px;border-radius:2px;background:{{ s.cor }}"></span></sc-for>
+            </div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim)">SBF-6A03 em manutenção</span>
+          </div>
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;color:var(--dim);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:15px">notifications</span>alertas ativos</span>
+            <div style="display:flex;align-items:baseline;gap:10px">
+              <span style="font-family:'Saira',sans-serif;font-weight:600;font-size:32px;line-height:1;font-variant-numeric:tabular-nums">{{ kAlertas }}</span>
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--crit);box-shadow:0 0 10px var(--crit);animation:pulse 1.8s infinite"></span>
+            </div>
+            <div style="display:flex;gap:12px;font-size:12px;flex-wrap:wrap">
+              <span style="display:flex;align-items:center;gap:4px;color:var(--crit)"><span class="material-symbols-outlined" style="font-size:14px">error</span>2 críticos</span><span style="display:flex;align-items:center;gap:4px;color:var(--warn)"><span class="material-symbols-outlined" style="font-size:14px">warning</span>3 atenção</span><span style="display:flex;align-items:center;gap:4px;color:var(--brand)"><span class="material-symbols-outlined" style="font-size:14px">info</span>1 info</span>
+            </div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim)">2 exigem ação hoje</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:start">
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+              <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0;display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="font-size:18px;color:var(--brand)">monitoring</span>Custo e eficiência por semana</h2>
+              <span style="display:flex;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--dim)"><span style="display:flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:2px;background:var(--brand)"></span>custo</span><span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:var(--ok)"></span>km/L</span></span>
+            </div>
+            <div style="position:relative;height:238px"><canvas ref="{{ chartTrendRef }}"></canvas></div>
+          </div>
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+            <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0;display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="font-size:18px;color:var(--brand)">donut_large</span>Disponibilidade da frota</h2>
+            <div style="position:relative;height:238px"><canvas ref="{{ chartDispRef }}"></canvas></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:start">
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:4px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px">
+              <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0">O que fez gastar mais que a semana passada</h2>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">vs 6–12 jul</span>
+            </div>
+            <sc-for list="{{ cats }}" as="c" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:96px 1fr 76px 52px;gap:14px;align-items:center;padding:11px 0;border-top:1px solid var(--line)">
+                <span style="font-size:13px">{{ c.n }}</span>
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  <div style="position:relative;height:9px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 6px)"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ c.pctAtu }}%;background:var(--brand);opacity:.85;border-radius:2px"></div></div>
+                  <div style="position:relative;height:4px;border-radius:2px"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ c.pctAnt }}%;background:var(--dim);opacity:.5;border-radius:2px"></div></div>
+                </div>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums">{{ c.atuF }}</span>
+                <span style="font-size:12.5px;font-weight:600;text-align:right;color:{{ c.dCor }}">{{ c.delta }}</span>
+              </div>
+            </sc-for>
+            <p style="margin:10px 0 0;padding:12px 14px;background:var(--surf2);border-radius:10px;font-size:13px;line-height:1.55;color:var(--mut)"><strong style="color:var(--txt)">Manutenção puxou a alta:</strong> +R$ 1.380 em corretivas, sendo R$ 1.180 nos freios da SBF-6A03. Combustível subiu com o diesel a R$ 6,21 (+R$ 0,14).</p>
+          </div>
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px">
+              <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0">O que precisa de atenção</h2>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">6 alertas</span>
+            </div>
+            <sc-for list="{{ alertas }}" as="a" hint-placeholder-count="6">
+              <div onClick="{{ a.ver }}" style="display:flex;gap:11px;align-items:flex-start;padding:10px 6px;margin:0 -6px;border-top:1px solid var(--line);cursor:pointer;border-radius:8px" style-hover="background:var(--surf2)">
+                <span style="width:22px;height:22px;border-radius:6px;background:{{ a.bg }};color:{{ a.cor }};display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px"><span class="material-symbols-outlined" style="font-size:14px">{{ a.glifo }}</span></span>
+                <div style="display:flex;flex-direction:column;gap:3px;flex:1">
+                  <span style="font-size:13px;line-height:1.4">{{ a.t }}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">{{ a.v }} · {{ a.nvLbl }}</span>
+                </div>
+                <button onClick="{{ a.ver }}" style="background:none;border:none;color:var(--brand);font-size:12.5px;padding:2px" style-hover="text-decoration:underline">ver →</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px">
+            <div style="display:flex;align-items:baseline;gap:10px">
+              <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0">Frota agora</h2>
+              <span style="font-size:12px;color:var(--dim)">clique num veículo para abrir a ficha completa</span>
+            </div>
+            <button onClick="{{ irVeiculos }}" style="background:none;border:none;color:var(--brand);font-size:12.5px">ver todos →</button>
+          </div>
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ frota }}" as="v" hint-placeholder-count="8">
+              <button onClick="{{ v.open }}" style="display:grid;grid-template-columns:34px minmax(120px,1.3fr) 1fr auto 22px;gap:14px;align-items:center;width:100%;background:transparent;border:none;border-top:1px solid var(--line);padding:11px 8px;margin:0;text-align:left;color:var(--txt);border-radius:8px" style-hover="background:var(--surf2)">
+                <span style="width:34px;height:34px;border-radius:8px;background:var(--surf2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:{{ v.stCor }}"><span class="material-symbols-outlined" style="font-size:19px">{{ v.tipoIcon }}</span></span>
+                <div style="display:flex;flex-direction:column;gap:1px;min-width:0">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500">{{ v.placa }}</span>
+                  <span style="font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.modelo }}</span>
+                </div>
+                <span style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--mut);min-width:0"><span class="material-symbols-outlined" style="font-size:15px;color:var(--dim)">person</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.motTxt }}</span></span>
+                <span style="display:flex;align-items:center;gap:12px;justify-self:end">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums">{{ v.kmHojeF }} km hoje</span>
+                  <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--mut);width:118px"><span style="width:7px;height:7px;border-radius:50%;background:{{ v.stCor }}"></span>{{ v.stLabel }}</span>
+                </span>
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--dim);justify-self:end">chevron_right</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+      <sc-if value="{{ sConta }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Configurações da conta" style="display:flex;flex-direction:column;gap:16px;animation:fadeup .3s ease both;max-width:760px">
+        <div style="display:flex;gap:8px;border-bottom:1px solid var(--line)">
+          <button onClick="{{ abaCadastro }}" style="background:none;border:none;border-bottom:2px solid {{ tabCadBorda }};color:{{ tabCadCor }};padding:10px 14px;font-size:13.5px;font-weight:600">Cadastro</button>
+          <button onClick="{{ abaIntegracoes }}" style="background:none;border:none;border-bottom:2px solid {{ tabIntBorda }};color:{{ tabIntCor }};padding:10px 14px;font-size:13.5px;font-weight:600">Integrações</button>
+        </div>
+        <sc-if value="{{ tabCad }}" hint-placeholder-val="{{ true }}">
+        <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:17px;margin:0">Dados da empresa e do administrador</h2>
+            <p style="margin:0;color:var(--mut);font-size:13px">Essas informações aparecem nos relatórios exportados.</p>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Razão social
+              <input value="{{ cEmpresa }}" onChange="{{ setCEmpresa }}" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt)">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">CNPJ
+              <input value="{{ cCnpj }}" onChange="{{ setCCnpj }}" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt);font-family:'IBM Plex Mono',monospace">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Nome do administrador
+              <input value="{{ cNome }}" onChange="{{ setCNome }}" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt)">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">E-mail de acesso
+              <input type="email" value="{{ cEmail }}" onChange="{{ setCEmail }}" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt)">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Telefone
+              <input value="{{ cFone }}" onChange="{{ setCFone }}" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt);font-family:'IBM Plex Mono',monospace">
+            </label>
+          </div>
+          <div style="display:flex;justify-content:flex-end;border-top:1px solid var(--line);padding-top:16px">
+            <button onClick="{{ salvarConta }}" style="background:var(--brand);border:none;border-radius:9px;padding:10px 18px;color:#0d1320;font-weight:600;font-size:13.5px" style-hover="filter:brightness(1.1)">Salvar alterações</button>
+          </div>
+        </div>
+        </sc-if>
+        <sc-if value="{{ tabInt }}" hint-placeholder-val="{{ false }}">
+        <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:17px;margin:0">Rastreamento — Hapolo</h2>
+              <p style="margin:0;color:var(--mut);font-size:13px;line-height:1.55;max-width:480px">Telemetria e hodômetro dos veículos vêm da Hapolo. Cadastre o token de integração da sua empresa — ele é gerado no painel Hapolo em Conta → API → Tokens.</p>
+            </div>
+            <span style="display:flex;align-items:center;gap:7px;background:{{ hapBg }};color:{{ hapCor }};border-radius:6px;padding:4px 10px;font-size:11.5px;font-weight:600;white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:{{ hapCor }}"></span>{{ hapLbl }}</span>
+          </div>
+          <sc-if value="{{ hapConectado }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:10px;background:var(--surf2);border:1px solid var(--line);border-radius:10px;padding:16px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">hap_live_ ····· ····· {{ hapFim }}</span>
+                <div style="display:flex;gap:10px">
+                  <button onClick="{{ hapTestar }}" style="background:none;border:1px solid var(--line);border-radius:8px;padding:7px 13px;color:var(--mut);font-size:12.5px" style-hover="border-color:var(--line2);color:var(--txt)">Testar conexão</button>
+                  <button onClick="{{ hapRemover }}" style="background:none;border:1px solid var(--line);border-radius:8px;padding:7px 13px;color:var(--crit);font-size:12.5px" style-hover="border-color:var(--crit)">Remover token</button>
+                </div>
+              </div>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim)">conectado desde 04 mar 2026 · última leitura 09:12 · 8 veículos reportando</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ hapSemToken }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <sc-if value="{{ temHapErr }}" hint-placeholder-val="{{ false }}">
+                <div role="alert" style="display:flex;gap:10px;background:var(--crit-bg);border:1px solid var(--crit);border-radius:10px;padding:11px 14px;font-size:13px"><span class="material-symbols-outlined" style="color:var(--crit);font-size:18px;flex-shrink:0">error</span><span>{{ hapErr }}</span></div>
+              </sc-if>
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Token de integração
+                <div style="display:flex;gap:10px">
+                  <input value="{{ hapToken }}" onChange="{{ setHapToken }}" placeholder="hap_live_..." style="flex:1;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt);font-family:'IBM Plex Mono',monospace">
+                  <button onClick="{{ hapConectar }}" disabled="{{ hapValidando }}" style="display:flex;align-items:center;gap:8px;background:var(--brand);border:none;border-radius:9px;padding:10px 16px;color:#0d1320;font-weight:600;font-size:13px;white-space:nowrap" style-hover="filter:brightness(1.1)">
+                    <sc-if value="{{ hapValidando }}" hint-placeholder-val="{{ false }}"><span style="width:12px;height:12px;border:2px solid rgba(13,19,32,.3);border-top-color:#0d1320;border-radius:50%;animation:spin .7s linear infinite"></span></sc-if>
+                    {{ hapBtnLbl }}
+                  </button>
+                </div>
+              </label>
+              <p style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim);margin:0">o token dá acesso somente-leitura à telemetria · a validação leva alguns segundos</p>
+            </div>
+          </sc-if>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+      <sc-if value="{{ sVeiculos }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Veículos" style="display:flex;flex-direction:column;gap:16px;animation:fadeup .3s ease both">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <input value="{{ q }}" onChange="{{ setQ }}" placeholder="Buscar por placa, modelo ou motorista" style="flex:1;min-width:220px;max-width:360px;background:var(--surf);border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:13.5px;color:var(--txt)">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <sc-for list="{{ chips }}" as="c" hint-placeholder-count="5">
+              <button onClick="{{ c.set }}" style="background:{{ c.bg }};color:{{ c.fg }};border:1px solid {{ c.bd }};border-radius:20px;padding:7px 14px;font-size:12.5px" style-hover="color:var(--txt)">{{ c.label }}</button>
+            </sc-for>
+          </div>
+          <div style="flex:1"></div>
+          <button onClick="{{ abrirVeicForm }}" style="background:var(--brand);color:#0d1320;border:none;border-radius:9px;padding:9px 16px;font-weight:600;font-size:13px"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;margin-right:6px">add</span>Adicionar veículo</button>
+        </div>
+        <sc-if value="{{ temVeic }}" hint-placeholder-val="{{ true }}">
+        <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:8px 20px 12px;overflow-x:auto">
+          <div style="display:grid;grid-template-columns:40px minmax(150px,1.3fr) 150px 160px 62px 150px 96px 22px;gap:14px;padding:12px 8px 10px;border-bottom:1px solid var(--line2);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);min-width:940px">
+            <span></span><span>veículo</span><span>motorista</span><span>combustível</span><span>km/L</span><span>próxima troca</span><span>pneus</span><span></span>
+          </div>
+          <sc-for list="{{ vList }}" as="v" hint-placeholder-count="8">
+            <div onClick="{{ v.open }}" style="display:grid;grid-template-columns:40px minmax(150px,1.3fr) 150px 160px 62px 150px 96px 22px;gap:14px;align-items:center;padding:13px 8px;border-top:1px solid var(--line);cursor:pointer;border-radius:8px;min-width:940px" style-hover="background:var(--surf2)">
+              <span style="width:40px;height:40px;border-radius:9px;background:var(--surf2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:{{ v.stCor }}"><span class="material-symbols-outlined" style="font-size:21px">{{ v.tipoIcon }}</span></span>
+              <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                <div style="display:flex;align-items:center;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500">{{ v.placa }}</span><span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mut)"><span style="width:6px;height:6px;border-radius:50%;background:{{ v.stCor }}"></span>{{ v.stLabel }}</span></div>
+                <span style="font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.modelo }}</span>
+              </div>
+              <span style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--mut);min-width:0"><span class="material-symbols-outlined" style="font-size:16px;color:var(--dim)">person</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.motTxt }}</span></span>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--dim);font-family:'IBM Plex Mono',monospace"><span>nível</span><span>{{ v.comb }}%</span></div>
+                <div style="position:relative;height:8px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 6px)"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ v.comb }}%;background:linear-gradient(90deg,transparent 20%,{{ v.combCor }});border-right:2px solid {{ v.combCor }}"></div></div>
+              </div>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-variant-numeric:tabular-nums">{{ v.kmlF }}</span>
+              <span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:{{ v.trocaCor }}"><span class="material-symbols-outlined" style="font-size:15px">build</span>{{ v.trocaTxt }}</span>
+              <div style="display:flex;gap:5px"><sc-for list="{{ v.pneuDots }}" as="p" hint-placeholder-count="4"><span title="{{ p.nome }} — {{ p.lbl }}" style="width:10px;height:10px;border-radius:2px;background:{{ p.cor }}"></span></sc-for></div>
+              <span class="material-symbols-outlined" style="font-size:18px;color:var(--dim);justify-self:end">chevron_right</span>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+        <sc-if value="{{ temVeicNao }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:480px;margin:40px auto;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center">
+            <div style="width:160px;height:12px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 8px)"></div>
+            <p style="color:var(--mut);font-size:13.5px;margin:0">Nenhum veículo corresponde à busca ou aos filtros. Limpe os filtros ou confira a grafia da placa.</p>
+          </div>
+        </sc-if>
+      </div>
+      </sc-if>
+      <sc-if value="{{ sDetalhe }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Detalhe do veículo" style="display:flex;flex-direction:column;gap:16px;animation:fadeup .3s ease both">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <button onClick="{{ irVeiculos }}" style="background:none;border:none;color:var(--brand);font-size:12.5px;padding:0;text-align:left">← Veículos</button>
+            <div style="display:flex;align-items:baseline;gap:12px">
+              <span style="font-family:'Saira',sans-serif;font-weight:600;font-size:28px;font-variant-numeric:tabular-nums">{{ d.placa }}</span>
+              <span style="color:var(--mut)">{{ d.modelo }} · {{ d.tipo }}</span>
+              <span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--mut)"><span style="width:7px;height:7px;border-radius:50%;background:{{ d.stCor }}"></span>{{ d.stLabel }}</span>
+            </div>
+          </div>
+          <button onClick="{{ abrirExcluir }}" style="background:none;border:1px solid var(--line);border-radius:9px;padding:9px 14px;color:var(--crit);font-size:13px" style-hover="border-color:var(--crit)">Excluir veículo</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px">
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:15px">route</span>hodômetro · rastreamento</span>
+            <span style="font-family:'Saira',sans-serif;font-weight:600;font-size:26px;font-variant-numeric:tabular-nums">{{ d.hodF }} <span style="font-size:14px;color:var(--mut)">km</span></span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">{{ d.kmHojeF }} km rodados hoje</span>
+          </div>
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:15px">local_gas_station</span>combustível</span>
+            <span style="font-family:'Saira',sans-serif;font-weight:600;font-size:26px;font-variant-numeric:tabular-nums">{{ d.comb }}%</span>
+            <div style="position:relative;height:9px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 6px)"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ d.comb }}%;background:linear-gradient(90deg,transparent 20%,{{ d.combCor }});border-right:2px solid {{ d.combCor }}"></div></div>
+          </div>
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:15px">oil_barrel</span>próxima troca de óleo</span>
+            <span style="font-family:'Saira',sans-serif;font-weight:600;font-size:20px;color:{{ d.trocaCor }}">{{ d.trocaTxt }}</span>
+            <div style="position:relative;height:9px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 6px)"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ d.trocaPct }}%;background:linear-gradient(90deg,transparent 20%,{{ d.trocaCor }});border-right:2px solid {{ d.trocaCor }}"></div></div>
+          </div>
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:15px">speed</span>km/L médio</span>
+            <span style="font-family:'Saira',sans-serif;font-weight:600;font-size:26px;font-variant-numeric:tabular-nums">{{ d.kmlF }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">últimos 30 dias</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px">
+                <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0">Abastecimentos</h2>
+                <button onClick="{{ abrirAbast }}" style="background:none;border:none;color:var(--brand);font-size:12.5px">+ registrar</button>
+              </div>
+              <sc-if value="{{ dTemAb }}" hint-placeholder-val="{{ true }}">
+                <sc-for list="{{ dAb }}" as="r" hint-placeholder-count="3">
+                  <div style="display:grid;grid-template-columns:58px 1fr 70px 64px;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:13px">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--dim)">{{ r.data }}</span>
+                    <span style="color:var(--mut)">{{ r.posto }} · {{ r.lF }} L</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums">{{ r.valF }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;color:{{ r.kmlCor }}">{{ r.kmlF }} km/L</span>
+                  </div>
+                </sc-for>
+              </sc-if>
+              <sc-if value="{{ dSemAb }}" hint-placeholder-val="{{ false }}">
+                <p style="color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:12px;margin:0">Nenhum abastecimento registrado ainda para este veículo — registre o primeiro para começar a ler o km/L.</p>
+              </sc-if>
+            </div>
+            <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px">
+              <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0 0 8px">Plano de manutenção</h2>
+              <sc-if value="{{ dTemMan }}" hint-placeholder-val="{{ true }}">
+                <sc-for list="{{ dMan }}" as="m" hint-placeholder-count="2">
+                  <div style="display:flex;gap:11px;align-items:center;padding:10px 0;border-top:1px solid var(--line)">
+                    <span class="material-symbols-outlined" style="color:{{ m.cor }};font-size:16px">{{ m.glifo }}</span>
+                    <span style="flex:1;font-size:13px">{{ m.item }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:{{ m.cor }}">{{ m.prazo }}</span>
+                    <button onClick="{{ m.concluir }}" style="background:none;border:1px solid var(--line);border-radius:7px;padding:5px 10px;color:var(--mut);font-size:12px" style-hover="border-color:var(--ok);color:var(--ok)">Marcar como feita</button>
+                  </div>
+                </sc-for>
+              </sc-if>
+              <sc-if value="{{ dSemMan }}" hint-placeholder-val="{{ false }}">
+                <p style="color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:12px;margin:0">Nenhum item pendente — o plano deste veículo está em dia.</p>
+              </sc-if>
+            </div>
+            <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px">
+              <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0 0 8px">Vistorias recentes</h2>
+              <sc-if value="{{ dTemVist }}" hint-placeholder-val="{{ true }}">
+                <sc-for list="{{ dVist }}" as="vi" hint-placeholder-count="1">
+                  <div style="display:flex;flex-direction:column;gap:8px;padding:12px 0;border-top:1px solid var(--line)">
+                    <div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:var(--mut)">{{ vi.mot }}</span><span style="font-family:'IBM Plex Mono',monospace;color:var(--dim)">{{ vi.data }}</span></div>
+                    <div style="display:flex;gap:14px;flex-wrap:wrap">
+                      <sc-for list="{{ vi.itens }}" as="it" hint-placeholder-count="5">
+                        <span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--mut)"><span class="material-symbols-outlined" style="color:{{ it.cor }};font-size:15px">{{ it.glifo }}</span>{{ it.n }}</span>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </sc-if>
+              <sc-if value="{{ dSemVist }}" hint-placeholder-val="{{ false }}">
+                <p style="color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:12px;margin:0">Nenhuma vistoria recebida do app para este veículo ainda.</p>
+              </sc-if>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:12px">
+              <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0">Pneus por posição</h2>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <sc-for list="{{ d.pneuDots }}" as="p" hint-placeholder-count="4">
+                  <div style="display:flex;flex-direction:column;gap:6px;background:var(--surf2);border:1px solid var(--line);border-radius:10px;padding:12px">
+                    <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--dim)">{{ p.pos }}</span><span style="width:9px;height:9px;border-radius:2px;background:{{ p.cor }}"></span></div>
+                    <span style="font-size:12px;color:var(--mut)">{{ p.nome }}</span>
+                    <span style="font-size:12px;color:{{ p.cor }}">{{ p.lbl }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:4px">
+              <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0 0 6px">Motorista vinculado</h2>
+              <sc-for list="{{ dVinc }}" as="h" hint-placeholder-count="2">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:13px">
+                  <span>{{ h.mot }}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim)">{{ h.de }} → {{ h.ate }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ sCombustivel }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Combustível" style="display:flex;flex-direction:column;gap:16px;animation:fadeup .3s ease both">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+          <p style="margin:0;color:var(--mut);font-size:13.5px">R$ 12.940 em diesel nesta semana · 430,3 L · preço médio R$ 6,21/L</p>
+          <button onClick="{{ abrirAbast }}" style="background:var(--brand);color:#0d1320;border:none;border-radius:9px;padding:9px 16px;font-weight:600;font-size:13px"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;margin-right:6px">add</span>Registrar abastecimento</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start">
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;overflow-x:auto">
+            <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0 0 10px">Abastecimentos</h2>
+            <sc-if value="{{ temAb }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:56px 84px 1fr 62px 84px 84px;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line2);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">
+              <button onClick="{{ sortData }}" style="background:none;border:none;color:inherit;font:inherit;padding:0;text-align:left">data{{ setaData }}</button>
+              <span>veículo</span><span>posto</span>
+              <button onClick="{{ sortLitros }}" style="background:none;border:none;color:inherit;font:inherit;padding:0;text-align:right">litros{{ setaLitros }}</button>
+              <button onClick="{{ sortValor }}" style="background:none;border:none;color:inherit;font:inherit;padding:0;text-align:right">valor{{ setaValor }}</button>
+              <button onClick="{{ sortKml }}" style="background:none;border:none;color:inherit;font:inherit;padding:0;text-align:right">km/L{{ setaKml }}</button>
+            </div>
+            <sc-for list="{{ abSorted }}" as="r" hint-placeholder-count="8">
+              <div style="display:grid;grid-template-columns:56px 84px 1fr 62px 84px 84px;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:13px;background:{{ r.zebra }}">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--dim)">{{ r.data }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px">{{ r.v }}</span>
+                <span style="color:var(--mut)">{{ r.posto }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums">{{ r.lF }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums">{{ r.valF }}</span>
+                <span style="display:flex;justify-content:flex-end;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:{{ r.kmlCor }};font-variant-numeric:tabular-nums">
+                  <sc-if value="{{ r.anomTag }}" hint-placeholder-val="{{ false }}"><span title="consumo anômalo" class="material-symbols-outlined" style="color:var(--warn);font-size:14px">warning</span></sc-if>
+                  {{ r.kmlF }}
+                </span>
+              </div>
+            </sc-for>
+            </sc-if>
+            <sc-if value="{{ temAbNao }}" hint-placeholder-val="{{ false }}">
+              <p style="color:var(--mut);font-size:13.5px;margin:12px 0 0">Nenhum abastecimento registrado ainda — registre o primeiro e o km/L começa a ser medido a partir do segundo.</p>
+            </sc-if>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0">km/L da frota por semana</h2>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">8 semanas</span>
+              </div>
+              <div style="display:flex;align-items:flex-end;gap:8px;height:150px;border-bottom:1px solid var(--line2);padding-bottom:2px">
+                <sc-for list="{{ bars }}" as="b" hint-placeholder-count="8">
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--dim)">{{ b.valF }}</span>
+                    <div title="{{ b.lbl }} — {{ b.valF }} km/L" style="width:100%;height:{{ b.hPct }}%;border-radius:3px 3px 0 0;background:linear-gradient(180deg,{{ b.cor }},transparent 160%);border-top:2px solid {{ b.cor }}"></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:8px">
+                <sc-for list="{{ bars }}" as="b" hint-placeholder-count="8"><span style="flex:1;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--dim)">{{ b.lbl }}</span></sc-for>
+              </div>
+            </div>
+            <div style="background:var(--surf);border:1px solid var(--warn);border-radius:14px;padding:18px 20px;display:flex;gap:12px;align-items:flex-start">
+              <span class="material-symbols-outlined" style="color:var(--warn);font-size:18px;flex-shrink:0">warning</span>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:13.5px;font-weight:600">Consumo anômalo — RKM-2E88</span>
+                <p style="margin:0;font-size:13px;color:var(--mut);line-height:1.55">6,4 km/L no abastecimento de 19 jul, contra média de 8,3 nos últimos 60 dias. Causas comuns: pneu descalibrado, filtro de ar saturado ou trajeto atípico com carga.</p>
+                <button onClick="{{ irManutencao }}" style="align-self:flex-start;background:none;border:none;color:var(--brand);font-size:12.5px;padding:0">agendar verificação →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ sManutencao }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Manutenção" style="display:flex;flex-direction:column;gap:16px;animation:fadeup .3s ease both">
+        <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px">
+          <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0 0 8px">Próximas do vencimento</h2>
+          <sc-if value="{{ temMan }}" hint-placeholder-val="{{ true }}">
+          <sc-for list="{{ man }}" as="m" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:22px 90px 1fr 220px 150px auto;gap:14px;align-items:center;padding:11px 0;border-top:1px solid var(--line)">
+              <span class="material-symbols-outlined" style="color:{{ m.cor }};font-size:16px">{{ m.glifo }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px">{{ m.v }}</span>
+              <span style="font-size:13px">{{ m.item }}</span>
+              <div style="position:relative;height:9px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 6px)"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ m.pct }}%;background:linear-gradient(90deg,transparent 20%,{{ m.cor }});border-right:2px solid {{ m.cor }}"></div></div>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:{{ m.cor }}">{{ m.prazo }}</span>
+              <button onClick="{{ m.concluir }}" style="background:none;border:1px solid var(--line);border-radius:7px;padding:6px 12px;color:var(--mut);font-size:12.5px" style-hover="border-color:var(--ok);color:var(--ok)">Marcar como feita</button>
+            </div>
+          </sc-for>
+          </sc-if>
+          <sc-if value="{{ temManNao }}" hint-placeholder-val="{{ false }}">
+            <p style="color:var(--mut);font-size:13.5px;border-top:1px solid var(--line);padding-top:14px;margin:0">Nenhuma manutenção próxima do vencimento — a frota está em dia com o plano.</p>
+          </sc-if>
+        </div>
+        <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start">
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px">
+            <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0 0 10px">Histórico com custos</h2>
+            <div style="display:grid;grid-template-columns:56px 90px 1fr 110px 84px;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">
+              <span>data</span><span>veículo</span><span>serviço</span><span>oficina</span><span style="text-align:right">custo</span>
+            </div>
+            <sc-for list="{{ manHist }}" as="h" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:56px 90px 1fr 110px 84px;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:13px">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--dim)">{{ h.data }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px">{{ h.v }}</span>
+                <span style="color:var(--mut)">{{ h.item }}</span>
+                <span style="color:var(--dim);font-size:12.5px">{{ h.ofi }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums">{{ h.custoF }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline">
+              <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0">Plano por tipo de veículo</h2>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">configurável</span>
+            </div>
+            <sc-for list="{{ planos }}" as="pl" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line);padding-top:12px">
+                <span style="font-size:13px;font-weight:600;padding-bottom:4px">{{ pl.tipo }}</span>
+                <sc-for list="{{ pl.itens }}" as="it" hint-placeholder-count="3">
+                  <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0">
+                    <span style="color:var(--mut)">{{ it.item }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim)">{{ it.km }} · {{ it.tempo }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ sPneus }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Pneus e vistorias" style="display:flex;flex-direction:column;gap:16px;animation:fadeup .3s ease both">
+        <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px">
+          <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0 0 12px">Pneus sinalizados para troca</h2>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">
+            <sc-for list="{{ pneusSin }}" as="p" hint-placeholder-count="3">
+              <div style="display:flex;gap:14px;background:var(--surf2);border:1px solid var(--line);border-radius:12px;padding:14px">
+                <div style="width:88px;height:88px;flex-shrink:0;border-radius:8px;border:1px solid var(--line2);background:repeating-linear-gradient(45deg,var(--surf) 0 6px,var(--surf2) 6px 12px);display:flex;align-items:center;justify-content:center;text-align:center">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--dim);line-height:1.4">foto da<br>vistoria</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:5px;flex:1">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px">{{ p.v }}</span>
+                    <span style="display:inline-flex;align-items:center;gap:4px;background:{{ p.bg }};color:{{ p.cor }};border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:600"><span class="material-symbols-outlined" style="font-size:14px">{{ p.glifo }}</span>{{ p.nvLbl }}</span>
+                  </div>
+                  <span style="font-size:13px;font-weight:600">{{ p.pos }}</span>
+                  <p style="margin:0;font-size:12.5px;color:var(--mut);line-height:1.5">{{ p.obs }}</p>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">vistoria de {{ p.vist }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px">
+            <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0">Vistorias recebidas do app</h2>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">últimos 7 dias</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">
+            <sc-for list="{{ vistorias }}" as="vi" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:10px;background:var(--surf2);border:1px solid var(--line);border-radius:12px;padding:16px">
+                <div style="display:flex;justify-content:space-between;align-items:baseline">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">{{ vi.v }}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">{{ vi.data }}</span>
+                </div>
+                <span style="font-size:12.5px;color:var(--mut)">por {{ vi.mot }}</span>
+                <div style="display:flex;flex-direction:column;gap:1px">
+                  <sc-for list="{{ vi.itens }}" as="it" hint-placeholder-count="5">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12.5px">
+                      <span>{{ it.n }}</span>
+                      <span style="display:flex;align-items:center;gap:6px;color:{{ it.cor }}"><span class="material-symbols-outlined" style="font-size:15px">{{ it.glifo }}</span>{{ it.lbl }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ sMotoristas }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Motoristas" style="display:flex;flex-direction:column;gap:16px;animation:fadeup .3s ease both">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+          <p style="margin:0;color:var(--mut);font-size:13.5px">7 motoristas · 6 vinculados a veículos · 2 CNHs vencem em até 90 dias</p>
+          <button onClick="{{ abrirMot }}" style="background:var(--brand);color:#0d1320;border:none;border-radius:9px;padding:9px 16px;font-weight:600;font-size:13px"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;margin-right:6px">person_add</span>Cadastrar motorista</button>
+        </div>
+        <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;overflow-x:auto">
+          <div style="display:grid;grid-template-columns:1fr 60px 130px 130px 110px 110px;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">
+            <span>nome</span><span>CNH</span><span>validade</span><span>situação</span><span>veículo</span><span>vínculo</span>
+          </div>
+          <sc-for list="{{ mots }}" as="m" hint-placeholder-count="7">
+            <div style="display:grid;grid-template-columns:1fr 60px 130px 130px 110px 110px;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);font-size:13px">
+              <span style="font-weight:500">{{ m.nome }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px">{{ m.cat }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--mut);font-variant-numeric:tabular-nums">{{ m.val }}</span>
+              <span style="justify-self:start;background:{{ m.cnhBg }};color:{{ m.cnhCor }};border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:600">{{ m.cnhTxt }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--mut)">{{ m.vTxt }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim)">{{ m.desdeTxt }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ sRelatorios }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Relatórios" style="display:flex;flex-direction:column;gap:16px;animation:fadeup .3s ease both">
+
+        <sc-if value="{{ relPicker }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:flex-start;gap:12px;background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:14px 18px">
+            <span class="material-symbols-outlined" style="font-size:20px;color:var(--brand);margin-top:1px">bolt</span>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:13.5px;font-weight:600">Geração sob demanda</span>
+              <span style="font-size:12.5px;color:var(--mut);line-height:1.5">Os relatórios são processados só quando você pede — escolha um tipo abaixo para economizar recursos da frota.</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">abrangência</span>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <sc-for list="{{ relEscOpts }}" as="o" hint-placeholder-count="2">
+                <button onClick="{{ o.pick }}" style="display:flex;align-items:center;gap:9px;background:{{ o.bg }};border:1px solid {{ o.borda }};color:{{ o.fg }};border-radius:10px;padding:11px 16px;font-size:13px;font-weight:500" style-hover="border-color:var(--line2)"><span class="material-symbols-outlined" style="font-size:18px">{{ o.icon }}</span>{{ o.lbl }}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ relEscVeic }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ abrirBuscaVeic }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:12px 16px;color:var(--txt);max-width:360px" style-hover="border-color:var(--line2)">
+              <span style="display:flex;align-items:center;gap:9px;font-size:13px"><span class="material-symbols-outlined" style="font-size:18px;color:var(--brand)">search</span><sc-if value="{{ relTemVeicSel }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Mono',monospace;font-size:13px">{{ relVeicSel }}</span></sc-if><sc-if value="{{ relEscVeic }}" hint-placeholder-val="{{ true }}"><span style="color:var(--mut)">Procurar veículo…</span></sc-if></span>
+              <span class="material-symbols-outlined" style="font-size:18px;color:var(--dim)">expand_more</span>
+            </button>
+            </sc-if>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:14px">
+            <sc-for list="{{ relTipos }}" as="t" hint-placeholder-count="5">
+              <button onClick="{{ t.pick }}" style="position:relative;display:flex;flex-direction:column;gap:12px;text-align:left;background:{{ t.cardBg }};border:1px solid {{ t.cardBorda }};border-radius:14px;padding:18px;color:var(--txt)" style-hover="border-color:var(--line2)">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                  <span style="width:42px;height:42px;border-radius:11px;background:var(--surf2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:{{ t.icCor }}"><span class="material-symbols-outlined" style="font-size:23px">{{ t.icon }}</span></span>
+                  <span style="display:{{ t.chkVis }};width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="font-size:15px">check</span></span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <span style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px">{{ t.titulo }}</span>
+                  <span style="font-size:12.5px;color:var(--mut);line-height:1.5">{{ t.desc }}</span>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:2px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">
+                  <span style="display:flex;align-items:center;gap:4px"><span class="material-symbols-outlined" style="font-size:14px">calendar_month</span>{{ t.periodo }}</span>
+                  <span style="display:flex;align-items:center;gap:4px"><span class="material-symbols-outlined" style="font-size:14px">table_rows</span>{{ t.linhas }}</span>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+          <div style="display:flex;justify-content:flex-end;align-items:center;gap:14px">
+            <span style="font-size:12.5px;color:var(--dim)">Relatório selecionado será processado agora.</span>
+            <button onClick="{{ relGerar }}" style="display:flex;align-items:center;gap:8px;background:var(--brand);color:#fff;border:none;border-radius:9px;padding:11px 20px;font-weight:600;font-size:13.5px" style-hover="filter:brightness(1.06)">
+              <sc-if value="{{ relGerando }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-outlined" style="font-size:17px;animation:spin 1s linear infinite">progress_activity</span></sc-if>
+              <sc-if value="{{ relPicker }}" hint-placeholder-val="{{ true }}"><span class="material-symbols-outlined" style="font-size:17px">play_arrow</span></sc-if>
+              Gerar relatório
+            </button>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ relPronto }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:12px">
+              <button onClick="{{ relTrocar }}" title="Escolher outro relatório" style="width:38px;height:38px;border-radius:9px;background:var(--surf);border:1px solid var(--line);color:var(--mut);display:flex;align-items:center;justify-content:center" style-hover="border-color:var(--line2);color:var(--txt)"><span class="material-symbols-outlined" style="font-size:19px">arrow_back</span></button>
+              <span style="width:38px;height:38px;border-radius:9px;background:var(--brand-bg);color:var(--brand);display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="font-size:21px">{{ relDefIcon }}</span></span>
+              <div style="display:flex;flex-direction:column;gap:1px">
+                <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:17px;margin:0">{{ relDefTitulo }}</h2>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim)">{{ relDefPeriodo }} · {{ relEscLabel }} · gerado 20 jul 2026</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button onClick="{{ exportCsv }}" style="background:none;border:1px solid var(--line);border-radius:9px;padding:9px 16px;color:var(--mut);font-size:13px" style-hover="border-color:var(--line2);color:var(--txt)"><span class="material-symbols-outlined" style="font-size:15px;vertical-align:-3px;margin-right:6px">download</span>Exportar CSV</button>
+              <button onClick="{{ exportPdf }}" style="background:var(--brand);color:#fff;border:none;border-radius:9px;padding:9px 16px;font-weight:600;font-size:13px"><span class="material-symbols-outlined" style="font-size:15px;vertical-align:-3px;margin-right:6px">picture_as_pdf</span>Exportar PDF</button>
+            </div>
+          </div>
+
+          <sc-if value="{{ relEhComparativo }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:16px;align-items:start">
+            <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:4px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px">
+                <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0">Custo por categoria</h2>
+                <span style="display:flex;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--dim)"><span style="color:var(--dim)">— jun</span><span style="color:var(--brand)">— jul</span></span>
+              </div>
+              <sc-for list="{{ relCats }}" as="c" hint-placeholder-count="3">
+                <div style="display:grid;grid-template-columns:96px 1fr 84px;gap:14px;align-items:center;padding:12px 0;border-top:1px solid var(--line)">
+                  <span style="font-size:13px">{{ c.n }}</span>
+                  <div style="display:flex;flex-direction:column;gap:5px">
+                    <div style="position:relative;height:9px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 6px)"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ c.pctJul }}%;background:var(--brand);opacity:.85;border-radius:2px"></div></div>
+                    <div style="position:relative;height:4px"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ c.pctJun }}%;background:var(--dim);opacity:.5;border-radius:2px"></div></div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:2px;text-align:right;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">
+                    <span style="font-size:12.5px">{{ c.julF }}</span>
+                    <span style="font-size:11px;color:var(--dim)">{{ c.junF }}</span>
+                  </div>
+                </div>
+              </sc-for>
+              <p style="margin:10px 0 0;padding:12px 14px;background:var(--surf2);border-radius:10px;font-size:12.5px;line-height:1.55;color:var(--mut)">Julho projeta fechar 4% abaixo de junho se o ritmo se mantiver — combustível é o principal fator da queda.</p>
+            </div>
+            <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;overflow-x:auto">
+              <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0 0 10px">Custo por veículo — julho</h2>
+              <div style="display:grid;grid-template-columns:100px 1fr 90px 90px;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">
+                <span>veículo</span><span>km rodados</span><span style="text-align:right">custo</span><span style="text-align:right">R$/km</span>
+              </div>
+              <sc-for list="{{ relFilt }}" as="r" hint-placeholder-count="8">
+                <div style="display:grid;grid-template-columns:100px 1fr 90px 90px;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:13px">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px">{{ r.placa }}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums">{{ r.kmF }} km</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums">{{ r.custoF }}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;color:var(--mut);font-variant-numeric:tabular-nums">{{ r.ckmF }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ relEhVeiculo }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;overflow-x:auto">
+            <div style="display:grid;grid-template-columns:120px 1fr 110px 110px;gap:14px;padding:8px 4px;border-bottom:1px solid var(--line2);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);min-width:520px">
+              <span>veículo</span><span>km rodados</span><span style="text-align:right">custo total</span><span style="text-align:right">R$/km</span>
+            </div>
+            <sc-for list="{{ relFilt }}" as="r" hint-placeholder-count="8">
+              <div style="display:grid;grid-template-columns:120px 1fr 110px 110px;gap:14px;align-items:center;padding:12px 4px;border-top:1px solid var(--line);min-width:520px">
+                <span style="display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:13px"><span class="material-symbols-outlined" style="font-size:16px;color:var(--dim)">local_shipping</span>{{ r.placa }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--mut);font-variant-numeric:tabular-nums">{{ r.kmF }} km</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:right;font-variant-numeric:tabular-nums">{{ r.custoF }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:right;color:var(--mut);font-variant-numeric:tabular-nums">{{ r.ckmF }}</span>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ relEhConsumo }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column">
+            <div style="display:grid;grid-template-columns:150px 1fr 96px 96px;gap:14px;padding:8px 4px;border-bottom:1px solid var(--line2);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">
+              <span>veículo</span><span>eficiência</span><span style="text-align:right">km/L</span><span style="text-align:right">situação</span>
+            </div>
+            <sc-for list="{{ relConsumo }}" as="v" hint-placeholder-count="8">
+              <div style="display:grid;grid-template-columns:150px 1fr 96px 96px;gap:14px;align-items:center;padding:12px 4px;border-top:1px solid var(--line)">
+                <div style="display:flex;flex-direction:column;gap:1px;min-width:0">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px">{{ v.placa }}</span>
+                  <span style="font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.modelo }}</span>
+                </div>
+                <div style="position:relative;height:9px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 6px)"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ v.pct }}%;background:{{ v.cor }};border-right:2px solid {{ v.cor }};border-radius:2px"></div></div>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;text-align:right;font-variant-numeric:tabular-nums">{{ v.kmlF }}</span>
+                <span style="font-size:12px;text-align:right;color:{{ v.cor }}">{{ v.lbl }}</span>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ relEhDisp }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start">
+            <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+              <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:15px;margin:0">Distribuição</h2>
+              <div style="position:relative;height:210px"><canvas ref="{{ chartDispRef }}"></canvas></div>
+            </div>
+            <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column">
+              <div style="display:grid;grid-template-columns:40px 1fr 70px 80px;gap:14px;padding:8px 4px;border-bottom:1px solid var(--line2);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">
+                <span></span><span>estado</span><span style="text-align:right">veículos</span><span style="text-align:right">% frota</span>
+              </div>
+              <sc-for list="{{ relDisp }}" as="d" hint-placeholder-count="3">
+                <div style="display:grid;grid-template-columns:40px 1fr 70px 80px;gap:14px;align-items:center;padding:14px 4px;border-top:1px solid var(--line)">
+                  <span style="width:34px;height:34px;border-radius:9px;background:var(--surf2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:{{ d.cor }}"><span class="material-symbols-outlined" style="font-size:19px">{{ d.icon }}</span></span>
+                  <span style="font-size:13.5px">{{ d.k }}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:15px;text-align:right;font-variant-numeric:tabular-nums">{{ d.n }}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:right;color:var(--mut)">{{ d.pct }}%</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ relEhMan }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column">
+            <div style="display:grid;grid-template-columns:100px 1fr 150px 120px;gap:14px;padding:8px 4px;border-bottom:1px solid var(--line2);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">
+              <span>veículo</span><span>serviço</span><span>referência</span><span style="text-align:right">prazo</span>
+            </div>
+            <sc-for list="{{ manFilt }}" as="m" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:100px 1fr 150px 120px;gap:14px;align-items:center;padding:13px 4px;border-top:1px solid var(--line)">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px">{{ m.v }}</span>
+                <span style="display:flex;align-items:center;gap:8px;font-size:13px"><span class="material-symbols-outlined" style="font-size:16px;color:{{ m.cor }}">build</span>{{ m.item }}</span>
+                <div style="position:relative;height:8px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 6px)"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ m.pct }}%;background:{{ m.cor }};border-right:2px solid {{ m.cor }};border-radius:2px"></div></div>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;color:{{ m.cor }}">{{ m.prazo }}</span>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+    </div>
+  </main>
+</div>
+</sc-if>
+<div style="position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column;gap:10px;z-index:90">
+  <sc-for list="{{ toasts }}" as="t" hint-placeholder-count="0">
+    <div role="status" style="display:flex;align-items:flex-start;gap:10px;background:var(--surf2);border:1px solid var(--line2);border-left:3px solid {{ t.cor }};border-radius:10px;padding:12px 16px;box-shadow:var(--shadow);animation:slidein .25s ease;max-width:360px">
+      <span class="material-symbols-outlined" style="color:{{ t.cor }};font-size:18px;margin-top:1px">{{ t.glifo }}</span>
+      <span style="font-size:13.5px;line-height:1.45">{{ t.msg }}</span>
+    </div>
+  </sc-for>
+</div>
+<sc-if value="{{ modalBuscaVeic }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ fecharBuscaVeic }}" style="position:fixed;inset:0;background:rgba(5,9,17,.62);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;z-index:80;padding:64px 20px 20px">
+    <div role="dialog" aria-modal="true" onClick="{{ pararProp }}" style="width:100%;max-width:480px;background:var(--surf);border:1px solid var(--line2);border-radius:16px;display:flex;flex-direction:column;box-shadow:var(--shadow);max-height:70vh;overflow:hidden">
+      <div style="display:flex;flex-direction:column;gap:12px;padding:20px 22px 14px;border-bottom:1px solid var(--line)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:17px;margin:0">Procurar veículo</h2>
+          <button onClick="{{ fecharBuscaVeic }}" style="width:30px;height:30px;border-radius:8px;background:none;border:1px solid var(--line);color:var(--mut);display:flex;align-items:center;justify-content:center" style-hover="border-color:var(--line2);color:var(--txt)"><span class="material-symbols-outlined" style="font-size:17px">close</span></button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;background:var(--surf2);border:1px solid var(--line);border-radius:10px;padding:10px 14px">
+          <span class="material-symbols-outlined" style="font-size:19px;color:var(--dim)">search</span>
+          <input value="{{ relBuscaVal }}" onInput="{{ setRelBusca }}" placeholder="Placa, modelo ou motorista" style="flex:1;background:none;border:none;outline:none;color:var(--txt);font-size:14px;font-family:'IBM Plex Sans',sans-serif">
+        </div>
+      </div>
+      <div style="overflow-y:auto;padding:8px 10px 12px">
+        <sc-for list="{{ relBuscaRes }}" as="v" hint-placeholder-count="6">
+          <button onClick="{{ v.pick }}" style="display:grid;grid-template-columns:38px 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;background:{{ v.bg }};border:1px solid {{ v.borda }};border-radius:10px;padding:11px 12px;margin:4px 0;color:var(--txt)" style-hover="border-color:var(--line2)">
+            <span style="width:38px;height:38px;border-radius:9px;background:var(--surf2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:{{ v.stCor }}"><span class="material-symbols-outlined" style="font-size:20px">{{ v.tipoIcon }}</span></span>
+            <div style="display:flex;flex-direction:column;gap:1px;min-width:0">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;font-weight:500">{{ v.placa }}</span>
+              <span style="font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.modelo }} · {{ v.mot }}</span>
+            </div>
+            <sc-if value="{{ v.sel }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-outlined" style="font-size:20px;color:var(--brand)">check_circle</span></sc-if>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ modalExcluir }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;background:rgba(5,9,17,.62);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:80;padding:20px">
+    <div role="dialog" aria-modal="true" style="width:100%;max-width:430px;background:var(--surf);border:1px solid var(--line2);border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)">
+      <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:18px;margin:0">Excluir o veículo {{ dPlaca }}?</h2>
+      <p style="color:var(--mut);font-size:13.5px;line-height:1.6;margin:0">O veículo sai da frota e para de receber telemetria. O histórico de abastecimentos, manutenções e vistorias fica arquivado por 90 dias antes da exclusão definitiva.</p>
+      <div style="display:flex;justify-content:flex-end;gap:10px">
+        <button onClick="{{ fecharModal }}" style="background:none;border:1px solid var(--line);border-radius:9px;padding:10px 16px;color:var(--mut);font-size:13.5px" style-hover="border-color:var(--line2);color:var(--txt)">Cancelar</button>
+        <button onClick="{{ excluirVeic }}" style="background:var(--crit);border:none;border-radius:9px;padding:10px 16px;color:#fff;font-weight:600;font-size:13.5px" style-hover="filter:brightness(1.1)">Excluir veículo</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ modalAbast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;background:rgba(5,9,17,.62);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:80;padding:20px">
+    <div role="dialog" aria-modal="true" style="width:100%;max-width:520px;background:var(--surf);border:1px solid var(--line2);border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:16px;box-shadow:var(--shadow)">
+      <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:18px;margin:0">Registrar abastecimento</h2>
+      <sc-if value="{{ temFormErr }}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="display:flex;gap:10px;background:var(--crit-bg);border:1px solid var(--crit);border-radius:10px;padding:11px 14px;font-size:13px"><span class="material-symbols-outlined" style="color:var(--crit);font-size:18px;flex-shrink:0">error</span><span>{{ formErr }}</span></div>
+      </sc-if>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Veículo
+          <select value="{{ fVeic }}" onChange="{{ setFVeic }}" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 12px;font-size:13.5px;color:var(--txt)">
+            <sc-for list="{{ placas }}" as="p" hint-placeholder-count="8"><option value="{{ p }}">{{ p }}</option></sc-for>
+          </select>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Data
+          <input type="date" value="{{ fData }}" onChange="{{ setFData }}" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt)">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Litros *
+          <input inputMode="decimal" value="{{ fLitros }}" onChange="{{ setFLitros }}" placeholder="62,4" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt);font-family:'IBM Plex Mono',monospace">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Valor total (R$) *
+          <input inputMode="decimal" value="{{ fValor }}" onChange="{{ setFValor }}" placeholder="387,50" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt);font-family:'IBM Plex Mono',monospace">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Hodômetro (km) *
+          <input inputMode="numeric" value="{{ fHodo }}" onChange="{{ setFHodo }}" placeholder="121480" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt);font-family:'IBM Plex Mono',monospace">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Posto
+          <input value="{{ fPosto }}" onChange="{{ setFPosto }}" placeholder="Ipiranga BR-116" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt)">
+        </label>
+      </div>
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim);margin:0">o km/L é calculado contra o abastecimento anterior deste veículo</p>
+      <div style="display:flex;justify-content:flex-end;gap:10px">
+        <button onClick="{{ fecharModal }}" style="background:none;border:1px solid var(--line);border-radius:9px;padding:10px 16px;color:var(--mut);font-size:13.5px" style-hover="border-color:var(--line2);color:var(--txt)">Cancelar</button>
+        <button onClick="{{ salvarAbast }}" style="background:var(--brand);border:none;border-radius:9px;padding:10px 16px;color:#0d1320;font-weight:600;font-size:13.5px" style-hover="filter:brightness(1.1)">Registrar abastecimento</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ modalMot }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;background:rgba(5,9,17,.62);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:80;padding:20px">
+    <div role="dialog" aria-modal="true" style="width:100%;max-width:480px;background:var(--surf);border:1px solid var(--line2);border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:16px;box-shadow:var(--shadow)">
+      <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:18px;margin:0">Cadastrar motorista</h2>
+      <sc-if value="{{ temFormErr }}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="display:flex;gap:10px;background:var(--crit-bg);border:1px solid var(--crit);border-radius:10px;padding:11px 14px;font-size:13px"><span class="material-symbols-outlined" style="color:var(--crit);font-size:18px;flex-shrink:0">error</span><span>{{ formErr }}</span></div>
+      </sc-if>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut);grid-column:1/-1">Nome completo *
+          <input value="{{ fNome }}" onChange="{{ setFNome }}" placeholder="Nome do motorista" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt)">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Categoria da CNH
+          <select value="{{ fCat }}" onChange="{{ setFCat }}" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 12px;font-size:13.5px;color:var(--txt)">
+            <option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+          </select>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Validade da CNH
+          <input type="date" value="{{ fVal }}" onChange="{{ setFVal }}" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt)">
+        </label>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px">
+        <button onClick="{{ fecharModal }}" style="background:none;border:1px solid var(--line);border-radius:9px;padding:10px 16px;color:var(--mut);font-size:13.5px" style-hover="border-color:var(--line2);color:var(--txt)">Cancelar</button>
+        <button onClick="{{ salvarMot }}" style="background:var(--brand);border:none;border-radius:9px;padding:10px 16px;color:#0d1320;font-weight:600;font-size:13.5px" style-hover="filter:brightness(1.1)">Cadastrar motorista</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ modalVeic }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;background:rgba(5,9,17,.62);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:80;padding:20px">
+    <div role="dialog" aria-modal="true" style="width:100%;max-width:480px;background:var(--surf);border:1px solid var(--line2);border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:16px;box-shadow:var(--shadow)">
+      <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:18px;margin:0">Adicionar veículo</h2>
+      <sc-if value="{{ temFormErr }}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="display:flex;gap:10px;background:var(--crit-bg);border:1px solid var(--crit);border-radius:10px;padding:11px 14px;font-size:13px"><span class="material-symbols-outlined" style="color:var(--crit);font-size:18px;flex-shrink:0">error</span><span>{{ formErr }}</span></div>
+      </sc-if>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Placa *
+          <input value="{{ fPlaca }}" onChange="{{ setFPlaca }}" placeholder="ABC-1D23" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt);font-family:'IBM Plex Mono',monospace;text-transform:uppercase">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut)">Modelo
+          <input value="{{ fModelo }}" onChange="{{ setFModelo }}" placeholder="Fiat Fiorino" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;color:var(--txt)">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mut);grid-column:1/-1">Tipo
+          <select value="{{ fTipo }}" onChange="{{ setFTipo }}" style="background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 12px;font-size:13.5px;color:var(--txt)">
+            <option value="Utilitário">Utilitário</option><option value="Van de carga">Van de carga</option><option value="Caminhão leve">Caminhão leve</option>
+          </select>
+        </label>
+      </div>
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim);margin:0">a telemetria conecta automaticamente quando o rastreador reportar esta placa</p>
+      <div style="display:flex;justify-content:flex-end;gap:10px">
+        <button onClick="{{ fecharModal }}" style="background:none;border:1px solid var(--line);border-radius:9px;padding:10px 16px;color:var(--mut);font-size:13.5px" style-hover="border-color:var(--line2);color:var(--txt)">Cancelar</button>
+        <button onClick="{{ salvarVeic }}" style="background:var(--brand);border:none;border-radius:9px;padding:10px 16px;color:#0d1320;font-weight:600;font-size:13.5px" style-hover="filter:brightness(1.1)">Adicionar veículo</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;tema&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Aparência&quot;},&quot;estadoDados&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;normal&quot;,&quot;carregando&quot;,&quot;vazio&quot;,&quot;erro&quot;],&quot;default&quot;:&quot;normal&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Estados do sistema&quot;},&quot;integracaoOffline&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Estados do sistema&quot;}}">
+class Component extends DCLogic {
+  state = { screen:'login', email:'', pass:'', emailErr:'', passErr:'', credErr:false, auth:false,
+    selId:2, q:'', filtro:'todos', sortKey:'data', sortDir:1, modal:null, form:{}, formErr:'',
+    relSel:'comparativo', relGerado:null, relGerando:false, relEscopo:'frota', relVeic:null,
+    toasts:[], kpiT:1, override:null, menu:false, abaConta:'cadastro',
+    conta:{empresa:'Transportes Almeida Ltda', cnpj:'12.456.789/0001-30', nome:'Rui Almeida', email:'rui@transportesalmeida.com.br', fone:'(11) 98122-4437'},
+    hapStatus:'conectado', hapToken:'', hapErr:'', hapValidando:false };
+  nf = new Intl.NumberFormat('pt-BR');
+  data = {
+    veic: [
+      {id:1, placa:'RTX-4B21', modelo:'Fiat Fiorino', tipo:'Utilitário', mot:'João Prates', hod:84312, comb:62, kml:9.4, troca:1220, status:'rodando', pneus:['ok','ok','ok','ok'], kmHoje:212},
+      {id:2, placa:'SQP-7D45', modelo:'Renault Master', tipo:'Van de carga', mot:'Carla Nunes', hod:121480, comb:34, kml:7.1, troca:-340, status:'rodando', pneus:['ok','ok','critico','ok'], kmHoje:187},
+      {id:3, placa:'TAV-9C10', modelo:'VW Saveiro', tipo:'Utilitário', mot:'Diego Ramos', hod:45902, comb:78, kml:11.8, troca:4100, status:'rodando', pneus:['ok','ok','ok','ok'], kmHoje:154},
+      {id:4, placa:'RKM-2E88', modelo:'Hyundai HR', tipo:'Caminhão leve', mot:'Otávio Dias', hod:97115, comb:51, kml:6.4, troca:850, status:'rodando', pneus:['ok','atencao','ok','ok'], kmHoje:231},
+      {id:5, placa:'SBF-6A03', modelo:'Iveco Daily', tipo:'Caminhão leve', mot:null, hod:132240, comb:45, kml:6.9, troca:2900, status:'manutencao', pneus:['ok','ok','ok','ok'], kmHoje:0},
+      {id:6, placa:'TQJ-1F77', modelo:'Fiat Fiorino', tipo:'Utilitário', mot:'Marcos Teixeira', hod:58660, comb:88, kml:9.9, troca:5300, status:'rodando', pneus:['ok','ok','ok','ok'], kmHoje:198},
+      {id:7, placa:'RYD-5H36', modelo:'Mercedes Sprinter 415', tipo:'Van de carga', mot:'Ana Beltrão', hod:143972, comb:22, kml:7.6, troca:1480, status:'rodando', pneus:['ok','atencao','ok','ok'], kmHoje:243},
+      {id:8, placa:'SNC-8G54', modelo:'VW Saveiro', tipo:'Utilitário', mot:null, hod:39480, comb:95, kml:12.1, troca:6800, status:'parado', pneus:['ok','ok','ok','ok'], kmHoje:0}
+    ],
+    alertas: [
+      {nv:'critico', t:'Troca de óleo vencida há 340 km', v:'SQP-7D45', acao:'manutencao'},
+      {nv:'critico', t:'Pneu traseiro esquerdo sinalizado na vistoria de 18 jul', v:'SQP-7D45', acao:'pneus'},
+      {nv:'atencao', t:'Consumo anômalo: 6,4 km/L contra média de 8,3', v:'RKM-2E88', acao:'combustivel'},
+      {nv:'atencao', t:'CNH de Marcos Teixeira vence em 12 dias', v:'TQJ-1F77', acao:'motoristas'},
+      {nv:'atencao', t:'Troca de óleo em 850 km', v:'RKM-2E88', acao:'manutencao'},
+      {nv:'info', t:'Vistoria recebida do app — sem apontamentos', v:'RYD-5H36', acao:'pneus'}
+    ],
+    abast: [
+      {data:'19 jul', v:'SQP-7D45', l:62.4, val:387.5, hod:121480, posto:'Ipiranga BR-116', kml:7.1, anom:false},
+      {data:'19 jul', v:'RKM-2E88', l:58.0, val:359.6, hod:97115, posto:'Shell Anchieta', kml:6.4, anom:true},
+      {data:'18 jul', v:'RTX-4B21', l:41.2, val:255.4, hod:84312, posto:'Posto Alvorada', kml:9.4, anom:false},
+      {data:'18 jul', v:'RYD-5H36', l:64.8, val:401.8, hod:143972, posto:'Ipiranga BR-116', kml:7.6, anom:false},
+      {data:'17 jul', v:'TAV-9C10', l:38.5, val:238.7, hod:45902, posto:'Petrobras Centro', kml:11.8, anom:false},
+      {data:'16 jul', v:'TQJ-1F77', l:40.0, val:248.0, hod:58660, posto:'Posto Alvorada', kml:9.9, anom:false},
+      {data:'15 jul', v:'SBF-6A03', l:70.3, val:435.9, hod:132240, posto:'Shell Anchieta', kml:6.9, anom:false},
+      {data:'14 jul', v:'RKM-2E88', l:55.1, val:341.6, hod:96204, posto:'Ipiranga BR-116', kml:8.1, anom:false}
+    ],
+    kmlSem: [
+      {lbl:'25 mai', val:8.2},{lbl:'1 jun', val:8.5},{lbl:'8 jun', val:8.3},{lbl:'15 jun', val:8.6},
+      {lbl:'22 jun', val:8.1},{lbl:'29 jun', val:8.9},{lbl:'6 jul', val:7.4},{lbl:'13 jul', val:8.7}
+    ],
+    custoSem: [15980,15420,16210,15760,14980,16480,15120,15890],
+    man: [
+      {id:'m1', v:'SQP-7D45', item:'Troca de óleo e filtro', resta:-340, nv:'critico', prazo:'vencida há 340 km'},
+      {id:'m2', v:'RKM-2E88', item:'Troca de óleo e filtro', resta:850, nv:'atencao', prazo:'em 850 km ou 12 dias'},
+      {id:'m3', v:'RYD-5H36', item:'Correia dentada', resta:1480, nv:'atencao', prazo:'em 1.480 km'},
+      {id:'m4', v:'RTX-4B21', item:'Troca de óleo e filtro', resta:1220, nv:'atencao', prazo:'em 1.220 km'},
+      {id:'m5', v:'SBF-6A03', item:'Pastilhas de freio', resta:2900, nv:'ok', prazo:'em 2.900 km'}
+    ],
+    manHist: [
+      {data:'12 jul', v:'SBF-6A03', item:'Corretiva — pastilhas e discos de freio', custo:1180, ofi:'Oficina Mecvel'},
+      {data:'28 jun', v:'RTX-4B21', item:'Troca de óleo e filtro', custo:420, ofi:'Lubrax Express'},
+      {data:'21 jun', v:'TAV-9C10', item:'Troca de óleo e filtro', custo:395, ofi:'Lubrax Express'},
+      {data:'9 jun', v:'RYD-5H36', item:'Alinhamento e balanceamento', custo:260, ofi:'Pneuforte'},
+      {data:'2 jun', v:'SQP-7D45', item:'Troca de óleo e filtro', custo:510, ofi:'Oficina Mecvel'}
+    ],
+    planos: [
+      {tipo:'Utilitário — Fiorino, Saveiro', itens:[{item:'Óleo e filtro', km:'10.000 km', tempo:'6 meses'},{item:'Filtro de ar', km:'20.000 km', tempo:'12 meses'},{item:'Pastilhas de freio', km:'30.000 km', tempo:'—'}]},
+      {tipo:'Van de carga — Master, Sprinter', itens:[{item:'Óleo e filtro', km:'15.000 km', tempo:'12 meses'},{item:'Correia dentada', km:'60.000 km', tempo:'48 meses'},{item:'Pastilhas de freio', km:'25.000 km', tempo:'—'}]},
+      {tipo:'Caminhão leve — HR, Daily', itens:[{item:'Óleo e filtro', km:'15.000 km', tempo:'12 meses'},{item:'Filtro de combustível', km:'30.000 km', tempo:'—'},{item:'Pastilhas de freio', km:'25.000 km', tempo:'—'}]}
+    ],
+    pneusSin: [
+      {v:'SQP-7D45', pos:'Traseiro esquerdo', obs:'Desgaste irregular na banda interna — recomendada troca imediata', vist:'18 jul', nv:'critico'},
+      {v:'RKM-2E88', pos:'Dianteiro direito', obs:'Bolha na lateral externa — monitorar e evitar carga máxima', vist:'16 jul', nv:'atencao'},
+      {v:'RYD-5H36', pos:'Dianteiro direito', obs:'Sulco em 2,1 mm — próximo do limite legal de 1,6 mm', vist:'15 jul', nv:'atencao'}
+    ],
+    vistorias: [
+      {v:'RYD-5H36', data:'19 jul · 08:12', mot:'Ana Beltrão', itens:[{n:'Pneus', ok:true, obs:''},{n:'Luzes e setas', ok:true, obs:''},{n:'Nível de óleo', ok:true, obs:''},{n:'Lataria', ok:true, obs:''},{n:'Documentos', ok:true, obs:''}]},
+      {v:'SQP-7D45', data:'18 jul · 07:48', mot:'Carla Nunes', itens:[{n:'Pneus', ok:false, obs:'traseiro esquerdo sinalizado'},{n:'Luzes e setas', ok:true, obs:''},{n:'Nível de óleo', ok:false, obs:'nível baixo'},{n:'Lataria', ok:true, obs:''},{n:'Documentos', ok:true, obs:''}]},
+      {v:'RKM-2E88', data:'16 jul · 09:05', mot:'Otávio Dias', itens:[{n:'Pneus', ok:false, obs:'dianteiro direito com bolha'},{n:'Luzes e setas', ok:true, obs:''},{n:'Nível de óleo', ok:true, obs:''},{n:'Lataria', ok:false, obs:'risco na porta lateral'},{n:'Documentos', ok:true, obs:''}]}
+    ],
+    mots: [
+      {nome:'João Prates', cat:'C', val:'03/2028', dias:null, v:'RTX-4B21', desde:'fev 2025'},
+      {nome:'Carla Nunes', cat:'D', val:'11/2027', dias:null, v:'SQP-7D45', desde:'ago 2024'},
+      {nome:'Diego Ramos', cat:'B', val:'07/2029', dias:null, v:'TAV-9C10', desde:'jan 2026'},
+      {nome:'Otávio Dias', cat:'C', val:'01/2027', dias:null, v:'RKM-2E88', desde:'mai 2025'},
+      {nome:'Marcos Teixeira', cat:'C', val:'01/08/2026', dias:12, v:'TQJ-1F77', desde:'out 2024'},
+      {nome:'Ana Beltrão', cat:'D', val:'05/2028', dias:null, v:'RYD-5H36', desde:'mar 2025'},
+      {nome:'Paulo Cezar', cat:'B', val:'09/2026', dias:62, v:null, desde:null}
+    ],
+    rel: [
+      {placa:'RTX-4B21', km:4410, custo:4980},{placa:'SQP-7D45', km:3980, custo:6120},
+      {placa:'TAV-9C10', km:3260, custo:3140},{placa:'RKM-2E88', km:4720, custo:6890},
+      {placa:'SBF-6A03', km:2110, custo:4310},{placa:'TQJ-1F77', km:4080, custo:4450},
+      {placa:'RYD-5H36', km:5140, custo:6480},{placa:'SNC-8G54', km:940, custo:820}
+    ]
+  };
+  go(id){ this.setState({screen:id, menu:false}); if(this._main) this._main.scrollTop=0; if(id==='painel') this.countUp(); }
+  hapConectar(){ const t=this.state.hapToken.trim();
+    if(!t){ this.setState({hapErr:'Cole o token gerado no painel Hapolo — o campo está vazio.'}); return; }
+    if(!t.startsWith('hap_')){ this.setState({hapErr:'Token não reconhecido — tokens Hapolo começam com "hap_live_" ou "hap_test_". Confira se copiou o valor inteiro.'}); return; }
+    this.setState({hapValidando:true, hapErr:''});
+    setTimeout(()=>{ this.setState({hapValidando:false, hapStatus:'conectado', hapToken:''}); this.toast('Token Hapolo conectado — telemetria sincronizando'); }, 1400);
+  }
+  hapTestar(){ this.toast('Conexão com a Hapolo OK — 8 veículos reportando, latência 320 ms','info'); }
+  escolherRel(id){ this.setState({relSel:id}); }
+  setEscopo(e){ if(e==='veiculo'){ this.setState({relEscopo:'veiculo', modal:'buscaVeic', relBusca:''}); }
+    else { this.setState({relEscopo:'frota', relVeic:null}); } }
+  setRelVeic(p){ this.setState({relVeic:p, modal:null, relBusca:''}); }
+  abrirBuscaVeic(){ this.setState({modal:'buscaVeic', relBusca:''}); }
+  gerarRel(){ const id=this.state.relSel; if(!id) return;
+    this.setState({relGerando:true});
+    setTimeout(()=>{ this.setState({relGerando:false, relGerado:id}); }, 650);
+  }
+  trocarRel(){ this.setState({relGerado:null}); }
+  openVeic(id){ this.setState({selId:id, screen:'detalhe'}); if(this._main) this._main.scrollTop=0; }
+  countUp(){
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches){ this.setState({kpiT:1}); return; }
+    const t0=performance.now();
+    const step=(t)=>{ const p=Math.min(1,(t-t0)/700); this.setState({kpiT:1-Math.pow(1-p,3)}); if(p<1) requestAnimationFrame(step); };
+    this.setState({kpiT:0}); requestAnimationFrame(step);
+  }
+  toast(msg, nv){ const id=Date.now()+Math.random();
+    this.setState(s=>({toasts:[...s.toasts,{id,msg,nv:nv||'ok'}]}));
+    setTimeout(()=>this.setState(s=>({toasts:s.toasts.filter(t=>t.id!==id)})), 4200);
+  }
+  entrar(){ const {email,pass}=this.state;
+    const emailErr = !email ? 'Informe o e-mail da conta' : (!email.includes('@') ? 'E-mail inválido — confira o formato' : '');
+    const passErr = !pass ? 'Informe a senha' : '';
+    if (emailErr||passErr){ this.setState({emailErr,passErr,credErr:false}); return; }
+    if (pass!=='demo'){ this.setState({credErr:true,emailErr:'',passErr:''}); return; }
+    this.setState({auth:true,credErr:false,emailErr:'',passErr:''});
+    setTimeout(()=>{ this.setState({auth:false,screen:'painel'}); this.countUp(); this.toast('Frota sincronizada às 09:12 — bem-vindo de volta','info'); }, 1100);
+  }
+  retry(){ this.setState({override:'carregando'}); setTimeout(()=>{ this.setState({override:'normal'}); this.toast('Dados da frota recarregados'); }, 1400); }
+  setF(k,v){ this.setState(s=>({form:{...s.form,[k]:v}, formErr:''})); }
+  salvarAbast(){ const f=this.state.form;
+    if(!f.litros||!f.valor||!f.hodo){ this.setState({formErr:'Preencha litros, valor e hodômetro — são obrigatórios para calcular o km/L.'}); return; }
+    const placa=f.veic||this.data.veic[0].placa;
+    this.data.abast.unshift({data:'20 jul', v:placa, l:parseFloat(String(f.litros).replace(',','.'))||0, val:parseFloat(String(f.valor).replace(',','.'))||0, hod:parseInt(f.hodo,10)||0, posto:f.posto||'—', kml:null, anom:false});
+    this.setState({modal:null,form:{},formErr:''});
+    this.toast('Abastecimento registrado — '+placa);
+  }
+  salvarMot(){ const f=this.state.form;
+    if(!f.nome){ this.setState({formErr:'Informe o nome do motorista.'}); return; }
+    this.data.mots.unshift({nome:f.nome, cat:f.cat||'B', val:f.val||'—', dias:null, v:null, desde:null});
+    this.setState({modal:null,form:{},formErr:''});
+    this.toast('Motorista cadastrado — '+f.nome);
+  }
+  salvarVeic(){ const f=this.state.form;
+    if(!f.placa){ this.setState({formErr:'Informe a placa do veículo.'}); return; }
+    this.setState({modal:null,form:{},formErr:'',override:'normal'});
+    this.toast('Veículo adicionado à frota — '+String(f.placa).toUpperCase());
+  }
+  concluirMan(id){ const m=this.data.man.find(x=>x.id===id); if(!m) return;
+    this.data.man=this.data.man.filter(x=>x.id!==id); this.forceUpdate();
+    this.toast('Manutenção marcada como feita — '+m.item+' · '+m.v);
+  }
+  excluirVeic(){ const v=this.data.veic.find(x=>x.id===this.state.selId); if(!v) return;
+    this.data.veic=this.data.veic.filter(x=>x.id!==v.id);
+    this.setState({modal:null,screen:'veiculos'});
+    this.toast('Veículo '+v.placa+' excluído — histórico arquivado por 90 dias','info');
+  }
+  sortBy(k){ this.setState(s=>({sortKey:k, sortDir:s.sortKey===k?-s.sortDir:1})); }
+  canvasRef(key){
+    this._refs = this._refs || {};
+    if(!this._refs[key]) this._refs[key] = (el)=>{
+      this._cv = this._cv || {};
+      if(el){ this._cv[key]=el; this.scheduleDraw(); }
+      else { if(this._charts && this._charts[key]){ this._charts[key].destroy(); delete this._charts[key]; } if(this._cv) this._cv[key]=null; }
+    };
+    return this._refs[key];
+  }
+  scheduleDraw(){ if(this._drawQ) return; this._drawQ=true; requestAnimationFrame(()=>{ this._drawQ=false; this.drawCharts(); }); }
+  themeColors(el){ const cs=getComputedStyle(el); const g=n=>cs.getPropertyValue(n).trim();
+    return {txt:g('--txt'),mut:g('--mut'),dim:g('--dim'),line:g('--line'),brand:g('--brand'),ok:g('--ok'),warn:g('--warn'),crit:g('--crit'),surf:g('--surf')}; }
+  drawCharts(){
+    if(!window.Chart){ if(this._chartTries==null)this._chartTries=0; if(this._chartTries++<40) setTimeout(()=>this.scheduleDraw(),120); return; }
+    this._charts=this._charts||{};
+    Object.keys(this._cv||{}).forEach(key=>{ const el=this._cv[key]; if(!el||!el.isConnected) return;
+      const c=this.themeColors(el);
+      if(this._charts[key]) this._charts[key].destroy();
+      this._charts[key]=this.buildChart(key,el,c);
+    });
+  }
+  buildChart(key,el,c){
+    const grid=c.line, tick=c.dim;
+    if(key==='trend'){
+      return new window.Chart(el,{data:{labels:this.data.kmlSem.map(x=>x.lbl),datasets:[
+        {type:'bar',label:'Custo',data:this.data.custoSem,backgroundColor:c.brand+'40',borderColor:c.brand,borderWidth:1,borderRadius:4,yAxisID:'y',order:2},
+        {type:'line',label:'km/L',data:this.data.kmlSem.map(x=>x.val),borderColor:c.ok,backgroundColor:c.ok,borderWidth:2,tension:.35,pointRadius:3,pointBackgroundColor:c.ok,yAxisID:'y1',order:1}
+      ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.yAxisID==='y'?' R$ '+ctx.parsed.y.toLocaleString('pt-BR'):' '+String(ctx.parsed.y).replace('.',',')+' km/L'}}},
+        scales:{
+          x:{grid:{color:grid,drawTicks:false},ticks:{color:tick,font:{size:11}}},
+          y:{position:'left',grid:{color:grid},ticks:{color:tick,font:{size:11},callback:v=>'R$ '+(v/1000)+'k'},beginAtZero:true},
+          y1:{position:'right',grid:{drawOnChartArea:false},ticks:{color:c.ok,font:{size:11}},suggestedMin:6,suggestedMax:13}
+        }}});
+    }
+    if(key==='disp'){
+      const dc=this._dispCounts||(()=>{const v=this.data.veic;return [v.filter(x=>x.status==='rodando').length,v.filter(x=>x.status==='manutencao').length,v.filter(x=>x.status==='parado').length];})();
+      return new window.Chart(el,{type:'doughnut',data:{labels:['Rodando','Em manutenção','Parado'],datasets:[{data:dc,backgroundColor:[c.ok,c.warn,c.dim],borderColor:c.surf,borderWidth:3,hoverOffset:4}]},
+        options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{position:'bottom',labels:{color:c.mut,boxWidth:10,boxHeight:10,padding:14,font:{size:12},usePointStyle:true,pointStyle:'circle'}},tooltip:{callbacks:{label:ctx=>' '+ctx.label+': '+ctx.parsed+' veículos'}}}}});
+    }
+  }
+  componentDidMount(){ this._lastTheme=this.props.tema??'dark'; this.scheduleDraw(); }
+  componentDidUpdate(){ const t=this.props.tema??'dark'; if(t!==this._lastTheme){ this._lastTheme=t; this._chartTries=0; this.scheduleDraw(); }
+    const sig=this.state.relGerado+'|'+this.state.relEscopo+'|'+this.state.relVeic;
+    if(sig!==this._relSig){ this._relSig=sig; this.scheduleDraw(); } }
+  renderVals(){
+    const S=this.state, P=this.props;
+    const theme=P.tema??'dark';
+    const ds=S.override??(P.estadoDados??'normal');
+    const off=P.integracaoOffline??false;
+    const cur=S.screen;
+    const nf=this.nf, fmt=n=>nf.format(n), dec=n=>String(n).replace('.',','), money=n=>'R$ '+nf.format(Math.round(n));
+    const C={ok:'var(--ok)',atencao:'var(--warn)',critico:'var(--crit)',info:'var(--brand)'};
+    const G={critico:'error',atencao:'warning',info:'info',ok:'check_circle'};
+    const titles={painel:'Visão geral',veiculos:'Veículos',detalhe:'Detalhe do veículo',combustivel:'Combustível',manutencao:'Manutenção',pneus:'Pneus e vistorias',motoristas:'Motoristas',relatorios:'Relatórios',conta:'Configurações da conta'};
+    const navDef=[['painel','Visão geral','space_dashboard'],['veiculos','Veículos','local_shipping'],['combustivel','Combustível','local_gas_station'],['manutencao','Manutenção','build'],['pneus','Pneus e vistorias','tire_repair'],['motoristas','Motoristas','badge'],['relatorios','Relatórios','monitoring']];
+    const nav=navDef.map(([id,label,icon])=>{ const act=cur===id||(id==='veiculos'&&cur==='detalhe');
+      return {id,label,icon,go:()=>this.go(id),bg:act?'var(--side-active)':'transparent',fg:act?'var(--side-fg)':'var(--side-dim)',bar:act?'var(--side-accent)':'transparent'}; });
+    const posN=['Dianteiro esquerdo','Dianteiro direito','Traseiro esquerdo','Traseiro direito'];
+    const mkV=v=>({...v,
+      hodF:fmt(v.hod), kmlF:dec(v.kml), kmHojeF:fmt(v.kmHoje),
+      stCor:v.status==='rodando'?'var(--ok)':v.status==='manutencao'?'var(--warn)':'var(--dim)',
+      stLabel:v.status==='rodando'?'rodando':v.status==='manutencao'?'em manutenção':'parado',
+      combCor:v.comb<25?'var(--crit)':v.comb<40?'var(--warn)':'var(--brand)',
+      trocaTxt:v.troca<0?'vencida há '+fmt(-v.troca)+' km':'em '+fmt(v.troca)+' km',
+      trocaCor:v.troca<0?'var(--crit)':v.troca<1500?'var(--warn)':'var(--ok)',
+      trocaPct:Math.max(4,Math.min(100,Math.round(100-(v.troca/10000)*100))),
+      pneuDots:v.pneus.map((p,i)=>({pos:['DE','DD','TE','TD'][i], nome:posN[i], cor:C[p]||C.ok, lbl:p==='ok'?'ok':p==='atencao'?'atenção':'sinalizado'})),
+      motTxt:v.mot||'sem motorista',
+      tipoIcon:v.tipo==='Van de carga'?'airport_shuttle':v.tipo==='Caminhão leve'?'local_shipping':'directions_car',
+      open:()=>this.openVeic(v.id),
+      excluir:()=>this.setState({modal:'excluir',selId:v.id}),
+      temAlerta:v.troca<1500||v.pneus.some(p=>p!=='ok')||v.kml<7});
+    const allV=this.data.veic.map(mkV);
+    const q=(S.q||'').toLowerCase();
+    const vList=allV.filter(v=>(!q||v.placa.toLowerCase().includes(q)||v.modelo.toLowerCase().includes(q)||(v.mot||'').toLowerCase().includes(q))
+      &&(S.filtro==='todos'||(S.filtro==='alerta'&&v.temAlerta)||(S.filtro==='rodando'&&v.status==='rodando')||(S.filtro==='parado'&&v.status==='parado')||(S.filtro==='manutencao'&&v.status==='manutencao')));
+    const chips=[['todos','Todos'],['alerta','Com alerta'],['rodando','Rodando'],['parado','Parados'],['manutencao','Em manutenção']]
+      .map(([id,label])=>({id,label,set:()=>this.setState({filtro:id}),bg:S.filtro===id?'var(--brand-bg)':'transparent',fg:S.filtro===id?'var(--brand)':'var(--mut)',bd:S.filtro===id?'var(--brand)':'var(--line)'}));
+    const sel=allV.find(v=>v.id===S.selId)||allV[0]||null;
+    const kt=S.kpiT;
+    const alertas=this.data.alertas.map(a=>({...a,cor:C[a.nv],glifo:G[a.nv],
+      bg:a.nv==='critico'?'var(--crit-bg)':a.nv==='atencao'?'var(--warn-bg)':'var(--brand-bg)',
+      nvLbl:a.nv==='critico'?'crítico':a.nv==='atencao'?'atenção':'informativo',
+      ver:()=>this.go(a.acao)}));
+    const cats=[{n:'Combustível',atu:12940,ant:11870},{n:'Manutenção',atu:3610,ant:2230},{n:'Pneus',atu:1912,ant:1790}].map(c=>{
+      const d=Math.round((c.atu/c.ant-1)*100);
+      return {...c,atuF:money(c.atu),antF:money(c.ant),pctAtu:Math.round(c.atu/14000*100),pctAnt:Math.round(c.ant/14000*100),delta:(d>=0?'+':'')+d+'%',dCor:d>25?'var(--crit)':d>8?'var(--warn)':'var(--mut)'};});
+    const k=S.sortKey, dir=S.sortDir;
+    const ab=this.data.abast.map((r,i)=>({...r,i,lF:dec(r.l.toFixed(1)),valF:'R$ '+dec(r.val.toFixed(2)),hodF:fmt(r.hod),kmlF:r.kml==null?'—':dec(r.kml),
+      kmlCor:r.anom?'var(--warn)':'var(--txt)',anomTag:r.anom}));
+    const abSorted=[...ab].sort((a,b)=>{ const va=k==='data'?a.i:k==='litros'?a.l:k==='valor'?a.val:(a.kml||0);
+      const vb=k==='data'?b.i:k==='litros'?b.l:k==='valor'?b.val:(b.kml||0);
+      return (va-vb)*(k==='data'?dir:-dir); }).map((r,i)=>({...r,zebra:i%2?'var(--surf2)':'transparent'}));
+    const seta=col=>k===col?(dir===1?' ↓':' ↑'):'';
+    const bars=this.data.kmlSem.map(x=>({...x,valF:dec(x.val),hPct:Math.round(x.val/13*100),cor:x.val<7.6?'var(--warn)':'var(--brand)'}));
+    const man=this.data.man.map(m=>({...m,cor:C[m.nv],glifo:G[m.nv],restaF:m.resta<0?'-'+fmt(-m.resta):fmt(m.resta),
+      pct:Math.max(4,Math.min(100,Math.round(100-(m.resta/10000)*100))),
+      concluir:()=>this.concluirMan(m.id)}));
+    const manHist=this.data.manHist.map(h=>({...h,custoF:money(h.custo)}));
+    const pneusSin=this.data.pneusSin.map(p=>({...p,cor:C[p.nv],glifo:G[p.nv],bg:p.nv==='critico'?'var(--crit-bg)':'var(--warn-bg)',nvLbl:p.nv==='critico'?'trocar agora':'monitorar'}));
+    const vistorias=this.data.vistorias.map(vi=>({...vi,itens:vi.itens.map(it=>({...it,glifo:it.ok?'●':'▲',cor:it.ok?'var(--ok)':'var(--crit)',lbl:it.ok?'ok':it.obs}))}));
+    const mots=this.data.mots.map(m=>({...m,vTxt:m.v||'sem vínculo',desdeTxt:m.desde?('desde '+m.desde):'—',
+      cnhCor:m.dias!=null&&m.dias<=30?'var(--warn)':'var(--ok)',
+      cnhTxt:m.dias!=null&&m.dias<=30?('vence em '+m.dias+' dias'):'em dia',
+      cnhBg:m.dias!=null&&m.dias<=30?'var(--warn-bg)':'var(--ok-bg)'}));
+    const rel=this.data.rel.map(r=>({...r,kmF:fmt(r.km),custoF:money(r.custo),ckmF:'R$ '+dec((r.custo/r.km).toFixed(2))}));
+    const relCats=[{n:'Combustível',jun:41200,jul:31900},{n:'Manutenção',jun:11300,jul:9800},{n:'Pneus',jun:6440,jul:5610}].map(c=>({...c,junF:money(c.jun),julF:money(c.jul),pctJun:Math.round(c.jun/45000*100),pctJul:Math.round(c.jul/45000*100)}));
+    const relSel=S.relSel, relGer=S.relGerado;
+    const relEscopo=S.relEscopo, relVeicP=S.relVeic;
+    const escFiltro=(placa)=>relEscopo!=='veiculo'||!relVeicP||placa===relVeicP;
+    const escLabel=relEscopo==='veiculo'&&relVeicP?('veículo '+relVeicP):'frota inteira';
+    const relDefs=[
+      {id:'comparativo', titulo:'Comparativo de custos', desc:'Custo por categoria, junho × julho, com projeção de fechamento.', icon:'compare_arrows', periodo:'jun × jul 2026', linhas:'3 categorias'},
+      {id:'veiculo', titulo:'Custo por veículo', desc:'Rateio de km rodados, custo total e R$/km de cada veículo.', icon:'local_shipping', periodo:'julho 2026', linhas:this.data.rel.length+' veículos'},
+      {id:'consumo', titulo:'Consumo e eficiência', desc:'km/L por veículo, ordenado do mais eficiente ao mais gastador.', icon:'speed', periodo:'julho 2026', linhas:this.data.veic.length+' veículos'},
+      {id:'disponibilidade', titulo:'Disponibilidade da frota', desc:'Distribuição entre rodando, em manutenção e parado.', icon:'donut_large', periodo:'agora', linhas:this.data.veic.length+' veículos'},
+      {id:'manutencao', titulo:'Manutenções previstas', desc:'Trocas e revisões agendadas por prazo e prioridade.', icon:'build', periodo:'próximos 30 dias', linhas:man.length+' pendências'}
+    ];
+    const relTipos=relDefs.map(d=>({...d, sel:d.id===relSel, pick:()=>this.escolherRel(d.id),
+      cardBorda:d.id===relSel?'var(--brand)':'var(--line)', cardBg:d.id===relSel?'var(--brand-bg)':'var(--surf)',
+      icCor:d.id===relSel?'var(--brand)':'var(--mut)', chkVis:d.id===relSel?'flex':'none'}));
+    const relDef=relDefs.find(d=>d.id===relGer)||relDefs.find(d=>d.id===relSel)||relDefs[0];
+    const relConsumo=this.data.veic.map(v=>({placa:v.placa, modelo:v.modelo, kml:v.kml, kmlF:dec(v.kml),
+        pct:Math.min(100,Math.round(v.kml/13*100)), cor:v.kml>=9?'var(--ok)':v.kml>=7?'var(--warn)':'var(--crit)',
+        lbl:v.kml>=9?'eficiente':v.kml>=7?'na média':'abaixo'}))
+      .filter(v=>escFiltro(v.placa))
+      .sort((a,b)=>b.kml-a.kml);
+    const veicEsc=relEscopo==='veiculo'&&relVeicP?this.data.veic.filter(x=>x.placa===relVeicP):this.data.veic;
+    const rodN=veicEsc.filter(x=>x.status==='rodando').length,
+          manN=veicEsc.filter(x=>x.status==='manutencao').length,
+          parN=veicEsc.filter(x=>x.status==='parado').length, totN=veicEsc.length;
+    const relDisp=[
+      {k:'Rodando', n:rodN, cor:'var(--ok)', icon:'check_circle'},
+      {k:'Em manutenção', n:manN, cor:'var(--warn)', icon:'build'},
+      {k:'Parado', n:parN, cor:'var(--dim)', icon:'pause_circle'}
+    ].map(x=>({...x, pct:totN?Math.round(x.n/totN*100):0}));
+    this._dispCounts=[rodN,manN,parN];
+    const relFilt=rel.filter(r=>escFiltro(r.placa));
+    const manFilt=man.filter(m=>escFiltro(m.v));
+    const relConsumoTem=relConsumo.length>0, relFiltTem=relFilt.length>0, manFiltTem=manFilt.length>0;
+    const relPlacas=this.data.veic.map(v=>({placa:v.placa, sel:v.placa===relVeicP, pick:()=>this.setRelVeic(v.placa),
+      bg:v.placa===relVeicP?'var(--brand)':'var(--surf2)', fg:v.placa===relVeicP?'#fff':'var(--mut)',
+      borda:v.placa===relVeicP?'var(--brand)':'var(--line)'}));
+    const bq=(S.relBusca||'').toLowerCase();
+    const relBuscaRes=this.data.veic
+      .filter(v=>!bq||v.placa.toLowerCase().includes(bq)||(v.modelo||'').toLowerCase().includes(bq)||(v.mot||'').toLowerCase().includes(bq))
+      .map(v=>({placa:v.placa, modelo:v.modelo, mot:v.mot||'sem motorista', sel:v.placa===relVeicP,
+        pick:()=>this.setRelVeic(v.placa),
+        tipoIcon:v.tipo==='Van de carga'?'airport_shuttle':v.tipo==='Caminhão leve'?'local_shipping':'directions_car',
+        stCor:v.status==='rodando'?'var(--ok)':v.status==='manutencao'?'var(--warn)':'var(--dim)',
+        bg:v.placa===relVeicP?'var(--brand-bg)':'transparent', borda:v.placa===relVeicP?'var(--brand)':'var(--line)'}));
+    const escOpts=[{id:'frota',lbl:'Frota inteira',icon:'grid_view'},{id:'veiculo',lbl:'Veículo específico',icon:'local_shipping'}]
+      .map(o=>({...o, sel:o.id===relEscopo, pick:()=>this.setEscopo(o.id),
+        bg:o.id===relEscopo?'var(--brand-bg)':'var(--surf)', fg:o.id===relEscopo?'var(--brand)':'var(--mut)',
+        borda:o.id===relEscopo?'var(--brand)':'var(--line)'}));
+    const dAb=sel?ab.filter(r=>r.v===sel.placa):[];
+    const dMan=sel?man.filter(m=>m.v===sel.placa):[];
+    const dVist=sel?vistorias.filter(vi=>vi.v===sel.placa):[];
+    const dVinc=sel?[{mot:sel.mot||'—',de:sel.mot?'ago 2024':'—',ate:'atual'},{mot:'Paulo Cezar',de:'jan 2024',ate:'ago 2024'}]:[];
+    const fs=(kk)=>((S.form[kk]!==undefined)?S.form[kk]:'');
+    const set=(kk)=>(e)=>this.setF(kk,e.target.value);
+    return {
+      theme, off, isLogin:cur==='login', isApp:cur!=='login',
+      screenTitle:titles[cur]||'', syncCor:off?'var(--warn)':'var(--ok)', syncLbl:off?'offline 14:32':'sync 09:12',
+      nav, mainRef:el=>{this._main=el;},
+      chartTrendRef:this.canvasRef('trend'), chartDispRef:this.canvasRef('disp'),
+      irPainel:()=>this.go('painel'), irVeiculos:()=>this.go('veiculos'), irManutencao:()=>this.go('manutencao'), irPneus:()=>this.go('pneus'),
+      email:S.email, pass:S.pass, setEmail:e=>this.setState({email:e.target.value,emailErr:'',credErr:false}),
+      setPass:e=>this.setState({pass:e.target.value,passErr:'',credErr:false}),
+      emailErr:S.emailErr, passErr:S.passErr, temEmailErr:!!S.emailErr, temPassErr:!!S.passErr,
+      emailBorda:S.emailErr?'var(--crit)':'var(--line)', passBorda:S.passErr?'var(--crit)':'var(--line)',
+      credErr:S.credErr, auth:S.auth, entrar:()=>this.entrar(), entrarLbl:S.auth?'Autenticando…':'Entrar',
+      dsNormal:ds==='normal', dsLoading:ds==='carregando', dsVazio:ds==='vazio', dsErro:ds==='erro',
+      retry:()=>this.retry(), skel4:[1,2,3,4], skel6:[1,2,3,4,5,6],
+      sPainel:cur==='painel', sVeiculos:cur==='veiculos', sDetalhe:cur==='detalhe', sCombustivel:cur==='combustivel',
+      sManutencao:cur==='manutencao', sPneus:cur==='pneus', sMotoristas:cur==='motoristas', sRelatorios:cur==='relatorios', sConta:cur==='conta',
+      menuAberto:S.menu, toggleMenu:()=>this.setState(s=>({menu:!s.menu})), menuBorda:S.menu?'var(--brand)':'var(--line)',
+      irConta:()=>this.go('conta'), sair:()=>{ this.setState({screen:'login',menu:false,pass:''}); },
+      tabCad:S.abaConta==='cadastro', tabInt:S.abaConta==='integracoes',
+      abaCadastro:()=>this.setState({abaConta:'cadastro'}), abaIntegracoes:()=>this.setState({abaConta:'integracoes'}),
+      tabCadBorda:S.abaConta==='cadastro'?'var(--brand)':'transparent', tabCadCor:S.abaConta==='cadastro'?'var(--brand)':'var(--mut)',
+      tabIntBorda:S.abaConta==='integracoes'?'var(--brand)':'transparent', tabIntCor:S.abaConta==='integracoes'?'var(--brand)':'var(--mut)',
+      cEmpresa:S.conta.empresa, cCnpj:S.conta.cnpj, cNome:S.conta.nome, cEmail:S.conta.email, cFone:S.conta.fone,
+      setCEmpresa:e=>this.setState(s=>({conta:{...s.conta,empresa:e.target.value}})),
+      setCCnpj:e=>this.setState(s=>({conta:{...s.conta,cnpj:e.target.value}})),
+      setCNome:e=>this.setState(s=>({conta:{...s.conta,nome:e.target.value}})),
+      setCEmail:e=>this.setState(s=>({conta:{...s.conta,email:e.target.value}})),
+      setCFone:e=>this.setState(s=>({conta:{...s.conta,fone:e.target.value}})),
+      salvarConta:()=>this.toast('Alterações salvas — cadastro da conta atualizado'),
+      hapConectado:S.hapStatus==='conectado', hapSemToken:S.hapStatus!=='conectado',
+      hapBg:S.hapStatus==='conectado'?'var(--ok-bg)':'var(--warn-bg)', hapCor:S.hapStatus==='conectado'?'var(--ok)':'var(--warn)',
+      hapLbl:S.hapStatus==='conectado'?'conectada':'sem token', hapFim:'x4T9',
+      hapToken:S.hapToken, setHapToken:e=>this.setState({hapToken:e.target.value,hapErr:''}),
+      temHapErr:!!S.hapErr, hapErr:S.hapErr, hapValidando:S.hapValidando,
+      hapBtnLbl:S.hapValidando?'Validando…':'Conectar',
+      hapConectar:()=>this.hapConectar(), hapTestar:()=>this.hapTestar(),
+      hapRemover:()=>{ this.setState({hapStatus:'sem'}); this.toast('Token removido — a telemetria para de sincronizar até um novo token ser conectado','info'); },
+      kCusto:money(18462*kt), kKml:dec(Math.round(87*kt)/10), kDisp:Math.round(7*kt), kAlertas:Math.round(6*kt),
+      dispSegs:[1,1,1,1,1,1,1,0].map(x=>({cor:x?'var(--ok)':'var(--warn)'})),
+      cats, alertas, frota:allV, vList, temVeic:vList.length>0, temVeicNao:vList.length===0, chips,
+      q:S.q, setQ:e=>this.setState({q:e.target.value}),
+      d:sel, dPlaca:sel?sel.placa:'', dAb, dMan, dVist, dVinc, dTemAb:dAb.length>0, dSemAb:dAb.length===0, dTemMan:dMan.length>0, dSemMan:dMan.length===0, dTemVist:dVist.length>0, dSemVist:dVist.length===0,
+      abSorted, temAb:abSorted.length>0, temAbNao:abSorted.length===0, bars,
+      sortData:()=>this.sortBy('data'), sortLitros:()=>this.sortBy('litros'), sortValor:()=>this.sortBy('valor'), sortKml:()=>this.sortBy('kml'),
+      setaData:seta('data'), setaLitros:seta('litros'), setaValor:seta('valor'), setaKml:seta('kml'),
+      man, temMan:man.length>0, temManNao:man.length===0, manHist, planos:this.data.planos,
+      pneusSin, vistorias, mots, temMots:mots.length>0, rel, relCats,
+      relTipos, relSelId:relSel,
+      relGerando:S.relGerando, relPronto:!!relGer, relPicker:!relGer,
+      relEscOpts:escOpts, relEscVeic:relEscopo==='veiculo', relPlacas, relEscLabel:escLabel,
+      relBuscaRes, relBuscaVal:S.relBusca||'', relTemVeicSel:!!relVeicP, relVeicSel:relVeicP||'',
+      modalBuscaVeic:S.modal==='buscaVeic', setRelBusca:e=>this.setState({relBusca:e.target.value}),
+      abrirBuscaVeic:()=>this.abrirBuscaVeic(), fecharBuscaVeic:()=>this.setState({modal:null}), pararProp:e=>e.stopPropagation(),
+      relFilt, manFilt, relFiltTem, manFiltTem, relConsumoTem,
+      relGerar:()=>this.gerarRel(), relTrocar:()=>this.trocarRel(),
+      relDef, relDefTitulo:relDef.titulo, relDefPeriodo:relDef.periodo, relDefIcon:relDef.icon,
+      relEhComparativo:relGer==='comparativo', relEhVeiculo:relGer==='veiculo',
+      relEhConsumo:relGer==='consumo', relEhDisp:relGer==='disponibilidade', relEhMan:relGer==='manutencao',
+      relConsumo, relDisp, relDispTotal:totN,
+      toasts:S.toasts.map(t=>({...t,cor:t.nv==='info'?'var(--brand)':'var(--ok)',glifo:t.nv==='info'?'info':'check_circle'})),
+      modalExcluir:S.modal==='excluir', modalAbast:S.modal==='abast', modalMot:S.modal==='mot', modalVeic:S.modal==='veic',
+      fecharModal:()=>this.setState({modal:null,form:{},formErr:''}),
+      abrirExcluir:()=>this.setState({modal:'excluir'}),
+      abrirAbast:()=>this.setState({modal:'abast',form:{},formErr:''}),
+      abrirMot:()=>this.setState({modal:'mot',form:{},formErr:''}),
+      abrirVeicForm:()=>this.setState({modal:'veic',form:{},formErr:''}),
+      temFormErr:!!S.formErr, formErr:S.formErr,
+      placas:this.data.veic.map(v=>v.placa),
+      fVeic:fs('veic'), setFVeic:set('veic'), fData:fs('data'), setFData:set('data'),
+      fLitros:fs('litros'), setFLitros:set('litros'), fValor:fs('valor'), setFValor:set('valor'),
+      fHodo:fs('hodo'), setFHodo:set('hodo'), fPosto:fs('posto'), setFPosto:set('posto'),
+      fNome:fs('nome'), setFNome:set('nome'), fCat:fs('cat'), setFCat:set('cat'), fVal:fs('val'), setFVal:set('val'),
+      fPlaca:fs('placa'), setFPlaca:set('placa'), fModelo:fs('modelo'), setFModelo:set('modelo'), fTipo:fs('tipo'), setFTipo:set('tipo'),
+      salvarAbast:()=>this.salvarAbast(), salvarMot:()=>this.salvarMot(), salvarVeic:()=>this.salvarVeic(),
+      excluirVeic:()=>this.excluirVeic(),
+      exportCsv:()=>this.toast('Relatório exportado (CSV) — custos por veículo, jul 2026'),
+      exportPdf:()=>this.toast('Relatório exportado (PDF) — comparativo jun × jul')
+    };
+  }
+}
+</script>
+</body>
+</html>
