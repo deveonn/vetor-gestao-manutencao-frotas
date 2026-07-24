@@ -1,0 +1,183 @@
+# ==============================================================
+#  Vetor — .gitignore do monorepo
+#  Cobre: backend (NestJS), web (Angular), mobile (Ionic/Angular + Capacitor)
+# ==============================================================
+
+
+# ------------------------------------------------------------------
+#  Node / dependências (todas as aplicações)
+# ------------------------------------------------------------------
+node_modules/
+**/node_modules/
+jspm_packages/
+.npm
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# logs de gerenciadores de pacote
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+logs/
+*.log
+
+
+# ------------------------------------------------------------------
+#  Variáveis de ambiente / segredos
+#  (mantenha versionados apenas os .env.example)
+# ------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.local
+
+# chaves e certificados
+*.pem
+*.key
+*.p12
+*.keystore
+*.jks
+google-services.json
+GoogleService-Info.plist
+
+
+# ------------------------------------------------------------------
+#  Builds / saídas de compilação
+# ------------------------------------------------------------------
+dist/
+**/dist/
+build/
+**/build/
+out/
+tmp/
+temp/
+*.tsbuildinfo
+.tscache/
+
+
+# ------------------------------------------------------------------
+#  Backend — NestJS
+# ------------------------------------------------------------------
+backend/dist/
+backend/coverage/
+backend/.nestcli.json
+# uploads locais / mídia gerada em desenvolvimento (ajuste ao seu caso)
+backend/uploads/
+backend/tmp/
+
+
+# ------------------------------------------------------------------
+#  Web — Angular
+# ------------------------------------------------------------------
+web/dist/
+web/tmp/
+web/out-tsc/
+web/.angular/
+web/coverage/
+web/connect.lock
+web/.sass-cache/
+web/libpeerconnection.log
+web/testem.log
+web/typings/
+
+
+# ------------------------------------------------------------------
+#  Mobile — Ionic / Angular
+# ------------------------------------------------------------------
+mobile/dist/
+mobile/www/
+mobile/.angular/
+mobile/out-tsc/
+mobile/coverage/
+mobile/.sourcemaps/
+mobile/.ionic/
+mobile/.tmp/
+
+
+# ------------------------------------------------------------------
+#  Mobile — Capacitor (assets gerados e projetos nativos sincronizados)
+# ------------------------------------------------------------------
+# ícones/splash gerados por @capacitor/assets a partir do source
+mobile/resources/android/
+mobile/resources/ios/
+
+# --- Android nativo ---
+mobile/android/.gradle/
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/captures/
+mobile/android/.idea/
+mobile/android/local.properties
+mobile/android/app/release/
+mobile/android/app/src/main/assets/public/
+mobile/android/app/src/main/assets/capacitor.config.json
+mobile/android/app/src/main/assets/capacitor.plugins.json
+mobile/android/app/src/main/res/xml/config.xml
+*.apk
+*.aab
+
+# --- iOS nativo (caso adicione a plataforma) ---
+mobile/ios/App/build/
+mobile/ios/App/Pods/
+mobile/ios/App/output/
+mobile/ios/App/App/public/
+mobile/ios/App/App/capacitor.config.json
+mobile/ios/App/App/config.xml
+mobile/ios/DerivedData/
+*.ipa
+xcuserdata/
+
+
+# ------------------------------------------------------------------
+#  Testes / cobertura (genérico)
+# ------------------------------------------------------------------
+coverage/
+**/coverage/
+.nyc_output/
+*.lcov
+
+
+# ------------------------------------------------------------------
+#  Caches de ferramentas
+# ------------------------------------------------------------------
+.cache/
+.eslintcache
+.stylelintcache
+.parcel-cache/
+.vite/
+
+
+# ------------------------------------------------------------------
+#  Editores / IDEs
+# ------------------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+
+
+# ------------------------------------------------------------------
+#  Sistema operacional
+# ------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
