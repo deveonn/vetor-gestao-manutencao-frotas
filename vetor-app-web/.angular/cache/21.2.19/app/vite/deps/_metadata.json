@@ -1,0 +1,70 @@
+{
+  "hash": "71b57661",
+  "configHash": "c4b25590",
+  "lockfileHash": "7699ac81",
+  "browserHash": "10306932",
+  "optimized": {
+    "@angular/core": {
+      "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
+      "file": "@angular_core.js",
+      "fileHash": "ce7f5b07",
+      "needsInterop": false
+    },
+    "@angular/core/rxjs-interop": {
+      "src": "../../../../../../node_modules/@angular/core/fesm2022/rxjs-interop.mjs",
+      "file": "@angular_core_rxjs-interop.js",
+      "fileHash": "835eca42",
+      "needsInterop": false
+    },
+    "@angular/forms": {
+      "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
+      "file": "@angular_forms.js",
+      "fileHash": "34820e58",
+      "needsInterop": false
+    },
+    "@angular/platform-browser": {
+      "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
+      "file": "@angular_platform-browser.js",
+      "fileHash": "b00a9e4b",
+      "needsInterop": false
+    },
+    "@angular/router": {
+      "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
+      "file": "@angular_router.js",
+      "fileHash": "4efc1e3f",
+      "needsInterop": false
+    },
+    "chart.js": {
+      "src": "../../../../../../node_modules/chart.js/dist/chart.js",
+      "file": "chart__js.js",
+      "fileHash": "ab48ad2d",
+      "needsInterop": false
+    },
+    "rxjs/operators": {
+      "src": "../../../../../../node_modules/rxjs/dist/esm5/operators/index.js",
+      "file": "rxjs_operators.js",
+      "fileHash": "2ef299e7",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-V32CWIZS": {
+      "file": "chunk-V32CWIZS.js"
+    },
+    "chunk-SOKTGRWD": {
+      "file": "chunk-SOKTGRWD.js"
+    },
+    "chunk-AKZFNTR7": {
+      "file": "chunk-AKZFNTR7.js"
+    },
+    "chunk-LHMONSBH": {
+      "file": "chunk-LHMONSBH.js"
+    },
+    "chunk-3OW44ZN3": {
+      "file": "chunk-3OW44ZN3.js"
+    },
+    "chunk-GOMI4DH3": {
+      "file": "chunk-GOMI4DH3.js"
+    }
+  }
+}

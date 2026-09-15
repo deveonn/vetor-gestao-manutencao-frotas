@@ -41,6 +41,8 @@ export class FuelComponent {
 
   anomalo = computed(() => this.store.fuelEnriched().find((r) => r.anom) ?? null);
 
+  fornecedores = this.store.fornecedoresEnriched;
+
   sortBy(k: SortKey): void {
     if (this.sortKey() === k) this.sortDir.update((d) => -d);
     else { this.sortKey.set(k); this.sortDir.set(1); }
@@ -55,6 +57,14 @@ export class FuelComponent {
 
   abrirAbast(): void {
     this.modal.open('abast');
+  }
+
+  abrirFornecedorForm(): void {
+    this.modal.open('fornecedor');
+  }
+
+  excluirFornecedor(id: number): void {
+    this.store.deleteFornecedor(id);
   }
 
   irManutencao(): void {

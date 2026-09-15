@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-export type ModalId = 'excluir' | 'abast' | 'mot' | 'veic' | 'buscaVeic' | null;
+export type ModalId = 'excluir' | 'abast' | 'mot' | 'veic' | 'buscaVeic' | 'fornecedor' | null;
 
 @Injectable({ providedIn: 'root' })
 export class ModalService {

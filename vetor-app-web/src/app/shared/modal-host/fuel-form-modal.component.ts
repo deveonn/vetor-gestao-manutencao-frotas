@@ -34,8 +34,14 @@ import { ModalService } from '../../core/modal.service';
           <label class="field">Hodômetro (km) *
             <input inputmode="numeric" [(ngModel)]="hodo" placeholder="121480" class="mono">
           </label>
-          <label class="field">Posto
-            <input [(ngModel)]="posto" placeholder="Ipiranga BR-116">
+          <label class="field" style="grid-column:1/-1">Fornecedor
+            @if (fornecedores().length > 0) {
+              <select [(ngModel)]="fornecedorId">
+                @for (f of fornecedores(); track f.id) { <option [ngValue]="f.id">{{ f.nome }}</option> }
+              </select>
+            } @else {
+              <span style="font-size:12.5px;color:var(--dim);padding:10px 0">nenhum fornecedor cadastrado — cadastre um na lista de fornecedores abaixo</span>
+            }
           </label>
         </div>
         <p class="mono" style="font-size:11.5px;color:var(--dim);margin:0">o km/L é calculado contra o abastecimento anterior deste veículo</p>
@@ -52,12 +58,13 @@ export class FuelFormModalComponent {
   private store = inject(FleetStore);
 
   placas = computed(() => this.store.vehicles().map((v) => v.placa));
+  fornecedores = this.store.fornecedores;
   veic = this.placas()[0] ?? '';
   data = '';
   litros = '';
   valor = '';
   hodo = '';
-  posto = '';
+  fornecedorId = this.fornecedores()[0]?.id ?? 0;
   private erroSig = signal('');
   erro = this.erroSig.asReadonly();
 
@@ -71,7 +78,7 @@ export class FuelFormModalComponent {
       litros: parseFloat(String(this.litros).replace(',', '.')) || 0,
       valor: parseFloat(String(this.valor).replace(',', '.')) || 0,
       hodo: parseInt(this.hodo, 10) || 0,
-      posto: this.posto,
+      fornecedorId: this.fornecedorId,
     });
     this.modal.close();
   }

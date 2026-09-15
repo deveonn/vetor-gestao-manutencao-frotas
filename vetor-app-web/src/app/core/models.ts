@@ -32,9 +32,17 @@ export interface FuelEntry {
   l: number;
   val: number;
   hod: number;
-  posto: string;
+  fornecedorId: number;
   kml: number | null;
   anom: boolean;
+}
+
+export interface Fornecedor {
+  id: number;
+  nome: string;
+  endereco: string;
+  cidade: string;
+  telefone: string | null;
 }
 
 export interface WeekPoint {

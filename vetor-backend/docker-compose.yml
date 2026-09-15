@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vetor
+      POSTGRES_PASSWORD: vetor
+      POSTGRES_DB: vetor
+    ports:
+      - "5432:5432"
+    volumes:
+      - vetor-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vetor -d vetor"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  vetor-db-data:

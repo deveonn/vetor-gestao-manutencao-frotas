@@ -60,14 +60,15 @@ Pontos de desenho:
 
 | Camada | Tecnologia |
 |---|---|
-| Painel web | Angular |
-| App mobile | Ionic + Angular (Android) |
-| Backend | NestJS |
-| Banco | PostgreSQL + PostGIS |
-| Integração | API REST da plataforma de rastreamento |
-| Mídia | Storage de objetos (fotos de vistoria) |
+| Painel web | Angular 21 |
+| App mobile | Ionic 8 + Angular 21 (Capacitor/Android) |
+| Backend | NestJS 11 + Prisma 6 |
+| Banco | PostgreSQL + PostGIS (16) |
+| Auth | JWT (access + refresh token) |
+| Integração | API REST da plataforma de rastreamento — camada de conexão pronta no backend, chamada real ainda não implementada |
+| Mídia | Storage local em dev (`vetor-backend/uploads`); trocar por storage de objetos S3-compatible antes de produção |
 
-<!-- TODO: preencher versões exatas (Node, Angular, NestJS, Postgres) e gerenciador de pacotes (npm/pnpm/yarn) -->
+Node.js 24, npm como gerenciador de pacotes nas três aplicações.
 
 ---
 
@@ -75,15 +76,14 @@ Pontos de desenho:
 
 ```
 .
-├── web/         # painel web do gestor (Angular)
-├── mobile/      # app de vistoria do motorista (Ionic/Angular)
-├── backend/     # API e regras de negócio (NestJS)
+├── vetor-app-web/      # painel web do gestor (Angular)
+├── vetor-app-mobile/   # app de vistoria do motorista (Ionic/Angular/Capacitor)
+├── vetor-backend/      # API e regras de negócio (NestJS + Prisma)
+├── endpoints.md        # contrato de endpoints (fonte pro backend)
 └── README.md
 ```
 
-<!-- TODO: ajustar os nomes das pastas aos reais do repo, se diferentes -->
-
-Cada aplicação tem seu próprio ciclo de build e suas dependências; o repositório as mantém juntas para versionamento e contexto compartilhado.
+Cada aplicação tem seu próprio ciclo de build e suas dependências; o repositório as mantém juntas para versionamento e contexto compartilhado. Os dois frontends ainda rodam sobre dados mockados — nenhum dos dois foi conectado à API real ainda.
 
 ---
 
@@ -115,46 +115,50 @@ O hodômetro vem da telemetria e alimenta tanto o cálculo de consumo (Km/L) qua
 
 ## Como rodar
 
-> Pré-requisitos: Node.js, PostgreSQL com extensão PostGIS. <!-- TODO: fixar versões -->
-
-Clone o repositório e configure as variáveis de ambiente de cada aplicação a partir dos arquivos de exemplo.
+> Pré-requisitos: Node.js 24+. O backend também precisa de um Postgres com PostGIS — o próprio `vetor-backend/docker-compose.yml` sobe um local.
 
 ```bash
 git clone <url-do-repo>
-cd vetor
+cd vetor-gestao-manutencao-frotas
 ```
 
 ### Backend
 
 ```bash
-cd backend
+cd vetor-backend
+docker compose up -d               # Postgres+PostGIS local
 npm install
-cp .env.example .env      # configure banco, storage e integração
+cp .env.example .env               # segredos de JWT, connection string
+npx prisma migrate dev --name init # cria as tabelas
+npm run prisma:seed                # popula com os mesmos dados do mock do painel web
 npm run start:dev
 ```
+Sobe em `http://localhost:3000/api`, com Swagger em `/api/docs`. Ver `vetor-backend/README-backend.md` pros logins de teste criados pelo seed.
 
 ### Painel web
 
 ```bash
-cd web
+cd vetor-app-web
 npm install
 npm start
 ```
+Roda inteiramente sobre dados mockados (`core/mock-data.ts`) — ainda não fala com o backend.
 
 ### App mobile
 
 ```bash
-cd mobile
+cd vetor-app-mobile
 npm install
+npm start                  # ng serve, preview no navegador
+# ou, pro shell nativo Android:
 npx cap sync
-ionic serve                # ou: npx cap run android
+npx cap run android
 ```
-
-<!-- TODO: confirmar os comandos reais (scripts do package.json de cada app), portas e passos de migração do banco -->
+Auth e sincronização também são mockadas hoje (`SessionService`/`QueueService`/`SyncService`, ver `vetor-app-mobile/docs/HANDOFF.md`); não fala com o backend ainda.
 
 ### Variáveis de ambiente
 
-Nenhuma credencial real está versionada. Cada app traz um `.env.example` com as chaves esperadas (conexão do banco, storage de mídia, credenciais da integração de rastreamento). Preencha com valores próprios.
+Nenhuma credencial real está versionada. Só o backend tem variáveis de ambiente hoje (`vetor-backend/.env.example` — conexão do banco, segredos de JWT, diretório de upload local); os dois frontends não têm `.env` porque ainda não fazem nenhuma chamada de rede configurável.
 
 ---
 

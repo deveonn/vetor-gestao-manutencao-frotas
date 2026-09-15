@@ -1,0 +1,364 @@
+// Schema derivado de /endpoints.md — cada modelo referencia o mock (web/mobile) que o originou.
+// Convenção de nomes: descritiva em português, diferente das abreviações do mock do painel web
+// (hod/comb/kml/troca/...) porque aqui é o contrato real da API, não a UI.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+// --- enums ---------------------------------------------------------------
+
+enum Papel {
+  ROOT
+  ADMIN
+  MOTORISTA
+}
+
+/// Unifica as duas classificações que hoje vivem só no front:
+/// web (VehicleType: Utilitário/Van de carga/Caminhão leve) e mobile
+/// (VehicleType: carro/van/caminhao, usado pra escolher o diagrama de pneus).
+/// UTILITARIO/VAN_CARGA → 4 posições de pneu; CAMINHAO_LEVE → 6 (traseiro duplo).
+enum TipoVeiculo {
+  UTILITARIO
+  VAN_CARGA
+  CAMINHAO_LEVE
+}
+
+enum StatusVeiculo {
+  RODANDO
+  MANUTENCAO
+  PARADO
+}
+
+/// Usado tanto pra severidade de pneu quanto pro nível de urgência de manutenção pendente.
+enum Severidade {
+  OK
+  ATENCAO
+  CRITICO
+}
+
+enum StatusManutencao {
+  PENDENTE
+  CONCLUIDA
+}
+
+enum StatusIntegracaoRastreamento {
+  CONECTADO
+  SEM
+}
+
+/// Corresponde a `Rating` no app mobile (core/models/inspection.model.ts).
+enum AvaliacaoVistoria {
+  OK
+  ATENCAO
+  TROCAR
+}
+
+// --- multi-tenancy / auth --------------------------------------------------
+
+model Empresa {
+  id            String   @id @default(cuid())
+  nome          String
+  cnpj          String   @unique
+  contatoNome   String
+  contatoEmail  String
+  contatoFone   String
+  criadoEm      DateTime @default(now())
+
+  usuarios               Usuario[]
+  veiculos               Veiculo[]
+  motoristas             Motorista[]
+  fornecedores           Fornecedor[]
+  planosManutencao       PlanoManutencao[]
+  integracaoRastreamento IntegracaoRastreamento?
+
+  @@map("empresas")
+}
+
+/// Login único pros três papéis. root/admin entram por e-mail, motorista por usuário —
+/// replica a regra do mock (AuthService.login no web, SessionService.login no mobile).
+model Usuario {
+  id        String    @id @default(cuid())
+  papel     Papel
+  email     String?   @unique
+  usuario   String?   @unique
+  senhaHash String
+  ativo     Boolean   @default(true)
+  criadoEm  DateTime  @default(now())
+
+  empresaId String?
+  empresa   Empresa? @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  motoristaId String?    @unique
+  motorista   Motorista? @relation(fields: [motoristaId], references: [id], onDelete: Cascade)
+
+  refreshTokens RefreshToken[]
+
+  @@index([empresaId])
+  @@map("usuarios")
+}
+
+/// Refresh tokens são guardados com hash (nunca o valor puro) e podem ser revogados —
+/// suporta POST /auth/refresh e POST /auth/logout descritos em endpoints.md.
+model RefreshToken {
+  id         String    @id @default(cuid())
+  tokenHash  String    @unique
+  usuarioId  String
+  usuario    Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  criadoEm   DateTime  @default(now())
+  expiraEm   DateTime
+  revogadoEm DateTime?
+
+  @@index([usuarioId])
+  @@map("refresh_tokens")
+}
+
+// --- frota -----------------------------------------------------------------
+
+model Veiculo {
+  id               String        @id @default(cuid())
+  empresaId        String
+  empresa          Empresa       @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  placa            String
+  modelo           String
+  tipo             TipoVeiculo
+  status           StatusVeiculo @default(PARADO)
+  /// hodômetro e nível de combustível vêm da integração de rastreamento — não são
+  /// digitados diretamente, mas ficam cacheados aqui pra não depender do serviço externo
+  /// em toda leitura (ver "Integração isolada" no README da raiz).
+  hodometro        Int           @default(0)
+  nivelCombustivel Int           @default(0)
+  kmL              Float?
+  kmParaTroca      Int           @default(10000)
+  kmHoje           Int           @default(0)
+  arquivadoEm      DateTime?
+  criadoEm         DateTime      @default(now())
+
+  motoristaAtualId String?
+  motoristaAtual   Motorista? @relation("VeiculoAtual", fields: [motoristaAtualId], references: [id])
+
+  pneus          PneuPosicao[]
+  vinculos       VinculoMotoristaVeiculo[]
+  abastecimentos Abastecimento[]
+  manutencoes    Manutencao[]
+  vistorias      Vistoria[]
+
+  @@unique([empresaId, placa])
+  @@index([empresaId])
+  @@map("veiculos")
+}
+
+/// Uma linha por posição de pneu (4 em utilitário/van, 6 em caminhão leve) —
+/// substitui o array `pneus: Severity[]` do mock web por algo consultável/editável por posição.
+model PneuPosicao {
+  id           String     @id @default(cuid())
+  veiculoId    String
+  veiculo      Veiculo    @relation(fields: [veiculoId], references: [id], onDelete: Cascade)
+  posicao      String
+  severidade   Severidade @default(OK)
+  observacao   String?
+  atualizadoEm DateTime   @updatedAt
+
+  @@unique([veiculoId, posicao])
+  @@map("pneu_posicoes")
+}
+
+model Motorista {
+  id           String    @id @default(cuid())
+  empresaId    String
+  empresa      Empresa   @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  nome         String
+  categoriaCnh String
+  validadeCnh  DateTime?
+  criadoEm     DateTime  @default(now())
+
+  usuario      Usuario?
+  veiculoAtual Veiculo[] @relation("VeiculoAtual")
+  vinculos     VinculoMotoristaVeiculo[]
+  vistorias    Vistoria[]
+
+  @@index([empresaId])
+  @@map("motoristas")
+}
+
+/// Histórico de vínculo motorista↔veículo. Hoje só existe como leitura
+/// (GET /veiculos/:id/vinculos, 🆕 em endpoints.md) — não há endpoint de mutação ainda
+/// porque o mock nunca implementou "atribuir motorista", só exibe o vínculo atual.
+model VinculoMotoristaVeiculo {
+  id          String    @id @default(cuid())
+  veiculoId   String
+  veiculo     Veiculo   @relation(fields: [veiculoId], references: [id], onDelete: Cascade)
+  motoristaId String
+  motorista   Motorista @relation(fields: [motoristaId], references: [id], onDelete: Cascade)
+  de          DateTime  @default(now())
+  ate         DateTime?
+
+  @@index([veiculoId])
+  @@index([motoristaId])
+  @@map("vinculos_motorista_veiculo")
+}
+
+// --- combustível -------------------------------------------------------------
+
+model Fornecedor {
+  id        String   @id @default(cuid())
+  empresaId String
+  empresa   Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  nome      String
+  endereco  String?
+  cidade    String?
+  telefone  String?
+  criadoEm  DateTime @default(now())
+
+  abastecimentos Abastecimento[]
+
+  @@index([empresaId])
+  @@map("fornecedores")
+}
+
+model Abastecimento {
+  id           String     @id @default(cuid())
+  empresaId    String
+  veiculoId    String
+  veiculo      Veiculo    @relation(fields: [veiculoId], references: [id], onDelete: Cascade)
+  fornecedorId String
+  fornecedor   Fornecedor @relation(fields: [fornecedorId], references: [id])
+  litros       Float
+  valor        Float
+  hodometro    Int
+  /// calculado no service contra o abastecimento anterior do mesmo veículo — ver
+  /// comentário em fuel-form-modal.component.ts:41 ("o km/L é calculado contra o
+  /// abastecimento anterior"); guardado aqui pra não recalcular a série toda a cada leitura.
+  kmL          Float?
+  anomalo      Boolean    @default(false)
+  data         DateTime   @default(now())
+
+  @@index([empresaId])
+  @@index([veiculoId, data])
+  @@map("abastecimentos")
+}
+
+// --- manutenção ----------------------------------------------------------
+
+model Manutencao {
+  id          String           @id @default(cuid())
+  empresaId   String
+  veiculoId   String
+  veiculo     Veiculo          @relation(fields: [veiculoId], references: [id], onDelete: Cascade)
+  item        String
+  status      StatusManutencao @default(PENDENTE)
+  /// só fazem sentido enquanto PENDENTE
+  kmRestante  Int?
+  nivel       Severidade?
+  prazo       String?
+  /// só fazem sentido depois de CONCLUIDA
+  custo       Float?
+  oficina     String?
+  concluidoEm DateTime?
+  criadoEm    DateTime         @default(now())
+
+  @@index([empresaId])
+  @@index([veiculoId])
+  @@map("manutencoes")
+}
+
+model PlanoManutencao {
+  id          String                @id @default(cuid())
+  empresaId   String
+  empresa     Empresa               @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  tipoVeiculo TipoVeiculo
+  itens       PlanoManutencaoItem[]
+
+  @@unique([empresaId, tipoVeiculo])
+  @@map("planos_manutencao")
+}
+
+model PlanoManutencaoItem {
+  id      String          @id @default(cuid())
+  planoId String
+  plano   PlanoManutencao @relation(fields: [planoId], references: [id], onDelete: Cascade)
+  item    String
+  km      String
+  tempo   String
+
+  @@index([planoId])
+  @@map("plano_manutencao_itens")
+}
+
+// --- vistorias (app mobile) -----------------------------------------------
+
+model Vistoria {
+  id               String    @id @default(cuid())
+  empresaId        String
+  veiculoId        String
+  veiculo          Veiculo   @relation(fields: [veiculoId], references: [id], onDelete: Cascade)
+  motoristaId      String
+  motorista        Motorista @relation(fields: [motoristaId], references: [id], onDelete: Cascade)
+  iniciadoEm       DateTime
+  concluidoEm      DateTime?
+  temAlertaCritico Boolean   @default(false)
+  temAlertaAtencao Boolean   @default(false)
+
+  itens VistoriaItem[]
+
+  @@index([empresaId])
+  @@index([veiculoId])
+  @@index([motoristaId])
+  @@map("vistorias")
+}
+
+/// Corresponde a um sub-item do checklist mobile (core/models/inspection.model.ts:
+/// SubItemState) — stepId é um dos ids de CHECKLIST_CONFIG (pneus, oleo-agua, luzes-setas,
+/// freios, lataria); label é a posição/sub-rótulo dentro do passo.
+model VistoriaItem {
+  id         String            @id @default(cuid())
+  vistoriaId String
+  vistoria   Vistoria          @relation(fields: [vistoriaId], references: [id], onDelete: Cascade)
+  stepId     String
+  label      String
+  avaliacao  AvaliacaoVistoria
+  observacao String?
+  midiaId    String?
+  midia      Midia?            @relation(fields: [midiaId], references: [id])
+
+  @@index([vistoriaId])
+  @@map("vistoria_itens")
+}
+
+/// Arquivo de foto enviado via POST /midia antes de anexar a um item de vistoria.
+/// `url` aponta pro storage local em dev (UPLOADS_DIR) — trocar por storage de objetos
+/// (S3-compatible) antes de produção, conforme decisão de arquitetura do README raiz.
+model Midia {
+  id        String   @id @default(cuid())
+  empresaId String
+  url       String
+  criadoEm  DateTime @default(now())
+
+  vistoriaItens VistoriaItem[]
+
+  @@index([empresaId])
+  @@map("midias")
+}
+
+// --- integração externa ---------------------------------------------------
+
+/// Uma linha por empresa — camada isolada de integração com a plataforma de rastreamento
+/// externa (chamada "Hapolo" no mock web). O token nunca é guardado em texto puro.
+model IntegracaoRastreamento {
+  id          String                       @id @default(cuid())
+  empresaId   String                       @unique
+  empresa     Empresa                      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  status      StatusIntegracaoRastreamento @default(SEM)
+  tokenHash   String?
+  tokenCauda  String?
+  conectadoEm DateTime?
+
+  @@map("integracoes_rastreamento")
+}

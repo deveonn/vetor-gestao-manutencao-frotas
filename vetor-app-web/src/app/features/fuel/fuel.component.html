@@ -22,7 +22,7 @@
         <div class="row" [style.background]="r.zebra">
           <span class="mono" style="font-size:12px;color:var(--dim)">{{ r.data }}</span>
           <span class="mono" style="font-size:12.5px">{{ r.v }}</span>
-          <span style="color:var(--mut)">{{ r.posto }}</span>
+          <span style="color:var(--mut)">{{ r.postoNome }}</span>
           <span class="mono tabular" style="font-size:12.5px;text-align:right">{{ r.lF }}</span>
           <span class="mono tabular" style="font-size:12.5px;text-align:right">{{ r.valF }}</span>
           <span style="display:flex;justify-content:flex-end;align-items:center;gap:6px" class="mono tabular" [style.color]="r.kmlCor">
@@ -70,3 +70,31 @@
     }
   </div>
 </div>
+
+<div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-top:4px">
+  <h2 class="panel-title">Fornecedores</h2>
+  <button (click)="abrirFornecedorForm()" class="btn btn-primary">
+    <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;margin-right:6px">add</span>Cadastrar fornecedor
+  </button>
+</div>
+
+@if (fornecedores().length > 0) {
+  <div class="card" style="overflow-x:auto">
+    <div class="forn-head mono">
+      <span>nome</span><span>endereço</span><span>telefone</span><span>abastecimentos</span><span></span>
+    </div>
+    @for (f of fornecedores(); track f.id) {
+      <div class="forn-row">
+        <span style="font-weight:500">{{ f.nome }}</span>
+        <span style="color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.enderecoTxt }}</span>
+        <span class="mono" style="font-size:12.5px;color:var(--mut)">{{ f.telefoneTxt }}</span>
+        <span class="mono tabular" style="font-size:12.5px;color:var(--dim)">{{ f.qtdAbastecimentos }}</span>
+        <button (click)="excluirFornecedor(f.id)" title="Excluir fornecedor" style="width:30px;height:30px;border-radius:8px;background:none;border:1px solid var(--line);color:var(--mut);display:flex;align-items:center;justify-content:center;justify-self:end">
+          <span class="material-symbols-outlined" style="font-size:17px">delete</span>
+        </button>
+      </div>
+    }
+  </div>
+} @else {
+  <p style="color:var(--mut);font-size:13.5px;margin:0">Nenhum fornecedor cadastrado ainda — cadastre um local de abastecimento para poder vinculá-lo aos registros.</p>
+}

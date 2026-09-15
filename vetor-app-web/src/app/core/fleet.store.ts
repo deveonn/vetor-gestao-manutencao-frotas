@@ -1,11 +1,11 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { dec, fmt, money } from './format';
 import {
-  MOCK_ACCOUNT, MOCK_ALERTS, MOCK_CUSTO_SEMANAL, MOCK_DRIVERS, MOCK_FLAGGED_TIRES, MOCK_FUEL,
-  MOCK_INSPECTIONS, MOCK_KML_SEMANAL, MOCK_MAINTENANCE, MOCK_MAINTENANCE_HISTORY, MOCK_PLANS,
+  MOCK_ACCOUNT, MOCK_ALERTS, MOCK_CUSTO_SEMANAL, MOCK_DRIVERS, MOCK_FLAGGED_TIRES, MOCK_FORNECEDORES,
+  MOCK_FUEL, MOCK_INSPECTIONS, MOCK_KML_SEMANAL, MOCK_MAINTENANCE, MOCK_MAINTENANCE_HISTORY, MOCK_PLANS,
   MOCK_REPORT_CATEGORIES, MOCK_REPORT_COSTS, MOCK_VEHICLES, MOCK_WEEK_CATEGORIES,
 } from './mock-data';
-import { AlertLevel, CompanyAccount, DataState, Driver, FuelEntry, HapoloStatus, Severity, Vehicle } from './models';
+import { AlertLevel, CompanyAccount, DataState, Driver, Fornecedor, FuelEntry, HapoloStatus, Severity, Vehicle } from './models';
 import { ToastService } from './toast.service';
 
 const SEVERITY_COLOR: Record<AlertLevel, string> = {
@@ -51,6 +51,7 @@ export class FleetStore {
   readonly flaggedTires = signal(MOCK_FLAGGED_TIRES);
   readonly inspections = signal(MOCK_INSPECTIONS);
   readonly drivers = signal<Driver[]>(MOCK_DRIVERS);
+  readonly fornecedores = signal<Fornecedor[]>(MOCK_FORNECEDORES);
   readonly reportCosts = signal(MOCK_REPORT_COSTS);
   readonly account = signal(MOCK_ACCOUNT);
   readonly hapoloStatus = signal<HapoloStatus>('conectado');
@@ -141,15 +142,29 @@ export class FleetStore {
     nvLbl: a.nv === 'critico' ? 'crítico' : a.nv === 'atencao' ? 'atenção' : 'informativo',
   })));
 
-  readonly fuelEnriched = computed(() => this.fuelEntries().map((r, i) => ({
-    ...r,
-    i,
-    lF: dec(r.l.toFixed(1)),
-    valF: 'R$ ' + dec(r.val.toFixed(2)),
-    hodF: fmt(r.hod),
-    kmlF: r.kml == null ? '—' : dec(r.kml),
-    kmlCor: r.anom ? 'var(--warn)' : 'var(--txt)',
-  })));
+  readonly fuelEnriched = computed(() => {
+    const fornecedores = this.fornecedores();
+    return this.fuelEntries().map((r, i) => ({
+      ...r,
+      i,
+      lF: dec(r.l.toFixed(1)),
+      valF: 'R$ ' + dec(r.val.toFixed(2)),
+      hodF: fmt(r.hod),
+      kmlF: r.kml == null ? '—' : dec(r.kml),
+      kmlCor: r.anom ? 'var(--warn)' : 'var(--txt)',
+      postoNome: fornecedores.find((f) => f.id === r.fornecedorId)?.nome ?? '—',
+    }));
+  });
+
+  readonly fornecedoresEnriched = computed(() => {
+    const usos = this.fuelEntries();
+    return this.fornecedores().map((f) => ({
+      ...f,
+      enderecoTxt: f.endereco ? `${f.endereco} · ${f.cidade}` : f.cidade || '—',
+      telefoneTxt: f.telefone || '—',
+      qtdAbastecimentos: usos.filter((r) => r.fornecedorId === f.id).length,
+    }));
+  });
 
   readonly weeklyBars = computed(() => this.kmlWeekly().map((x) => ({
     ...x,
@@ -217,12 +232,32 @@ export class FleetStore {
   }
 
   // --- mutações ---
-  addFuelEntry(payload: { veic: string; litros: number; valor: number; hodo: number; posto: string }): void {
+  addFuelEntry(payload: { veic: string; litros: number; valor: number; hodo: number; fornecedorId: number }): void {
     this.fuelEntries.update((list) => [
-      { data: '20 jul', v: payload.veic, l: payload.litros, val: payload.valor, hod: payload.hodo, posto: payload.posto || '—', kml: null, anom: false },
+      { data: '20 jul', v: payload.veic, l: payload.litros, val: payload.valor, hod: payload.hodo, fornecedorId: payload.fornecedorId, kml: null, anom: false },
       ...list,
     ]);
     this.toast.show(`Abastecimento registrado — ${payload.veic}`);
+  }
+
+  addFornecedor(payload: { nome: string; endereco: string; cidade: string; telefone: string }): Fornecedor {
+    const fornecedor: Fornecedor = {
+      id: Date.now(),
+      nome: payload.nome,
+      endereco: payload.endereco,
+      cidade: payload.cidade,
+      telefone: payload.telefone || null,
+    };
+    this.fornecedores.update((list) => [...list, fornecedor]);
+    this.toast.show(`Fornecedor cadastrado — ${fornecedor.nome}`);
+    return fornecedor;
+  }
+
+  deleteFornecedor(id: number): void {
+    const fornecedor = this.fornecedores().find((f) => f.id === id);
+    if (!fornecedor) return;
+    this.fornecedores.update((list) => list.filter((f) => f.id !== id));
+    this.toast.show(`Fornecedor excluído — ${fornecedor.nome}`, 'info');
   }
 
   addDriver(payload: { nome: string; cat: string; val: string }): void {
