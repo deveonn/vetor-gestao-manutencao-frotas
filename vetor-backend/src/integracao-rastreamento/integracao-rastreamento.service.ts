@@ -34,7 +34,8 @@ export class IntegracaoRastreamentoService {
     if (!integracao || integracao.status !== StatusIntegracaoRastreamento.CONECTADO) {
       return { ok: false, mensagem: 'Nenhum token conectado.' };
     }
-    // A chamada real à API da plataforma de rastreamento entra aqui quando a integração existir de fato.
+    // Fora de escopo por decisão consciente (22/09/2026): sem credencial real de terceiro
+    // disponível pra este portfólio. A chamada real à API entraria aqui. Ver PENDENCIAS_DEPLOY.txt #4.
     return { ok: true, mensagem: 'Conexão OK.' };
   }
 

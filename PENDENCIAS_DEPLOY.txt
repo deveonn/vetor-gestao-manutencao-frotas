@@ -23,9 +23,11 @@ BACKEND (vetor-backend)
    - Teste: confirmado via curl — POST criou o vínculo novo, GET /vinculos mostra os dois
      (antigo com `ate` preenchido, novo com `ate: null`), e GET /veiculos/:id reflete o motoristaAtual novo.
 
-4. Chamada real à plataforma de rastreamento externa
+4. [FORA DE ESCOPO — decisão 22/09/2026] Chamada real à plataforma de rastreamento externa
    - Hoje só existe a camada de token (conectar/testar/remover), sem chamada real de fato.
-   - Decidir: implementar de verdade OU marcar conscientemente como "fora de escopo" (portfólio, sem credencial real de terceiro).
+   - Decisão: não implementar por ora — sem credencial real de terceiro (Hapolo) disponível
+     no momento. Comentário deixado em integracao-rastreamento.service.ts apontando pra cá.
+     Revisitar se/quando surgir acesso a uma credencial de teste.
 
 5. Storage de mídia em S3-compatible
    - Hoje é disco local (UPLOADS_DIR) — só relevante quando for pensar em deploy de verdade (ambiente efêmero perde os arquivos).
