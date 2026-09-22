@@ -9,12 +9,12 @@ BACKEND (vetor-backend)
 1. [CONCLUÍDO 22/09/2026] CORS restrito por ambiente
    - Trocar app.enableCors() (aberto) por origem configurável via env (ex: http://localhost:4200 em dev).
    - Feito: main.ts lê CORS_ORIGIN (lista separada por vírgula) do env, credentials: true, fallback pra localhost:4200.
-   - Teste: request do navegador ainda funciona, request de outra origem é bloqueado. (pendente teste manual do bloqueio)
+   - Teste: confirmado via curl OPTIONS — localhost:4200 recebe Access-Control-Allow-Origin, evil.com não recebe header nenhum.
 
 2. [CONCLUÍDO 22/09/2026] Segredos JWT reais em .env
    - Gerar JWT_SECRET / JWT_REFRESH_SECRET fortes localmente (não precisa ainda ser o segredo de produção).
    - Feito: .env criado localmente (gitignorado) com JWT_SECRET/JWT_REFRESH_SECRET gerados via crypto.randomBytes(48). Banco recriado do zero (migrate dev --name init) + seed.
-   - Teste: login continua funcionando com os logins do seed. (em andamento — 401 sendo investigado)
+   - Teste: confirmado via curl em /auth/login com rui@transportesalmeida.com.br/demo123 — 401 inicial era seed vazio após reset do banco, resolvido rodando `npm run prisma:seed` de novo.
 
 3. Endpoint de vínculo motorista<->veículo (POST)
    - Hoje só existe leitura do histórico (GET /veiculos/:id/vinculos).
