@@ -188,9 +188,9 @@ model Motorista {
   @@map("motoristas")
 }
 
-/// Histórico de vínculo motorista↔veículo. Hoje só existe como leitura
-/// (GET /veiculos/:id/vinculos, 🆕 em endpoints.md) — não há endpoint de mutação ainda
-/// porque o mock nunca implementou "atribuir motorista", só exibe o vínculo atual.
+/// Histórico de vínculo motorista↔veículo. GET /veiculos/:id/vinculos (🆕 em endpoints.md)
+/// lê o histórico; POST /veiculos/:id/vinculos encerra o vínculo aberto atual (se houver)
+/// e cria um novo — não existia no mock original, que só exibia o vínculo vigente.
 model VinculoMotoristaVeiculo {
   id          String    @id @default(cuid())
   veiculoId   String

@@ -16,9 +16,12 @@ BACKEND (vetor-backend)
    - Feito: .env criado localmente (gitignorado) com JWT_SECRET/JWT_REFRESH_SECRET gerados via crypto.randomBytes(48). Banco recriado do zero (migrate dev --name init) + seed.
    - Teste: confirmado via curl em /auth/login com rui@transportesalmeida.com.br/demo123 — 401 inicial era seed vazio após reset do banco, resolvido rodando `npm run prisma:seed` de novo.
 
-3. Endpoint de vínculo motorista<->veículo (POST)
+3. [CONCLUÍDO 22/09/2026] Endpoint de vínculo motorista<->veículo (POST)
    - Hoje só existe leitura do histórico (GET /veiculos/:id/vinculos).
-   - Teste: criar vínculo via Swagger e conferir que aparece no GET.
+   - Feito: POST /veiculos/:id/vinculos (body: { motoristaId }) — encerra o vínculo aberto atual
+     (seta `ate`) e cria um novo, atualizando veiculo.motoristaAtualId. Ver veiculos.service.ts.
+   - Teste: confirmado via curl — POST criou o vínculo novo, GET /vinculos mostra os dois
+     (antigo com `ate` preenchido, novo com `ate: null`), e GET /veiculos/:id reflete o motoristaAtual novo.
 
 4. Chamada real à plataforma de rastreamento externa
    - Hoje só existe a camada de token (conectar/testar/remover), sem chamada real de fato.

@@ -5,6 +5,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { JwtPayload } from '../common/types/jwt-payload';
 import { CreateVeiculoDto } from './dto/create-veiculo.dto';
+import { CreateVinculoDto } from './dto/create-vinculo.dto';
 import { VeiculosService } from './veiculos.service';
 
 @ApiTags('veiculos')
@@ -32,6 +33,11 @@ export class VeiculosController {
   @Get(':id/vinculos')
   vinculos(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
     return this.service.vinculos(user.empresaId!, id);
+  }
+
+  @Post(':id/vinculos')
+  criarVinculo(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: CreateVinculoDto) {
+    return this.service.criarVinculo(user.empresaId!, id, dto);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)

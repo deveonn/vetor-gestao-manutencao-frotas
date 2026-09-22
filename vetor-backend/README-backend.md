@@ -124,7 +124,7 @@ Cada controller/service tem só os endpoints que estão em `/endpoints.md` — n
 - **"Pneus" não tem custo próprio.** Os relatórios de comparativo de categoria (`/relatorios/categorias-*`) só têm Combustível e Manutenção — o mock original tinha 3 categorias fixas, mas não existe uma entidade de custo de pneu separada; uma troca de pneu registrada vira um item de `Manutencao` normal.
 - **`km` em relatórios de custo por veículo é aproximado** por `MAX(hodômetro) − MIN(hodômetro)` entre os abastecimentos do período — é a única leitura de hodômetro que existe sem a integração de rastreamento real conectada.
 - **Upload de mídia é local em dev** (`UPLOADS_DIR`, servido em `/uploads`). Trocar por storage de objetos (S3-compatible) antes de qualquer uso além do próprio ambiente de desenvolvimento.
-- **Sem endpoint de vínculo motorista↔veículo.** `GET /veiculos/:id/vinculos` lê o histórico, mas não existe `POST` pra criar um vínculo novo — o mock nunca teve essa mutação (só exibia o vínculo atual), então o schema suporta a tabela mas a rota de escrita ainda não foi construída.
+- **Vínculo motorista↔veículo.** `GET /veiculos/:id/vinculos` lê o histórico; `POST /veiculos/:id/vinculos` (body: `{ motoristaId }`) encerra o vínculo aberto atual (se houver, marcando `ate`) e cria um novo, atualizando `veiculo.motoristaAtualId` — mutação que não existia no mock original.
 
 ---
 

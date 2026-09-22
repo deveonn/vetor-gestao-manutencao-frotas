@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateVeiculoDto } from './dto/create-veiculo.dto';
+import { CreateVinculoDto } from './dto/create-vinculo.dto';
 
 const POSICOES_PADRAO = ['dianteiro esquerdo', 'dianteiro direito', 'traseiro esquerdo', 'traseiro direito'];
 
@@ -48,6 +49,31 @@ export class VeiculosService {
       include: { motorista: true },
       orderBy: { de: 'desc' },
     });
+  }
+
+  /** Encerra o vínculo aberto atual (se houver) e cria um novo, atualizando o motorista atual do veículo. */
+  async criarVinculo(empresaId: string, veiculoId: string, dto: CreateVinculoDto) {
+    await this.buscar(empresaId, veiculoId);
+    const motorista = await this.prisma.motorista.findFirst({ where: { id: dto.motoristaId, empresaId } });
+    if (!motorista) throw new NotFoundException('Motorista não encontrado.');
+
+    const agora = new Date();
+    const [, vinculo] = await this.prisma.$transaction([
+      this.prisma.vinculoMotoristaVeiculo.updateMany({
+        where: { veiculoId, ate: null },
+        data: { ate: agora },
+      }),
+      this.prisma.vinculoMotoristaVeiculo.create({
+        data: { veiculoId, motoristaId: dto.motoristaId, de: agora },
+        include: { motorista: true },
+      }),
+      this.prisma.veiculo.update({
+        where: { id: veiculoId },
+        data: { motoristaAtualId: dto.motoristaId },
+      }),
+    ]);
+
+    return vinculo;
   }
 
   async veiculoDoDia(empresaId: string, motoristaId: string) {
