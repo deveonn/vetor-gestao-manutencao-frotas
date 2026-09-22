@@ -1,0 +1,101 @@
+PENDÊNCIAS PARA DEPLOY — VETOR
+Gerado em 15/09/2026. Ordem sugerida: Backend #1-#3 -> Web #1-#2 (login) -> Web #3 em diante -> Mobile inteiro por último.
+Fazer uma task por vez e testar antes de seguir pra próxima.
+
+===========================================
+BACKEND (vetor-backend)
+===========================================
+
+1. [CONCLUÍDO 22/09/2026] CORS restrito por ambiente
+   - Trocar app.enableCors() (aberto) por origem configurável via env (ex: http://localhost:4200 em dev).
+   - Feito: main.ts lê CORS_ORIGIN (lista separada por vírgula) do env, credentials: true, fallback pra localhost:4200.
+   - Teste: request do navegador ainda funciona, request de outra origem é bloqueado. (pendente teste manual do bloqueio)
+
+2. [CONCLUÍDO 22/09/2026] Segredos JWT reais em .env
+   - Gerar JWT_SECRET / JWT_REFRESH_SECRET fortes localmente (não precisa ainda ser o segredo de produção).
+   - Feito: .env criado localmente (gitignorado) com JWT_SECRET/JWT_REFRESH_SECRET gerados via crypto.randomBytes(48). Banco recriado do zero (migrate dev --name init) + seed.
+   - Teste: login continua funcionando com os logins do seed. (em andamento — 401 sendo investigado)
+
+3. Endpoint de vínculo motorista<->veículo (POST)
+   - Hoje só existe leitura do histórico (GET /veiculos/:id/vinculos).
+   - Teste: criar vínculo via Swagger e conferir que aparece no GET.
+
+4. Chamada real à plataforma de rastreamento externa
+   - Hoje só existe a camada de token (conectar/testar/remover), sem chamada real de fato.
+   - Decidir: implementar de verdade OU marcar conscientemente como "fora de escopo" (portfólio, sem credencial real de terceiro).
+
+5. Storage de mídia em S3-compatible
+   - Hoje é disco local (UPLOADS_DIR) — só relevante quando for pensar em deploy de verdade (ambiente efêmero perde os arquivos).
+   - Pode ficar por último.
+
+6. Testes automatizados básicos
+   - Hoje zero cobertura. Pelo menos e2e do fluxo de auth + isolamento multi-tenant (empresaId).
+
+7. Dockerfile de produção + pipeline CI
+   - Só depois de tudo acima validado manualmente via Swagger.
+   - Hoje só existe docker-compose.yml de dev (sobe só o Postgres).
+
+===========================================
+WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por endpoint
+===========================================
+
+1. Base HTTP
+   - environment.ts / environment.prod.ts (URL da API), provideHttpClient, interceptor que injeta Bearer token e trata 401 (refresh ou logout).
+   - Teste: uma chamada simples (GET /empresa) funcionando end-to-end.
+
+2. Login real
+   - AuthService.login chamando POST /auth/login no lugar da regra hardcoded (email válido + senha "demo").
+   - Teste: login com usuários do seed (rui@transportesalmeida.com.br / demo123), sessão persiste, logout funciona.
+
+3. Empresa/Conta
+   - GET/PATCH /empresa.
+   - Teste: tela de conta lê e salva de verdade.
+
+4. Integração de rastreamento
+   - Conectar/testar/remover token.
+   - Teste: fluxo completo na tela de conta.
+
+5. Veículos
+   - Listar/criar/excluir.
+   - Teste: CRUD completo na tela de frota.
+
+6. Motoristas
+   - Listar/criar.
+
+7. Combustível
+   - Abastecimentos + fornecedores.
+   - Conferir se o km/L exibido bate com o calculado pelo backend (módulo com mais campos calculados).
+
+8. Manutenção
+   - Pendentes/concluir/histórico/planos.
+
+9. Pneus e vistorias
+   - Somente leitura no painel (quem escreve é o mobile).
+
+10. Dashboard e relatórios
+    - Geralmente mais fáceis por serem só leitura, mas dependem dos módulos acima terem dados reais pra fazer sentido visualmente.
+
+===========================================
+MOBILE (vetor-app-mobile)
+===========================================
+
+1. Base HTTP
+   - Mesmo pacote de setup do web (environment, HttpClient, interceptor JWT).
+   - Teste: uma chamada simples autenticada funcionando.
+
+2. Login real
+   - SessionService.login via POST /auth/login, e GET /auth/me pra restaurar sessão ao reabrir o app offline.
+   - Teste: login com um motorista do seed, fecha e reabre o app.
+
+3. Veículo do dia
+   - GET /motorista/veiculo-do-dia na tela confirm-vehicle.
+
+4. Upload de mídia
+   - PhotoCaptureService enviando pra POST /midia antes de referenciar midiaId na vistoria.
+
+5. Envio de vistoria
+   - SyncService.drain() chamando POST /vistorias de verdade no lugar do delay simulado (1200ms).
+   - Mapear erro de rede pra status: 'error' na fila (já documentado em endpoints.md).
+
+6. Histórico do motorista
+   - GET /vistorias/minhas, pra sobreviver a reinstalação do app (hoje histórico é só a fila local).
