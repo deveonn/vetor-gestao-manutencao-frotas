@@ -1,0 +1,47 @@
+<div class="screen">
+  <div class="header-back">
+    <button class="icon-btn" (click)="back()"><span class="ms">arrow_back</span></button>
+  </div>
+
+  @if (vehicle.todaysVehicle(); as v) {
+    <div class="cv__intro">
+      <div class="cv__title">você está com {{ typeMeta?.demonstrative }}?</div>
+      <div class="cv__subtitle">confira a placa antes de começar</div>
+    </div>
+
+    <div class="cv__card">
+      <div class="cv__photo">
+        @if (v.photoDataUrl) {
+          <img [src]="v.photoDataUrl" [alt]="'foto ' + typeMeta?.articleDe" />
+        } @else {
+          <span class="ms">{{ typeMeta?.icon }}</span>
+          <span class="tabular">foto {{ typeMeta?.articleDe }}</span>
+        }
+      </div>
+      <div class="cv__details">
+        <div class="cv__plate tabular">{{ v.plate }}</div>
+        <div class="cv__model">{{ v.model }} · {{ v.color }}</div>
+        <div class="cv__km tabular"><span class="ms">speed</span>km atual: {{ v.odometerKm.toLocaleString('pt-BR') }}</div>
+      </div>
+    </div>
+
+    <div class="cv__spacer"></div>
+
+    <div class="cv__actions">
+      <button class="btn-primary" (click)="confirm()">
+        <span class="ms">check</span>
+        sim, é {{ demonstrativePronoun }}
+      </button>
+      <button class="btn-secondary" (click)="chooseAnother()">
+        <span class="ms">swap_horiz</span>
+        não, escolher outra
+      </button>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <span class="ms">directions_car</span>
+      <div>nenhum veículo vinculado a você ainda</div>
+      <button class="btn-secondary">vincular veículo</button>
+    </div>
+  }
+</div>

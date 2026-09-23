@@ -1,0 +1,100 @@
+@if (step && sub) {
+  <div class="screen">
+    <div class="rate__head">
+      <button class="icon-btn" (click)="back()"><span class="ms">arrow_back</span></button>
+      @if (positionLabel; as pos) {
+        <div class="rate__position">{{ pos }}</div>
+      }
+      <div class="rate__head-spacer"></div>
+    </div>
+
+    <div class="rate__question">
+      como está <span class="rate__question-target">{{ targetLabel }}</span
+      >?
+    </div>
+
+    <div class="rate__options">
+      <button
+        class="rate-option"
+        [class.rate-option--selected-ok]="selected() === 'ok'"
+        (click)="choose('ok')"
+      >
+        <span class="ms fill" style="color: var(--ok)">check_circle</span>
+        está bom
+      </button>
+      <button
+        class="rate-option"
+        [class.rate-option--selected-warn]="selected() === 'atencao'"
+        (click)="choose('atencao')"
+      >
+        <span class="ms fill" style="color: var(--warn)">warning</span>
+        precisa de atenção
+      </button>
+      <button
+        class="rate-option"
+        [class.rate-option--selected-crit]="selected() === 'trocar'"
+        (click)="choose('trocar')"
+      >
+        <span class="ms fill" style="color: var(--crit)">cancel</span>
+        precisa manutenção corretiva
+      </button>
+    </div>
+
+    @if (showOnIssueNote) {
+      <div class="rate__note" [class.rate__note--required]="noteMissing">
+        <label class="rate__note-label" for="issue-note">descreva rapidamente o problema</label>
+        <textarea
+          id="issue-note"
+          class="rate__note-input"
+          rows="3"
+          [placeholder]="step.notePlaceholder"
+          [ngModel]="noteText()"
+          (ngModelChange)="noteText.set($event)"
+        ></textarea>
+      </div>
+    }
+
+    @if (showOnIssuePhoto) {
+      <div class="rate__photo" [class.rate__photo--required]="photoMissing">
+        @if (sub.photoDataUrl) {
+          <img [src]="sub.photoDataUrl" alt="foto" />
+          <div class="rate__retake" (click)="capturePhoto()"><span class="ms">refresh</span>refazer</div>
+        } @else {
+          <button class="rate__photo-cta" (click)="capturePhoto()">
+            <span class="ms">add_a_photo</span>
+            tire uma foto do problema
+          </button>
+        }
+      </div>
+    }
+
+    @if (selected() === 'trocar') {
+      <div class="rate__alert">
+        <div class="soft-banner soft-banner--crit">
+          <span class="ms">campaign</span>
+          <div>o gestor da frota vai receber um <b>alerta deste item</b>{{ alertContextSuffix }}</div>
+        </div>
+      </div>
+    }
+
+    <div class="rate__spacer"></div>
+
+    <div class="rate__footer">
+      <button
+        class="btn-primary"
+        [class.btn-danger]="selected() === 'trocar'"
+        [disabled]="!selected() || capturing() || busy() || photoMissing || noteMissing"
+        (click)="confirm()"
+      >
+        {{ confirmLabel() }}
+      </button>
+    </div>
+
+    @if (capturing()) {
+      <div class="capture-overlay">
+        <span class="ms spin">progress_activity</span>
+        <div>abrindo câmera…</div>
+      </div>
+    }
+  </div>
+}

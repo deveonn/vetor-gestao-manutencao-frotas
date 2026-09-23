@@ -1,0 +1,66 @@
+.splash {
+  position: relative;
+  height: 100dvh;
+  width: 100%;
+  background: linear-gradient(180deg, #0d1320, #0a1730);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  &__icon {
+    display: block;
+    width: 88px;
+    height: 88px;
+    border-radius: 24px;
+    box-shadow: 0 16px 40px rgba(3, 8, 18, 0.5);
+  }
+
+  &__word {
+    font: 700 34px/1 'Saira', sans-serif;
+    color: var(--text);
+    letter-spacing: 1px;
+    margin-top: 22px;
+  }
+
+  &__subtitle {
+    font: 500 13px 'IBM Plex Sans', sans-serif;
+    color: var(--text-2);
+    margin-top: 6px;
+  }
+
+  &__progress-track {
+    position: absolute;
+    bottom: 64px;
+    width: 140px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--surf-2);
+    overflow: hidden;
+  }
+
+  &__progress-fill {
+    width: 45%;
+    height: 100%;
+    border-radius: 3px;
+    background: var(--brand);
+    animation: splash-fill 1.2s ease-out forwards;
+  }
+
+  &__footer {
+    position: absolute;
+    bottom: 36px;
+    font: 500 10.5px 'IBM Plex Mono', monospace;
+    color: var(--text-mut);
+  }
+}
+
+@keyframes splash-fill {
+  from {
+    width: 10%;
+  }
+  to {
+    width: 96%;
+  }
+}

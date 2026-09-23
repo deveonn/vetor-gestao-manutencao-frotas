@@ -1,0 +1,7 @@
+{
+  "name": "vetor",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

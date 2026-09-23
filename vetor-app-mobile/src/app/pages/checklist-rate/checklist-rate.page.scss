@@ -1,0 +1,189 @@
+.rate {
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px 6px;
+    flex: none;
+  }
+
+  &__position {
+    flex: 1;
+    text-align: center;
+    font: 600 15px 'IBM Plex Sans', sans-serif;
+    color: var(--text-2);
+  }
+
+  &__head-spacer {
+    width: 48px;
+  }
+
+  &__question {
+    padding: 0 20px;
+    font: 600 22px/1.25 'IBM Plex Sans', sans-serif;
+    color: var(--text);
+    flex: none;
+
+    &-target {
+      color: var(--brand);
+    }
+  }
+
+  &__photo {
+    margin: 12px 16px 0;
+    position: relative;
+    height: 150px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: repeating-linear-gradient(45deg, var(--surf-2) 0 8px, var(--surf) 8px 16px);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-mut);
+    font-size: 12px;
+    flex: none;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    &--required {
+      border: 2px dashed var(--crit-soft-line);
+      background: var(--crit-soft-bg);
+    }
+  }
+
+  &__photo-cta {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: var(--crit);
+    font: 600 14px 'IBM Plex Sans', sans-serif;
+
+    .ms {
+      font-size: 30px;
+    }
+  }
+
+  &__retake {
+    position: absolute;
+    right: 12px;
+    bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 14px;
+    border-radius: 12px;
+    background: rgba(5, 7, 12, 0.7);
+    border: 1px solid var(--line-2);
+    color: var(--text);
+    font: 600 13px 'IBM Plex Sans', sans-serif;
+
+    .ms {
+      font-size: 18px;
+    }
+  }
+
+  &__options {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px 0;
+  }
+
+  &__note {
+    margin: 12px 16px 0;
+    padding: 12px 14px 14px;
+    border-radius: 16px;
+    background: var(--surf);
+    border: 1px solid var(--line);
+    flex: none;
+
+    &--required {
+      border: 2px dashed var(--crit-soft-line);
+      background: var(--crit-soft-bg);
+    }
+  }
+
+  &__note-label {
+    display: block;
+    font: 600 13px 'IBM Plex Sans', sans-serif;
+    color: var(--text-2);
+    margin-bottom: 8px;
+  }
+
+  &__note-input {
+    width: 100%;
+    resize: none;
+    background: var(--surf-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 12px;
+    color: var(--text);
+    font: 500 14px/1.5 'IBM Plex Sans', sans-serif;
+
+    &::placeholder {
+      color: var(--text-mut);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--brand);
+    }
+  }
+
+  &__alert {
+    margin: 12px 16px 0;
+    flex: none;
+  }
+
+  &__spacer {
+    flex: 1;
+  }
+
+  &__footer {
+    padding: 12px 16px 16px;
+    flex: none;
+  }
+}
+
+.rate-option {
+  min-height: 58px;
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  background: var(--surf);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 18px;
+  font: 600 18px 'IBM Plex Sans', sans-serif;
+  text-align: left;
+
+  .ms {
+    font-size: 28px;
+  }
+
+  &--selected-ok {
+    background: var(--ok-soft-bg);
+    border-color: var(--ok);
+  }
+  &--selected-warn {
+    background: var(--warn-soft-bg);
+    border-color: var(--warn);
+  }
+  &--selected-crit {
+    background: var(--crit-soft-bg);
+    border-color: var(--crit);
+  }
+}

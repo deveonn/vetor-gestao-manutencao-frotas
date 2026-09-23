@@ -1,0 +1,62 @@
+:host {
+  display: block;
+}
+
+.login {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+
+  &__head {
+    padding: 26px 22px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  &__logo {
+    display: block;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+  }
+
+  &__title {
+    font: 600 26px/1.2 'IBM Plex Sans', sans-serif;
+    color: var(--text);
+    margin-top: 18px;
+  }
+
+  &__subtitle {
+    font: 500 15px/1.5 'IBM Plex Sans', sans-serif;
+    color: var(--text-2);
+    margin-top: 6px;
+  }
+
+  &__form {
+    width: 100%;
+    max-width: 400px;
+    padding: 24px 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: none;
+  }
+
+  &__forgot {
+    margin-top: 4px;
+  }
+
+  &__offline {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px 16px 0;
+    flex: none;
+  }
+}

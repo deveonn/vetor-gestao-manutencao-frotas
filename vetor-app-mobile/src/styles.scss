@@ -1,0 +1,613 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* ---------- fontes (self-hosted, offline-first) ---------- */
+@font-face {
+  font-family: 'Saira';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/saira-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Saira';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/saira-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Saira';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/saira-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-sans-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-sans-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-sans-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url('/fonts/material-symbols-outlined.woff2') format('woff2');
+}
+
+.ms {
+  font-family: 'Material Symbols Outlined';
+  font-weight: 300;
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  line-height: 1;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  vertical-align: middle;
+}
+.ms.fill {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ---------- design tokens ---------- */
+:root {
+  --bg: #0d1320;
+  --bg-deep: #0a0e16;
+  --surf: #151d2c;
+  --surf-2: #1c2638;
+  --surf-3: #111826;
+  --line: #26334a;
+  --line-2: #33425f;
+  --brand: #5cb3ff;
+  --brand-ink: #06121f;
+  --brand-deep: #0f3f7a;
+
+  --ok: #2fd08a;
+  --warn: #f5b23d;
+  --crit: #ff5d52;
+
+  --text: #e9eef7;
+  --text-2: #a9b6c9;
+  --text-mut: #6b7a92;
+
+  --ok-soft-bg: rgba(47, 208, 138, 0.14);
+  --ok-soft-line: rgba(47, 208, 138, 0.35);
+  --warn-soft-bg: rgba(245, 178, 61, 0.11);
+  --warn-soft-line: rgba(245, 178, 61, 0.3);
+  --crit-soft-bg: rgba(255, 93, 82, 0.13);
+  --crit-soft-line: rgba(255, 93, 82, 0.35);
+  --brand-soft-bg: rgba(92, 179, 255, 0.15);
+  --brand-soft-line: rgba(92, 179, 255, 0.25);
+
+  color-scheme: dark;
+
+  /* map to ionic */
+  --ion-background-color: var(--bg);
+  --ion-text-color: var(--text);
+  --ion-color-primary: var(--brand);
+  --ion-color-primary-contrast: var(--brand-ink);
+  --ion-toolbar-background: var(--surf);
+  --ion-item-background: var(--surf);
+  --ion-border-color: var(--line);
+  --ion-tab-bar-background: var(--bg);
+}
+
+@keyframes vetor-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+@keyframes vetor-shimmer {
+  0% {
+    background-position: -260px 0;
+  }
+  100% {
+    background-position: 260px 0;
+  }
+}
+@keyframes vetor-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---------- base ---------- */
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+}
+body {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.tabular {
+  font-family: 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- layout primitives ---------- */
+.screen {
+  min-height: 100dvh;
+  width: 100%;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.icon-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--surf);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: var(--text);
+
+  .ms {
+    font-size: 24px;
+  }
+}
+
+.header-back {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px 4px;
+  flex: none;
+}
+
+/* ---------- botões ---------- */
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-danger {
+  border: none;
+  border-radius: 18px;
+  font: 600 18px 'IBM Plex Sans', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 62px;
+  width: 100%;
+  transition:
+    opacity 0.15s ease,
+    transform 0.1s ease;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: var(--brand-ink);
+  box-shadow: 0 10px 24px rgba(92, 179, 255, 0.3);
+}
+
+.btn-secondary {
+  background: var(--surf);
+  border: 1px solid var(--line-2);
+  color: var(--text);
+  height: 58px;
+  font-size: 16px;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-2);
+  height: 54px;
+  font-size: 15px;
+  box-shadow: none;
+}
+
+.btn-danger {
+  background: var(--crit);
+  color: #1a0503;
+  box-shadow: 0 10px 24px rgba(255, 93, 82, 0.3);
+}
+
+.link {
+  text-align: center;
+  font: 500 15px 'IBM Plex Sans', sans-serif;
+  color: var(--brand);
+  padding: 6px 0;
+  display: block;
+  cursor: pointer;
+}
+
+.spin {
+  display: inline-block;
+  animation: vetor-spin 0.9s linear infinite;
+}
+
+.pulse {
+  animation: vetor-pulse 1.6s ease-in-out infinite;
+}
+
+/* ---------- campos de formulário ---------- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  &__label {
+    font: 600 13px 'IBM Plex Sans', sans-serif;
+    color: var(--text-2);
+  }
+
+  &__control {
+    height: 58px;
+    border-radius: 16px;
+    background: var(--surf);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 0 16px;
+
+    &--focus,
+    &:focus-within {
+      border: 2px solid var(--brand);
+      padding: 0 15px;
+    }
+
+    .ms {
+      font-size: 22px;
+      color: var(--text-mut);
+      flex: none;
+    }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font: 500 18px 'IBM Plex Sans', sans-serif;
+
+      &::placeholder {
+        color: var(--text-mut);
+      }
+    }
+  }
+
+  &__control--focus .ms:first-child {
+    color: var(--brand);
+  }
+
+  &__control--error {
+    border: 2px solid var(--crit);
+    padding: 0 15px;
+  }
+
+  &__toggle {
+    cursor: pointer;
+    color: var(--text-mut);
+  }
+
+  &__error {
+    font: 500 12.5px 'IBM Plex Sans', sans-serif;
+    color: var(--crit);
+    padding-left: 2px;
+  }
+}
+
+/* ---------- banners de estado (soft) ---------- */
+.soft-banner {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 13px 15px;
+  border-radius: 14px;
+  font: 500 13.5px/1.45 'IBM Plex Sans', sans-serif;
+
+  .ms {
+    font-size: 22px;
+    flex: none;
+  }
+
+  &--warn {
+    background: var(--warn-soft-bg);
+    border: 1px solid var(--warn-soft-line);
+    color: #f5d9a0;
+    .ms {
+      color: var(--warn);
+    }
+  }
+  &--ok {
+    background: var(--ok-soft-bg);
+    border: 1px solid var(--ok-soft-line);
+    color: #bdf0d8;
+    .ms {
+      color: var(--ok);
+    }
+  }
+  &--crit {
+    background: var(--crit-soft-bg);
+    border: 1px solid var(--crit-soft-line);
+    color: #ffc9c4;
+    .ms {
+      color: var(--crit);
+    }
+  }
+  &--brand {
+    background: var(--brand-soft-bg);
+    border: 1px solid var(--brand-soft-line);
+    color: var(--text-2);
+    .ms {
+      color: var(--brand);
+    }
+  }
+
+  b {
+    color: var(--text);
+  }
+}
+
+/* ---------- hero button (home) ---------- */
+.hero-btn {
+  width: 100%;
+  height: 84px;
+  border: none;
+  border-radius: 22px;
+  background: var(--brand);
+  color: var(--brand-ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  box-shadow: 0 12px 28px rgba(92, 179, 255, 0.32);
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font: 600 21px 'IBM Plex Sans', sans-serif;
+
+    .ms {
+      font-size: 28px;
+    }
+  }
+
+  &__sub {
+    font: 500 12.5px 'IBM Plex Sans', sans-serif;
+    opacity: 0.75;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+/* ---------- listas (home / histórico) ---------- */
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  border-top: 1px solid var(--surf-2);
+  cursor: pointer;
+
+  > .ms:first-child {
+    font-size: 24px;
+    flex: none;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font: 600 14px 'IBM Plex Sans', sans-serif;
+    color: var(--text);
+  }
+
+  &__sub {
+    font: 500 12.5px 'IBM Plex Sans', sans-serif;
+    margin-top: 1px;
+  }
+
+  &__chevron {
+    font-size: 20px;
+    color: var(--text-mut);
+    flex: none;
+  }
+}
+
+/* ---------- checklist step card ---------- */
+.step-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 60px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  cursor: pointer;
+
+  &__tile {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--brand-soft-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+
+    .ms {
+      font-size: 25px;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font: 600 16px 'IBM Plex Sans', sans-serif;
+    color: var(--text);
+  }
+
+  &__sub {
+    font: 500 12.5px 'IBM Plex Sans', sans-serif;
+    margin-top: 1px;
+  }
+
+  &--done-ok {
+    background: #12202f;
+    border: 1px solid var(--ok-soft-line);
+  }
+  &--done-warn {
+    background: #12202f;
+    border: 1px solid var(--warn-soft-line);
+  }
+  &--done-crit {
+    background: #12202f;
+    border: 1px solid var(--crit-soft-line);
+  }
+  &--next {
+    background: #152a45;
+    border: 2px solid var(--brand);
+    min-height: 76px;
+
+    .step-card__title {
+      font-size: 17px;
+    }
+  }
+  &--pending {
+    background: var(--surf-3);
+    border: 1px solid var(--surf-2);
+    opacity: 0.75;
+    cursor: default;
+
+    .step-card__title {
+      color: var(--text-2);
+    }
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 36px 16px;
+  text-align: center;
+  color: var(--text-2);
+  font: 500 14px 'IBM Plex Sans', sans-serif;
+
+  .ms {
+    font-size: 34px;
+    color: var(--text-mut);
+  }
+}
+
+/* ---------- overlay de captura de foto ---------- */
+.capture-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(5, 7, 12, 0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text);
+  font: 500 14px 'IBM Plex Sans', sans-serif;
+
+  .ms {
+    font-size: 32px;
+    color: var(--brand);
+  }
+}
+
+/* ---------- modal custom sizeado ao conteúdo (ex.: photo-target-modal) ---------- */
+ion-modal.auto-height-modal {
+  --width: 320px;
+  --min-width: 280px;
+  --height: auto;
+  --border-radius: 20px;
+  --background: var(--surf);
+  --box-shadow: 0 20px 44px rgba(3, 8, 18, 0.55);
+  --backdrop-opacity: 0.62;
+}
+ion-modal.auto-height-modal .ion-page {
+  position: relative;
+  display: block;
+  contain: content;
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: inherit;
+}

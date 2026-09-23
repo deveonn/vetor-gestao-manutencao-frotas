@@ -1,0 +1,51 @@
+<div class="screen">
+  <div class="header-back">
+    <button class="icon-btn" (click)="back()"><span class="ms">arrow_back</span></button>
+    <div class="rv__headtext">
+      <div class="rv__title">confira antes de enviar</div>
+      <div class="rv__subtitle tabular">
+        {{ vehicleArticleDe }} {{ inspection.vehiclePlate() }} · hoje,
+        {{ now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) }}
+      </div>
+    </div>
+  </div>
+
+  <div class="rv__list">
+    @for (step of inspection.steps(); track step.id) {
+      @let s = summaryIcon(step);
+      <div class="rv-card" [style.border-color]="s.color">
+        @if (firstPhoto(step); as photo) {
+          <div class="rv-card__thumb"><img [src]="photo" alt="" /></div>
+        } @else {
+          <div class="rv-card__thumb rv-card__thumb--icon">
+            <span class="ms" [style.color]="s.color">{{ step.icon }}</span>
+          </div>
+        }
+        <div class="rv-card__body">
+          <div class="rv-card__title">{{ step.label }}</div>
+          <div class="rv-card__status" [style.color]="s.color">
+            <span class="ms" [class.fill]="status(step).startsWith('done')">{{ s.icon }}</span>
+            {{ summaryText(step) }}
+          </div>
+          @if (firstNote(step); as note) {
+            <div class="rv-card__note">"{{ note }}"</div>
+          }
+        </div>
+        <span class="link" style="padding: 0" (click)="change(step)">mudar</span>
+      </div>
+    }
+  </div>
+
+  <div class="rv__banner">
+    <app-offline-banner
+      message="sem internet — a vistoria fica guardada no celular e é enviada sozinha depois."
+    />
+  </div>
+
+  <div class="rv__footer">
+    <button class="btn-primary" [disabled]="!allStepsDone" (click)="finish()">
+      <span class="ms">task_alt</span>
+      finalizar vistoria
+    </button>
+  </div>
+</div>

@@ -1,0 +1,71 @@
+<div class="screen">
+  <div class="header-back">
+    <button class="icon-btn" (click)="back()"><span class="ms">arrow_back</span></button>
+    <div class="cl__headtext">
+      <div class="cl__title">vistoria {{ vehicleArticleDe }} {{ inspection.vehiclePlate() }}</div>
+      <div class="cl__subtitle">
+        @if (inspection.nextStep()) {
+          falta pouco: {{ inspection.doneStepsCount() }} de {{ inspection.steps().length }} passos feitos
+        } @else {
+          tudo pronto — confira e envie
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="cl__progress">
+    <div class="cl__progress-track">
+      <div class="cl__progress-fill" [style.width.%]="stepProgressPct"></div>
+    </div>
+  </div>
+
+  @if (inspection.nextStep()) {
+    <div class="cl__notice">
+      <div class="soft-banner soft-banner--brand">
+        <span class="ms">photo_camera</span>
+        <div>
+          as fotos dos pneus e das avarias fazem parte da vistoria. as fotos ficam só no sistema da empresa.
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="cl__list">
+    @for (step of inspection.steps(); track step.id) {
+      @let meta = statusMeta(status(step));
+      <div
+        class="step-card"
+        [class]="'step-card--' + status(step)"
+        (click)="openStep(step)"
+      >
+        @if (status(step) === 'next') {
+          <div class="step-card__tile"><span class="ms" [style.color]="meta.color">{{ step.icon }}</span></div>
+        } @else {
+          <span class="ms" [class.fill]="meta.filled" [style.color]="meta.color" style="font-size: 28px">{{
+            meta.icon
+          }}</span>
+        }
+        <div class="step-card__body">
+          <div class="step-card__title">{{ step.label }}</div>
+          <div class="step-card__sub" [style.color]="meta.color">{{ meta.text }}</div>
+        </div>
+        @if (status(step).startsWith('done')) {
+          <span class="link" style="padding: 0">rever</span>
+        } @else if (status(step) === 'next') {
+          <span class="ms" style="color: var(--brand); font-size: 24px">arrow_forward</span>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="cl__footer">
+    <button class="btn-primary" [disabled]="busy()" (click)="continue()">
+      @if (inspection.nextStep(); as next) {
+        continuar: {{ next.label }}
+      } @else {
+        continuar: revisão
+      }
+      <span class="ms">arrow_forward</span>
+    </button>
+  </div>
+</div>

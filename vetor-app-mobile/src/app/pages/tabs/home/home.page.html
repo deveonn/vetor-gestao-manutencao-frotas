@@ -1,0 +1,52 @@
+<div class="home">
+  <div class="home__banner">
+    <app-offline-banner [message]="offlineMessage()" />
+  </div>
+
+  <div class="home__list">
+    <div class="home__list-title">suas últimas vistorias</div>
+
+    @if (recentInspections().length === 0) {
+      <div class="empty-state">
+        <span class="ms">assignment_turned_in</span>
+        <div>faça sua primeira vistoria</div>
+      </div>
+    } @else {
+      @for (item of recentInspections(); track item.id) {
+        <div class="list-row">
+          <span
+            class="ms"
+            [class.fill]="queueStatusIsFilled(item.status)"
+            [class.pulse]="item.status === 'sending'"
+            [style.color]="statusColor(item.status)"
+            >{{ queueStatusIcon(item.status) }}</span
+          >
+          <div class="list-row__body">
+            <div class="list-row__title">{{ dayLabel(item.createdAt) }}, {{ timeLabel(item.createdAt) }}</div>
+            <div class="list-row__sub" [style.color]="statusColor(item.status)">
+              {{ queueStatusLabel(item.status, item.hasCriticalAlert, item.hasWarnAlert) }}
+            </div>
+          </div>
+          <span class="ms list-row__chevron">chevron_right</span>
+        </div>
+      }
+    }
+  </div>
+
+  <div class="home__footer">
+    @if (vehicle.todaysVehicle()) {
+      <button class="hero-btn" (click)="startInspection()">
+        <span class="hero-btn__row">
+          <span class="ms">assignment_turned_in</span>
+          começar vistoria
+        </span>
+        <span class="hero-btn__sub">leva uns 5 minutos</span>
+      </button>
+    } @else {
+      <button class="btn-secondary">
+        <span class="ms">directions_car</span>
+        vincular veículo
+      </button>
+    }
+  </div>
+</div>

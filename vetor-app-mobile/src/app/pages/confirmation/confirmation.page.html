@@ -1,0 +1,35 @@
+<div class="screen">
+  <div class="conf__body">
+    <div class="conf__circle"><span class="ms">check</span></div>
+    <div class="conf__title">vistoria concluída!</div>
+    <div class="conf__text">
+      @if (network.online()) {
+        ela foi <b>enviada</b> com sucesso para o sistema da empresa.
+      } @else {
+        ela está <b>guardada no celular</b>. quando a internet voltar, será enviada sozinha — você não precisa
+        fazer nada.
+      }
+    </div>
+
+    @if (queue.queuedCount() > 0) {
+      <div class="conf__chip">
+        <span class="ms">schedule</span>
+        <span><b class="tabular">{{ queue.queuedCount() }}</b> vistorias na fila de envio</span>
+      </div>
+    }
+
+    @if (inspection()?.hasCriticalAlert) {
+      <div class="conf__chip conf__chip--crit">
+        <span class="ms">campaign</span>
+        <span>1 alerta de manutenção corretiva vai junto para o gestor</span>
+      </div>
+    }
+  </div>
+
+  <div class="conf__actions">
+    <button class="btn-primary" (click)="goHome()">voltar para o início</button>
+    <button class="btn-ghost" style="color: var(--brand)" (click)="viewSummary()">
+      ver o resumo desta vistoria
+    </button>
+  </div>
+</div>

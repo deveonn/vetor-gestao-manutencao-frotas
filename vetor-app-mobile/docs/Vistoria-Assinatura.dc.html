@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0&display=block" rel="stylesheet">
+<style>
+  body{margin:0;background:#0a0e16;font-family:'IBM Plex Sans',system-ui,sans-serif}
+  a{color:#5cb3ff}a:hover{color:#e9eef7}
+  .ms{font-family:'Material Symbols Outlined';font-weight:300;line-height:1;font-feature-settings:'liga';-webkit-font-smoothing:antialiased}
+  .dv-turn{padding:44px 48px 36px;border-bottom:1px solid rgba(255,255,255,.06);scroll-margin-top:16px}
+  .dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 22px}
+  .dv-tid{font:600 10px 'IBM Plex Mono',monospace;padding:3px 7px;background:#5cb3ff;color:#06121f;border-radius:4px;text-decoration:none}
+  .dv-tname{font:600 13px/1.3 'Saira',sans-serif;color:#e9eef7;letter-spacing:.2px}
+  .dv-opts{display:flex;flex-wrap:wrap;gap:34px;align-items:flex-start}
+  .dv-opt{flex:none;display:flex;flex-direction:column;gap:11px;scroll-margin-top:16px}
+  .dv-oid{font:600 10.5px 'IBM Plex Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.08);color:#e9eef7;border-radius:5px;text-decoration:none}
+  .dv-olabel{display:flex;align-items:baseline;gap:9px;font:400 11.5px/1.4 'IBM Plex Sans',sans-serif;color:#a9b6c9;max-width:360px}
+  .dv-opt:target .dv-oid{background:#5cb3ff;color:#06121f}
+  .dv-next{margin:26px 0 0;font:12.5px/1.6 'IBM Plex Sans',sans-serif;color:#8494aa}
+  @keyframes vv-pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  @keyframes vv-shim{0%{background-position:-260px 0}100%{background-position:260px 0}}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+
+<div style="padding:40px 48px 8px">
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px">
+    <div style="width:34px;height:34px;border-radius:9px;background:#0f3f7a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:21px;color:#bcdcff">sensors</span></div>
+    <div>
+      <div style="font:700 19px/1 'Saira',sans-serif;color:#e9eef7;letter-spacing:.3px">telemetria viva · campo</div>
+      <div style="font:500 11.5px/1.5 'IBM Plex Mono',monospace;color:#6b7a92;margin-top:3px">app de vistoria de frota — vetor · android · dark-first</div>
+    </div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
+    <div style="display:flex;align-items:center;gap:7px;padding:5px 11px;border:1px solid #26334a;border-radius:8px;font:500 11px 'IBM Plex Mono',monospace;color:#a9b6c9"><span style="width:11px;height:11px;border-radius:3px;background:#5cb3ff"></span>marca #5cb3ff</div>
+    <div style="display:flex;align-items:center;gap:7px;padding:5px 11px;border:1px solid #26334a;border-radius:8px;font:500 11px 'IBM Plex Mono',monospace;color:#a9b6c9"><span style="width:11px;height:11px;border-radius:3px;background:#2fd08a"></span>ok #2fd08a</div>
+    <div style="display:flex;align-items:center;gap:7px;padding:5px 11px;border:1px solid #26334a;border-radius:8px;font:500 11px 'IBM Plex Mono',monospace;color:#a9b6c9"><span style="width:11px;height:11px;border-radius:3px;background:#f5b23d"></span>atenção #f5b23d</div>
+    <div style="display:flex;align-items:center;gap:7px;padding:5px 11px;border:1px solid #26334a;border-radius:8px;font:500 11px 'IBM Plex Mono',monospace;color:#a9b6c9"><span style="width:11px;height:11px;border-radius:3px;background:#ff5d52"></span>trocar #ff5d52</div>
+    <div style="display:flex;align-items:center;gap:7px;padding:5px 11px;border:1px solid #26334a;border-radius:8px;font:500 11px 'IBM Plex Mono',monospace;color:#a9b6c9">Saira · Plex Sans · Plex Mono</div>
+  </div>
+</div>
+
+<section class="dv-turn" id="t3">
+  <div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname">fluxo completo ponta a ponta — estilo simplificado do turno 2, na ordem de uso</span></div>
+  <div class="dv-opts">
+
+    <!-- 3a splash -->
+    <div class="dv-opt" id="3a">
+      <div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>1 · splash</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:linear-gradient(180deg,#0d1320,#0a1730);border-radius:34px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="width:88px;height:88px;border-radius:24px;background:#0f3f7a;display:flex;align-items:center;justify-content:center;box-shadow:0 16px 40px rgba(3,8,18,.5)"><span class="ms" style="font-size:48px;color:#bcdcff">sensors</span></div>
+          <div style="font:700 34px/1 'Saira',sans-serif;color:#e9eef7;letter-spacing:1px;margin-top:22px">vetor</div>
+          <div style="font:500 13px 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-top:6px">vistoria de frota</div>
+          <div style="position:absolute;bottom:64px;width:140px;height:5px;border-radius:3px;background:#1c2638;overflow:hidden"><div style="width:45%;height:100%;border-radius:3px;background:#5cb3ff"></div></div>
+          <div style="position:absolute;bottom:36px;font:500 10.5px 'IBM Plex Mono',monospace;color:#6b7a92">v2.4.1 · funciona sem internet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3b login -->
+    <div class="dv-opt" id="3b">
+      <div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>2 · login — entrada simples, deixa claro que funciona offline</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none"><span>9:41</span><span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:17px">battery_5_bar</span></span></div>
+          <div style="padding:26px 22px 0;flex:none">
+            <div style="width:56px;height:56px;border-radius:16px;background:#0f3f7a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:30px;color:#bcdcff">sensors</span></div>
+            <div style="font:600 26px/1.2 'IBM Plex Sans',sans-serif;color:#e9eef7;margin-top:18px">bem-vindo de volta</div>
+            <div style="font:500 15px/1.5 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-top:6px">entre com seu usuário e senha</div>
+          </div>
+          <div style="padding:24px 20px 0;display:flex;flex-direction:column;gap:14px;flex:none">
+            <div>
+              <div style="font:600 13px 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-bottom:7px">usuário</div>
+              <div style="height:58px;border-radius:16px;background:#151d2c;border:2px solid #5cb3ff;display:flex;align-items:center;gap:11px;padding:0 16px"><span class="ms" style="font-size:22px;color:#5cb3ff">person</span><span style="font:500 18px 'IBM Plex Sans',sans-serif;color:#e9eef7">marcos.oliveira</span><span style="width:2px;height:22px;background:#5cb3ff;animation:vv-pulse 1s steps(2) infinite"></span></div>
+            </div>
+            <div>
+              <div style="font:600 13px 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-bottom:7px">senha</div>
+              <div style="height:58px;border-radius:16px;background:#151d2c;border:1px solid #26334a;display:flex;align-items:center;gap:11px;padding:0 16px"><span class="ms" style="font-size:22px;color:#6b7a92">lock</span><span style="font:500 18px 'IBM Plex Mono',monospace;color:#6b7a92;letter-spacing:4px">••••••</span><span style="flex:1"></span><span class="ms" style="font-size:22px;color:#6b7a92">visibility</span></div>
+            </div>
+            <button style="height:62px;border:none;border-radius:18px;background:#5cb3ff;color:#06121f;font:600 18px 'IBM Plex Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 24px rgba(92,179,255,.3);margin-top:4px">entrar<span class="ms" style="font-size:24px">arrow_forward</span></button>
+            <div style="text-align:center;font:500 15px 'IBM Plex Sans',sans-serif;color:#5cb3ff;padding:6px 0">esqueci minha senha</div>
+          </div>
+          <div style="flex:1"></div>
+          <div style="margin:0 16px 12px;padding:13px 15px;border-radius:14px;background:rgba(245,178,61,.1);border:1px solid rgba(245,178,61,.3);display:flex;gap:11px;flex:none">
+            <span class="ms" style="font-size:22px;color:#f5b23d">wifi_off</span>
+            <div style="font:500 13.5px/1.45 'IBM Plex Sans',sans-serif;color:#f5d9a0">sem internet — se você já entrou antes neste celular, dá para entrar e trabalhar normal. tudo é enviado depois.</div>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3c home -->
+    <div class="dv-opt" id="3c">
+      <div class="dv-olabel"><a class="dv-oid" href="#3c">3c</a>3 · home — igual à <a class="dv-oid" href="#2c">2c</a>, ponto de partida de tudo</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none"><span>9:41</span><span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:17px">battery_5_bar</span></span></div>
+          <div style="padding:14px 20px 0;flex:none">
+            <div style="font:600 24px/1.2 'IBM Plex Sans',sans-serif;color:#e9eef7">olá, marcos</div>
+            <div style="font:500 15px/1.5 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-top:4px">sua van de hoje é a <b style="color:#e9eef7;font-family:'IBM Plex Mono',monospace">RQF-2318</b></div>
+          </div>
+          <div style="margin:16px 16px 0;padding:14px 16px;border-radius:16px;background:rgba(245,178,61,.1);border:1px solid rgba(245,178,61,.3);display:flex;gap:12px;flex:none">
+            <span class="ms" style="font-size:24px;color:#f5b23d">wifi_off</span>
+            <div style="font:500 14px/1.45 'IBM Plex Sans',sans-serif;color:#f5d9a0">sem internet agora — pode trabalhar normal. <b style="color:#e9eef7">3 vistorias</b> serão enviadas sozinhas quando a internet voltar.</div>
+          </div>
+          <div style="padding:18px 16px 0;flex:none">
+            <button style="width:100%;height:84px;border:none;border-radius:22px;background:#5cb3ff;color:#06121f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;box-shadow:0 12px 28px rgba(92,179,255,.32)">
+              <span style="display:flex;align-items:center;gap:10px;font:600 21px 'IBM Plex Sans',sans-serif"><span class="ms" style="font-size:28px">assignment_turned_in</span>começar vistoria</span>
+              <span style="font:500 12.5px 'IBM Plex Sans',sans-serif;opacity:.75">leva uns 5 minutos</span>
+            </button>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:20px 16px 0">
+            <div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-bottom:6px">suas últimas vistorias</div>
+            <div style="display:flex;align-items:center;gap:12px;min-height:58px;border-top:1px solid #1c2638">
+              <span class="ms" style="font-size:24px;color:#f5b23d">schedule</span>
+              <div style="flex:1"><div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#e9eef7">hoje, 08:05</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#f5b23d">guardada no celular, vai ser enviada</div></div>
+              <span class="ms" style="font-size:20px;color:#6b7a92">chevron_right</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;min-height:58px;border-top:1px solid #1c2638">
+              <span class="ms" style="font-size:24px;color:#2fd08a;font-variation-settings:'FILL' 1">check_circle</span>
+              <div style="flex:1"><div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#e9eef7">ontem, 16:20</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#a9b6c9">enviada — tudo certo</div></div>
+              <span class="ms" style="font-size:20px;color:#6b7a92">chevron_right</span>
+            </div>
+          </div>
+          <div style="display:flex;border-top:1px solid #1c2638;flex:none">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 4px;color:#5cb3ff"><span class="ms" style="font-size:24px;font-variation-settings:'FILL' 1">home</span><span style="font:600 11px 'IBM Plex Sans',sans-serif">início</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 4px;color:#6b7a92"><span class="ms" style="font-size:24px">history</span><span style="font:500 11px 'IBM Plex Sans',sans-serif">histórico</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 4px;color:#6b7a92"><span class="ms" style="font-size:24px">person</span><span style="font:500 11px 'IBM Plex Sans',sans-serif">perfil</span></div>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3d confirmar veículo -->
+    <div class="dv-opt" id="3d">
+      <div class="dv-olabel"><a class="dv-oid" href="#3d">3d</a>4 · confirmar o veículo — pergunta única antes de começar</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none"><span>9:41</span><span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:17px">battery_5_bar</span></span></div>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 16px 0;flex:none">
+            <div style="width:48px;height:48px;border-radius:14px;background:#151d2c;border:1px solid #26334a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:24px;color:#e9eef7">arrow_back</span></div>
+          </div>
+          <div style="padding:16px 20px 0;flex:none">
+            <div style="font:600 26px/1.25 'IBM Plex Sans',sans-serif;color:#e9eef7">você está com esta van?</div>
+            <div style="font:500 15px/1.5 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-top:6px">confira a placa antes de começar</div>
+          </div>
+          <div style="margin:18px 16px 0;border-radius:20px;background:#151d2c;border:1px solid #26334a;overflow:hidden;flex:none">
+            <div style="height:150px;background:repeating-linear-gradient(45deg,#1c2638 0 8px,#151d2c 8px 16px);display:flex;align-items:center;justify-content:center"><span style="font:500 12px 'IBM Plex Mono',monospace;color:#6b7a92">foto da van</span></div>
+            <div style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:6px">
+              <div style="padding:8px 22px;border-radius:10px;background:#e9eef7;border:2px solid #33425f"><span style="font:700 26px 'IBM Plex Mono',monospace;color:#0d1320;letter-spacing:3px">RQF-2318</span></div>
+              <div style="font:500 14px 'IBM Plex Sans',sans-serif;color:#a9b6c9">mercedes sprinter 415 · branca</div>
+              <div style="display:flex;align-items:center;gap:6px;font:500 12.5px 'IBM Plex Mono',monospace;color:#6b7a92"><span class="ms" style="font-size:16px">speed</span>km atual: 84 312</div>
+            </div>
+          </div>
+          <div style="flex:1"></div>
+          <div style="padding:0 16px 8px;display:flex;flex-direction:column;gap:11px;flex:none">
+            <button style="height:64px;border:none;border-radius:18px;background:#5cb3ff;color:#06121f;font:600 19px 'IBM Plex Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 24px rgba(92,179,255,.3)"><span class="ms" style="font-size:26px">check</span>sim, é essa</button>
+            <button style="height:58px;border:1px solid #33425f;border-radius:18px;background:#151d2c;color:#e9eef7;font:600 16px 'IBM Plex Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:9px"><span class="ms" style="font-size:22px">swap_horiz</span>não, escolher outra</button>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3e permissão câmera -->
+    <div class="dv-opt" id="3e">
+      <div class="dv-olabel"><a class="dv-oid" href="#3e">3e</a>5 · pedido de câmera — aparece uma vez, antes do primeiro passo com foto</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none"><span>9:41</span><span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:17px">battery_5_bar</span></span></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 26px;text-align:center">
+            <div style="width:96px;height:96px;border-radius:26px;background:rgba(92,179,255,.14);display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:50px;color:#5cb3ff">photo_camera</span></div>
+            <div style="font:600 25px/1.25 'IBM Plex Sans',sans-serif;color:#e9eef7;margin-top:22px">vamos usar a câmera</div>
+            <div style="font:500 15.5px/1.55 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-top:10px">as fotos dos pneus e das avarias fazem parte da vistoria. as fotos ficam só no sistema da empresa.</div>
+          </div>
+          <div style="padding:0 16px 8px;display:flex;flex-direction:column;gap:11px;flex:none">
+            <button style="height:64px;border:none;border-radius:18px;background:#5cb3ff;color:#06121f;font:600 18px 'IBM Plex Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 24px rgba(92,179,255,.3)">deixar usar a câmera</button>
+            <button style="height:54px;border:none;border-radius:18px;background:transparent;color:#a9b6c9;font:600 15px 'IBM Plex Sans',sans-serif">agora não</button>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3f checklist -->
+    <div class="dv-opt" id="3f">
+      <div class="dv-olabel"><a class="dv-oid" href="#3f">3f</a>6 · checklist — igual à <a class="dv-oid" href="#2b">2b</a>, o mapa da vistoria</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none"><span>9:41</span><span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:17px">battery_5_bar</span></span></div>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 16px 4px;flex:none">
+            <div style="width:48px;height:48px;border-radius:14px;background:#151d2c;border:1px solid #26334a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:24px;color:#e9eef7">arrow_back</span></div>
+            <div style="flex:1"><div style="font:600 19px/1.2 'IBM Plex Sans',sans-serif;color:#e9eef7">vistoria da van RQF-2318</div><div style="font:500 13px 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-top:2px">falta pouco: 2 de 5 passos feitos</div></div>
+          </div>
+          <div style="padding:10px 16px 12px;flex:none">
+            <div style="height:10px;border-radius:5px;background:#1c2638;overflow:hidden"><div style="width:40%;height:100%;border-radius:5px;background:#2fd08a"></div></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:0 16px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:13px;min-height:64px;padding:0 14px;border-radius:16px;background:#12202f;border:1px solid rgba(47,208,138,.35)">
+              <span class="ms" style="font-size:28px;color:#2fd08a;font-variation-settings:'FILL' 1">check_circle</span>
+              <div style="flex:1"><div style="font:600 16px 'IBM Plex Sans',sans-serif;color:#e9eef7">pneus</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#2fd08a">feito — tudo bom</div></div>
+              <span style="font:500 13px 'IBM Plex Sans',sans-serif;color:#5cb3ff">rever</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:13px;min-height:64px;padding:0 14px;border-radius:16px;background:#12202f;border:1px solid rgba(245,178,61,.4)">
+              <span class="ms" style="font-size:28px;color:#f5b23d;font-variation-settings:'FILL' 1">warning</span>
+              <div style="flex:1"><div style="font:600 16px 'IBM Plex Sans',sans-serif;color:#e9eef7">óleo e água</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#f5b23d">feito — óleo precisa de atenção</div></div>
+              <span style="font:500 13px 'IBM Plex Sans',sans-serif;color:#5cb3ff">rever</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:13px;min-height:76px;padding:0 14px;border-radius:16px;background:#152a45;border:2px solid #5cb3ff">
+              <div style="width:44px;height:44px;border-radius:12px;background:rgba(92,179,255,.16);display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:25px;color:#5cb3ff">lightbulb</span></div>
+              <div style="flex:1"><div style="font:600 17px 'IBM Plex Sans',sans-serif;color:#e9eef7">luzes e setas</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#5cb3ff">é o próximo passo</div></div>
+              <span class="ms" style="font-size:24px;color:#5cb3ff">arrow_forward</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:13px;min-height:60px;padding:0 14px;border-radius:16px;background:#111826;border:1px solid #1c2638;opacity:.75">
+              <span class="ms" style="font-size:26px;color:#6b7a92">radio_button_unchecked</span>
+              <div style="flex:1"><div style="font:600 16px 'IBM Plex Sans',sans-serif;color:#a9b6c9">freios</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#6b7a92">ainda não</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:13px;min-height:60px;padding:0 14px;border-radius:16px;background:#111826;border:1px solid #1c2638;opacity:.75">
+              <span class="ms" style="font-size:26px;color:#6b7a92">radio_button_unchecked</span>
+              <div style="flex:1"><div style="font:600 16px 'IBM Plex Sans',sans-serif;color:#a9b6c9">avarias na lataria</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#6b7a92">ainda não</div></div>
+            </div>
+          </div>
+          <div style="padding:12px 16px 8px;flex:none">
+            <button style="width:100%;height:62px;border:none;border-radius:18px;background:#5cb3ff;color:#06121f;font:600 18px 'IBM Plex Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 24px rgba(92,179,255,.3)">continuar: luzes e setas<span class="ms" style="font-size:24px">arrow_forward</span></button>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3g câmera -->
+    <div class="dv-opt" id="3g">
+      <div class="dv-olabel"><a class="dv-oid" href="#3g">3g</a>7 · câmera do pneu — quadro-guia e um botão só</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#05070c;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,#141b28 0 9px,#0e1522 9px 18px)"></div>
+          <div style="position:relative;height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none"><span>9:41</span><span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:17px">battery_5_bar</span></span></div>
+          <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;flex:none">
+            <div style="width:48px;height:48px;border-radius:14px;background:rgba(5,7,12,.65);display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:24px;color:#e9eef7">close</span></div>
+            <div style="padding:8px 16px;border-radius:12px;background:rgba(5,7,12,.65);font:600 14px 'IBM Plex Sans',sans-serif;color:#e9eef7">pneu traseiro esquerdo</div>
+            <div style="width:48px;height:48px;border-radius:14px;background:rgba(5,7,12,.65);display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:24px;color:#e9eef7">flash_on</span></div>
+          </div>
+          <div style="position:relative;flex:1;display:flex;align-items:center;justify-content:center">
+            <div style="width:250px;height:250px;border-radius:28px;border:3px dashed rgba(92,179,255,.85);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2000px rgba(5,7,12,.35)">
+              <div style="padding:8px 14px;border-radius:10px;background:rgba(5,7,12,.7);font:500 13.5px 'IBM Plex Sans',sans-serif;color:#e9eef7">encaixe o pneu inteiro no quadro</div>
+            </div>
+          </div>
+          <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:38px;padding:14px 0 10px;flex:none">
+            <div style="width:52px;height:52px;border-radius:14px;background:rgba(5,7,12,.65);display:flex;align-items:center;justify-content:center;overflow:hidden"><span class="ms" style="font-size:24px;color:#a9b6c9">photo_library</span></div>
+            <div style="width:82px;height:82px;border-radius:50%;border:5px solid #e9eef7;display:flex;align-items:center;justify-content:center"><div style="width:62px;height:62px;border-radius:50%;background:#e9eef7"></div></div>
+            <div style="width:52px;height:52px;border-radius:14px;background:rgba(5,7,12,.65);display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:24px;color:#a9b6c9">help</span></div>
+          </div>
+          <div style="position:relative;height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#6b7a92"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3h avaliar pneu (trocar + alerta) -->
+    <div class="dv-opt" id="3h">
+      <div class="dv-olabel"><a class="dv-oid" href="#3h">3h</a>8 · avaliar o pneu — igual à <a class="dv-oid" href="#2a">2a</a>; ao marcar "trocar", avisa que o gestor recebe alerta</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none"><span>9:41</span><span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:17px">battery_5_bar</span></span></div>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 16px 6px;flex:none">
+            <div style="width:48px;height:48px;border-radius:14px;background:#151d2c;border:1px solid #26334a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:24px;color:#e9eef7">arrow_back</span></div>
+            <div style="flex:1;text-align:center;font:600 15px 'IBM Plex Sans',sans-serif;color:#a9b6c9">pneu 3 de 4</div>
+            <div style="width:48px"></div>
+          </div>
+          <div style="padding:0 20px;flex:none">
+            <div style="font:600 22px/1.25 'IBM Plex Sans',sans-serif;color:#e9eef7">como está o pneu <span style="color:#5cb3ff">traseiro esquerdo</span>?</div>
+          </div>
+          <div style="margin:12px 16px 0;flex:none;position:relative;height:150px;border-radius:20px;overflow:hidden;background:repeating-linear-gradient(45deg,#1c2638 0 8px,#151d2c 8px 16px);border:1px solid #26334a;display:flex;align-items:center;justify-content:center">
+            <div style="font:500 12px 'IBM Plex Mono',monospace;color:#6b7a92">foto do pneu</div>
+            <div style="position:absolute;right:12px;bottom:10px;display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:12px;background:rgba(5,7,12,.7);border:1px solid #33425f;color:#e9eef7;font:600 13px 'IBM Plex Sans',sans-serif"><span class="ms" style="font-size:18px">refresh</span>refazer</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:10px;padding:14px 16px 0">
+            <button style="min-height:58px;border:none;border-radius:18px;background:#151d2c;border:2px solid #26334a;color:#e9eef7;display:flex;align-items:center;gap:14px;padding:0 18px;font:600 18px 'IBM Plex Sans',sans-serif;text-align:left"><span class="ms" style="font-size:28px;color:#2fd08a;font-variation-settings:'FILL' 1">check_circle</span>está bom</button>
+            <button style="min-height:58px;border:none;border-radius:18px;background:#151d2c;border:2px solid #26334a;color:#e9eef7;display:flex;align-items:center;gap:14px;padding:0 18px;font:600 18px 'IBM Plex Sans',sans-serif;text-align:left"><span class="ms" style="font-size:28px;color:#f5b23d;font-variation-settings:'FILL' 1">warning</span>precisa de atenção</button>
+            <button style="min-height:58px;border:none;border-radius:18px;background:rgba(255,93,82,.16);border:2px solid #ff5d52;color:#e9eef7;display:flex;align-items:center;gap:14px;padding:0 18px;font:600 18px 'IBM Plex Sans',sans-serif;text-align:left"><span class="ms" style="font-size:28px;color:#ff5d52;font-variation-settings:'FILL' 1">cancel</span>precisa trocar</button>
+          </div>
+          <div style="margin:12px 16px 0;padding:13px 15px;border-radius:14px;background:rgba(255,93,82,.1);border:1px solid rgba(255,93,82,.35);display:flex;gap:11px;flex:none">
+            <span class="ms" style="font-size:22px;color:#ff5d52">campaign</span>
+            <div style="font:500 13.5px/1.45 'IBM Plex Sans',sans-serif;color:#ffc9c4">o gestor da frota vai receber um <b style="color:#e9eef7">alerta deste pneu</b> junto com a foto.</div>
+          </div>
+          <div style="padding:12px 16px 8px;flex:none">
+            <button style="width:100%;height:60px;border:none;border-radius:18px;background:#ff5d52;color:#1a0503;font:600 18px 'IBM Plex Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 24px rgba(255,93,82,.3)">confirmar: precisa trocar</button>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3i revisão -->
+    <div class="dv-opt" id="3i">
+      <div class="dv-olabel"><a class="dv-oid" href="#3i">3i</a>9 · revisão antes de enviar — resumo simples, avisa que ficará guardada se estiver offline</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none"><span>9:41</span><span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:17px">battery_5_bar</span></span></div>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 16px 4px;flex:none">
+            <div style="width:48px;height:48px;border-radius:14px;background:#151d2c;border:1px solid #26334a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:24px;color:#e9eef7">arrow_back</span></div>
+            <div style="flex:1"><div style="font:600 19px/1.2 'IBM Plex Sans',sans-serif;color:#e9eef7">confira antes de enviar</div><div style="font:500 13px 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-top:2px">van RQF-2318 · hoje, 09:38</div></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:10px 16px 0;display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:14px;background:#151d2c;border:1px solid rgba(255,93,82,.4)">
+              <div style="width:46px;height:46px;border-radius:11px;background:repeating-linear-gradient(45deg,#1c2638 0 5px,#151d2c 5px 10px);border:1px solid #26334a;flex:none"></div>
+              <div style="flex:1"><div style="font:600 15px 'IBM Plex Sans',sans-serif;color:#e9eef7">pneu traseiro esquerdo</div><div style="display:flex;align-items:center;gap:5px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#ff5d52;margin-top:2px"><span class="ms" style="font-size:15px;font-variation-settings:'FILL' 1">cancel</span>precisa trocar · vira alerta</div></div>
+              <span style="font:500 13px 'IBM Plex Sans',sans-serif;color:#5cb3ff">mudar</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:14px;background:#151d2c;border:1px solid #26334a">
+              <div style="width:46px;height:46px;border-radius:11px;background:repeating-linear-gradient(45deg,#1c2638 0 5px,#151d2c 5px 10px);border:1px solid #26334a;flex:none"></div>
+              <div style="flex:1"><div style="font:600 15px 'IBM Plex Sans',sans-serif;color:#e9eef7">outros 3 pneus</div><div style="display:flex;align-items:center;gap:5px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#2fd08a;margin-top:2px"><span class="ms" style="font-size:15px;font-variation-settings:'FILL' 1">check_circle</span>estão bons</div></div>
+              <span style="font:500 13px 'IBM Plex Sans',sans-serif;color:#5cb3ff">mudar</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:14px;background:#151d2c;border:1px solid rgba(245,178,61,.4)">
+              <div style="width:46px;height:46px;border-radius:11px;background:#1c2638;border:1px solid #26334a;flex:none;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:23px;color:#f5b23d">opacity</span></div>
+              <div style="flex:1"><div style="font:600 15px 'IBM Plex Sans',sans-serif;color:#e9eef7">óleo</div><div style="display:flex;align-items:center;gap:5px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#f5b23d;margin-top:2px"><span class="ms" style="font-size:15px;font-variation-settings:'FILL' 1">warning</span>precisa de atenção</div></div>
+              <span style="font:500 13px 'IBM Plex Sans',sans-serif;color:#5cb3ff">mudar</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:14px;background:#151d2c;border:1px solid #26334a">
+              <div style="width:46px;height:46px;border-radius:11px;background:#1c2638;border:1px solid #26334a;flex:none;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:23px;color:#2fd08a">lightbulb</span></div>
+              <div style="flex:1"><div style="font:600 15px 'IBM Plex Sans',sans-serif;color:#e9eef7">luzes, freios e lataria</div><div style="display:flex;align-items:center;gap:5px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#2fd08a;margin-top:2px"><span class="ms" style="font-size:15px;font-variation-settings:'FILL' 1">check_circle</span>tudo certo</div></div>
+              <span style="font:500 13px 'IBM Plex Sans',sans-serif;color:#5cb3ff">mudar</span>
+            </div>
+          </div>
+          <div style="margin:10px 16px 0;padding:12px 14px;border-radius:14px;background:rgba(245,178,61,.1);border:1px solid rgba(245,178,61,.3);display:flex;gap:11px;flex:none">
+            <span class="ms" style="font-size:21px;color:#f5b23d">wifi_off</span>
+            <div style="font:500 13px/1.45 'IBM Plex Sans',sans-serif;color:#f5d9a0">sem internet — a vistoria fica <b style="color:#e9eef7">guardada no celular</b> e é enviada sozinha depois.</div>
+          </div>
+          <div style="padding:12px 16px 8px;flex:none">
+            <button style="width:100%;height:62px;border:none;border-radius:18px;background:#5cb3ff;color:#06121f;font:600 18px 'IBM Plex Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 24px rgba(92,179,255,.3)"><span class="ms" style="font-size:24px">task_alt</span>finalizar vistoria</button>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3j confirmação -->
+    <div class="dv-opt" id="3j">
+      <div class="dv-olabel"><a class="dv-oid" href="#3j">3j</a>10 · confirmação — vistoria guardada, explica o envio automático</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none"><span>9:41</span><span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:17px">battery_5_bar</span></span></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 26px;text-align:center">
+            <div style="width:104px;height:104px;border-radius:50%;background:rgba(47,208,138,.14);border:3px solid #2fd08a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:56px;color:#2fd08a">check</span></div>
+            <div style="font:600 26px/1.25 'IBM Plex Sans',sans-serif;color:#e9eef7;margin-top:22px">vistoria concluída!</div>
+            <div style="font:500 15.5px/1.55 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-top:10px">ela está <b style="color:#e9eef7">guardada no celular</b>. quando a internet voltar, será enviada sozinha — você não precisa fazer nada.</div>
+            <div style="margin-top:18px;display:flex;align-items:center;gap:9px;padding:11px 16px;border-radius:14px;background:#151d2c;border:1px solid #26334a">
+              <span class="ms" style="font-size:20px;color:#f5b23d">schedule</span>
+              <span style="font:500 14px 'IBM Plex Sans',sans-serif;color:#a9b6c9"><b style="color:#e9eef7;font-family:'IBM Plex Mono',monospace">4</b> vistorias na fila de envio</span>
+            </div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:12px;background:rgba(255,93,82,.1);border:1px solid rgba(255,93,82,.3)">
+              <span class="ms" style="font-size:18px;color:#ff5d52">campaign</span>
+              <span style="font:500 13px 'IBM Plex Sans',sans-serif;color:#ffc9c4">1 alerta de pneu vai junto para o gestor</span>
+            </div>
+          </div>
+          <div style="padding:0 16px 8px;display:flex;flex-direction:column;gap:11px;flex:none">
+            <button style="height:62px;border:none;border-radius:18px;background:#5cb3ff;color:#06121f;font:600 18px 'IBM Plex Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 24px rgba(92,179,255,.3)">voltar para o início</button>
+            <button style="height:52px;border:none;border-radius:16px;background:transparent;color:#5cb3ff;font:600 15px 'IBM Plex Sans',sans-serif">ver o resumo desta vistoria</button>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3k histórico -->
+    <div class="dv-opt" id="3k">
+      <div class="dv-olabel"><a class="dv-oid" href="#3k">3k</a>11 · histórico — enviadas × na fila; o sinal volta e a fila esvazia</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none"><span>9:41</span><span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#2fd08a">wifi</span><span class="ms" style="font-size:17px">battery_5_bar</span></span></div>
+          <div style="padding:12px 20px 0;flex:none">
+            <div style="font:600 22px/1.2 'IBM Plex Sans',sans-serif;color:#e9eef7">suas vistorias</div>
+          </div>
+          <div style="margin:12px 16px 0;padding:13px 15px;border-radius:14px;background:rgba(47,208,138,.1);border:1px solid rgba(47,208,138,.35);display:flex;gap:11px;align-items:center;flex:none">
+            <span class="ms" style="font-size:22px;color:#2fd08a;animation:vv-pulse 1.6s ease-in-out infinite">sync</span>
+            <div style="flex:1;font:500 13.5px/1.4 'IBM Plex Sans',sans-serif;color:#bdf0d8">internet voltou! enviando <b style="color:#e9eef7;font-family:'IBM Plex Mono',monospace">2 de 4</b> vistorias…</div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:12px 16px 0">
+            <div style="font:600 12.5px 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-bottom:4px">hoje</div>
+            <div style="display:flex;align-items:center;gap:12px;min-height:62px;border-top:1px solid #1c2638">
+              <span class="ms" style="font-size:24px;color:#2fd08a;animation:vv-pulse 1.6s ease-in-out infinite">sync</span>
+              <div style="flex:1"><div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#e9eef7">09:38 · van RQF-2318</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#2fd08a">enviando agora… · 1 alerta de pneu</div></div>
+              <span class="ms" style="font-size:20px;color:#6b7a92">chevron_right</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;min-height:62px;border-top:1px solid #1c2638">
+              <span class="ms" style="font-size:24px;color:#f5b23d">schedule</span>
+              <div style="flex:1"><div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#e9eef7">08:05 · van RQF-2318</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#f5b23d">na fila — é a próxima</div></div>
+              <span class="ms" style="font-size:20px;color:#6b7a92">chevron_right</span>
+            </div>
+            <div style="font:600 12.5px 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin:12px 0 4px">ontem</div>
+            <div style="display:flex;align-items:center;gap:12px;min-height:62px;border-top:1px solid #1c2638">
+              <span class="ms" style="font-size:24px;color:#2fd08a;font-variation-settings:'FILL' 1">check_circle</span>
+              <div style="flex:1"><div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#e9eef7">16:20 · caminhão MTP-4471</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#a9b6c9">enviada — tudo certo</div></div>
+              <span class="ms" style="font-size:20px;color:#6b7a92">chevron_right</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;min-height:62px;border-top:1px solid #1c2638">
+              <span class="ms" style="font-size:24px;color:#2fd08a;font-variation-settings:'FILL' 1">check_circle</span>
+              <div style="flex:1"><div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#e9eef7">07:52 · van RQF-2318</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#a9b6c9">enviada — teve 1 atenção (óleo)</div></div>
+              <span class="ms" style="font-size:20px;color:#6b7a92">chevron_right</span>
+            </div>
+          </div>
+          <div style="display:flex;border-top:1px solid #1c2638;flex:none">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 4px;color:#6b7a92"><span class="ms" style="font-size:24px">home</span><span style="font:500 11px 'IBM Plex Sans',sans-serif">início</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 4px;color:#5cb3ff"><span class="ms" style="font-size:24px;font-variation-settings:'FILL' 1">history</span><span style="font:600 11px 'IBM Plex Sans',sans-serif">histórico</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 4px;color:#6b7a92"><span class="ms" style="font-size:24px">person</span><span style="font:500 11px 'IBM Plex Sans',sans-serif">perfil</span></div>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <p class="dv-next">Experimente a seguir: "transformar em protótipo navegável (um app só, tela a tela)" · "mostrar os estados de erro (foto falhou, envio falhou, sem veículo vinculado)" · "trocar a ordem: pedir a câmera só na hora da primeira foto"</p>
+</section>
+
+<section class="dv-turn" id="t2">
+  <div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">versão simplificada — uma coisa por tela, texto grande, linguagem falada (menos instrumento, mais clareza)</span></div>
+  <div class="dv-opts">
+
+    <!-- 2a: um pneu por vez, 3 botões gigantes -->
+    <div class="dv-opt" id="2a">
+      <div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>um pneu por vez — pergunta direta, foto grande, 3 botões gigantes com cor + ícone + palavra</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none">
+            <span>9:41</span>
+            <span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:17px">battery_5_bar</span></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 16px 6px;flex:none">
+            <div style="width:48px;height:48px;border-radius:14px;background:#151d2c;border:1px solid #26334a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:24px;color:#e9eef7">arrow_back</span></div>
+            <div style="flex:1;text-align:center;font:600 15px 'IBM Plex Sans',sans-serif;color:#a9b6c9">pneu 3 de 4</div>
+            <div style="width:48px"></div>
+          </div>
+          <div style="display:flex;gap:6px;padding:0 16px 14px;flex:none">
+            <div style="flex:1;height:6px;border-radius:3px;background:#2fd08a"></div>
+            <div style="flex:1;height:6px;border-radius:3px;background:#2fd08a"></div>
+            <div style="flex:1;height:6px;border-radius:3px;background:#5cb3ff"></div>
+            <div style="flex:1;height:6px;border-radius:3px;background:#26334a"></div>
+          </div>
+          <div style="padding:0 20px;flex:none">
+            <div style="font:600 24px/1.25 'IBM Plex Sans',sans-serif;color:#e9eef7">como está o pneu <span style="color:#5cb3ff">traseiro esquerdo</span>?</div>
+          </div>
+          <div style="margin:14px 16px 0;flex:none;position:relative;height:190px;border-radius:20px;overflow:hidden;background:repeating-linear-gradient(45deg,#1c2638 0 8px,#151d2c 8px 16px);border:1px solid #26334a;display:flex;align-items:center;justify-content:center">
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(13,19,32,.85))"></div>
+            <div style="font:500 12px 'IBM Plex Mono',monospace;color:#6b7a92">foto do pneu</div>
+            <div style="position:absolute;left:14px;bottom:12px;display:flex;align-items:center;gap:7px;color:#e9eef7;font:600 13px 'IBM Plex Sans',sans-serif"><span class="ms" style="font-size:18px;color:#2fd08a">check</span>foto tirada</div>
+            <div style="position:absolute;right:12px;bottom:10px;display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:12px;background:rgba(5,7,12,.7);border:1px solid #33425f;color:#e9eef7;font:600 13px 'IBM Plex Sans',sans-serif"><span class="ms" style="font-size:18px">refresh</span>refazer</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:11px;padding:16px 16px 8px">
+            <button style="flex:1;min-height:64px;border:none;border-radius:18px;background:rgba(47,208,138,.16);border:2px solid #2fd08a;color:#e9eef7;display:flex;align-items:center;gap:14px;padding:0 18px;font:600 19px 'IBM Plex Sans',sans-serif;text-align:left"><span class="ms" style="font-size:30px;color:#2fd08a;font-variation-settings:'FILL' 1">check_circle</span>está bom</button>
+            <button style="flex:1;min-height:64px;border:none;border-radius:18px;background:#151d2c;border:2px solid #26334a;color:#e9eef7;display:flex;align-items:center;gap:14px;padding:0 18px;font:600 19px 'IBM Plex Sans',sans-serif;text-align:left"><span class="ms" style="font-size:30px;color:#f5b23d;font-variation-settings:'FILL' 1">warning</span>precisa de atenção</button>
+            <button style="flex:1;min-height:64px;border:none;border-radius:18px;background:#151d2c;border:2px solid #26334a;color:#e9eef7;display:flex;align-items:center;gap:14px;padding:0 18px;font:600 19px 'IBM Plex Sans',sans-serif;text-align:left"><span class="ms" style="font-size:30px;color:#ff5d52;font-variation-settings:'FILL' 1">cancel</span>precisa trocar</button>
+          </div>
+          <div style="padding:4px 16px 10px;flex:none;text-align:center;font:500 13px 'IBM Plex Sans',sans-serif;color:#6b7a92">escolha uma opção para continuar</div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2b: checklist como lista de passos simples -->
+    <div class="dv-opt" id="2b">
+      <div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>checklist como lista de passos — feito/agora/depois, sem números técnicos, um botão só</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none">
+            <span>9:41</span>
+            <span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:17px">battery_5_bar</span></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 16px 4px;flex:none">
+            <div style="width:48px;height:48px;border-radius:14px;background:#151d2c;border:1px solid #26334a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:24px;color:#e9eef7">arrow_back</span></div>
+            <div style="flex:1"><div style="font:600 19px/1.2 'IBM Plex Sans',sans-serif;color:#e9eef7">vistoria da van RQF-2318</div><div style="font:500 13px 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-top:2px">falta pouco: 2 de 5 passos feitos</div></div>
+          </div>
+          <div style="padding:10px 16px 12px;flex:none">
+            <div style="height:10px;border-radius:5px;background:#1c2638;overflow:hidden"><div style="width:40%;height:100%;border-radius:5px;background:#2fd08a"></div></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:0 16px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:13px;min-height:64px;padding:0 14px;border-radius:16px;background:#12202f;border:1px solid rgba(47,208,138,.35)">
+              <span class="ms" style="font-size:28px;color:#2fd08a;font-variation-settings:'FILL' 1">check_circle</span>
+              <div style="flex:1"><div style="font:600 16px 'IBM Plex Sans',sans-serif;color:#e9eef7">pneus</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#2fd08a">feito — tudo bom</div></div>
+              <span style="font:500 13px 'IBM Plex Sans',sans-serif;color:#5cb3ff">rever</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:13px;min-height:64px;padding:0 14px;border-radius:16px;background:#12202f;border:1px solid rgba(245,178,61,.4)">
+              <span class="ms" style="font-size:28px;color:#f5b23d;font-variation-settings:'FILL' 1">warning</span>
+              <div style="flex:1"><div style="font:600 16px 'IBM Plex Sans',sans-serif;color:#e9eef7">óleo e água</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#f5b23d">feito — óleo precisa de atenção</div></div>
+              <span style="font:500 13px 'IBM Plex Sans',sans-serif;color:#5cb3ff">rever</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:13px;min-height:76px;padding:0 14px;border-radius:16px;background:#152a45;border:2px solid #5cb3ff">
+              <div style="width:44px;height:44px;border-radius:12px;background:rgba(92,179,255,.16);display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:25px;color:#5cb3ff">lightbulb</span></div>
+              <div style="flex:1"><div style="font:600 17px 'IBM Plex Sans',sans-serif;color:#e9eef7">luzes e setas</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#5cb3ff">é o próximo passo</div></div>
+              <span class="ms" style="font-size:24px;color:#5cb3ff">arrow_forward</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:13px;min-height:60px;padding:0 14px;border-radius:16px;background:#111826;border:1px solid #1c2638;opacity:.75">
+              <span class="ms" style="font-size:26px;color:#6b7a92">radio_button_unchecked</span>
+              <div style="flex:1"><div style="font:600 16px 'IBM Plex Sans',sans-serif;color:#a9b6c9">freios</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#6b7a92">ainda não</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:13px;min-height:60px;padding:0 14px;border-radius:16px;background:#111826;border:1px solid #1c2638;opacity:.75">
+              <span class="ms" style="font-size:26px;color:#6b7a92">radio_button_unchecked</span>
+              <div style="flex:1"><div style="font:600 16px 'IBM Plex Sans',sans-serif;color:#a9b6c9">avarias na lataria</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#6b7a92">ainda não</div></div>
+            </div>
+          </div>
+          <div style="padding:12px 16px 8px;flex:none">
+            <button style="width:100%;height:62px;border:none;border-radius:18px;background:#5cb3ff;color:#06121f;font:600 18px 'IBM Plex Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 24px rgba(92,179,255,.3)">continuar: luzes e setas<span class="ms" style="font-size:24px">arrow_forward</span></button>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2c: home simples com sync em frase -->
+    <div class="dv-opt" id="2c">
+      <div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>home em linguagem falada — um botão gigante, offline explicado numa frase, sem mostradores</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none">
+            <span>9:41</span>
+            <span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:17px">battery_5_bar</span></span>
+          </div>
+          <div style="padding:14px 20px 0;flex:none">
+            <div style="font:600 24px/1.2 'IBM Plex Sans',sans-serif;color:#e9eef7">olá, marcos</div>
+            <div style="font:500 15px/1.5 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-top:4px">sua van de hoje é a <b style="color:#e9eef7;font-family:'IBM Plex Mono',monospace">RQF-2318</b></div>
+          </div>
+          <div style="margin:16px 16px 0;padding:14px 16px;border-radius:16px;background:rgba(245,178,61,.1);border:1px solid rgba(245,178,61,.3);display:flex;gap:12px;flex:none">
+            <span class="ms" style="font-size:24px;color:#f5b23d">wifi_off</span>
+            <div style="font:500 14px/1.45 'IBM Plex Sans',sans-serif;color:#f5d9a0">sem internet agora — pode trabalhar normal. <b style="color:#e9eef7">3 vistorias</b> estão guardadas no celular e serão enviadas sozinhas quando a internet voltar.</div>
+          </div>
+          <div style="margin:16px 16px 0;padding:16px;border-radius:18px;background:#151d2c;border:1px solid #26334a;display:flex;align-items:center;gap:14px;flex:none">
+            <div style="width:56px;height:56px;border-radius:14px;background:#1c2638;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:30px;color:#5cb3ff">airport_shuttle</span></div>
+            <div style="flex:1"><div style="font:600 18px 'IBM Plex Mono',monospace;color:#e9eef7">RQF-2318</div><div style="font:500 13px 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-top:2px">sprinter branca · van de carga</div></div>
+            <span style="font:500 14px 'IBM Plex Sans',sans-serif;color:#5cb3ff">trocar</span>
+          </div>
+          <div style="padding:18px 16px 0;flex:none">
+            <button style="width:100%;height:84px;border:none;border-radius:22px;background:#5cb3ff;color:#06121f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;box-shadow:0 12px 28px rgba(92,179,255,.32)">
+              <span style="display:flex;align-items:center;gap:10px;font:600 21px 'IBM Plex Sans',sans-serif"><span class="ms" style="font-size:28px">assignment_turned_in</span>começar vistoria</span>
+              <span style="font:500 12.5px 'IBM Plex Sans',sans-serif;opacity:.75">leva uns 5 minutos</span>
+            </button>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:20px 16px 0">
+            <div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-bottom:6px">suas últimas vistorias</div>
+            <div style="display:flex;align-items:center;gap:12px;min-height:58px;border-top:1px solid #1c2638">
+              <span class="ms" style="font-size:24px;color:#f5b23d">schedule</span>
+              <div style="flex:1"><div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#e9eef7">hoje, 08:05</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#f5b23d">guardada no celular, vai ser enviada</div></div>
+              <span class="ms" style="font-size:20px;color:#6b7a92">chevron_right</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;min-height:58px;border-top:1px solid #1c2638">
+              <span class="ms" style="font-size:24px;color:#2fd08a;font-variation-settings:'FILL' 1">check_circle</span>
+              <div style="flex:1"><div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#e9eef7">ontem, 16:20</div><div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#a9b6c9">enviada — tudo certo</div></div>
+              <span class="ms" style="font-size:20px;color:#6b7a92">chevron_right</span>
+            </div>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <p class="dv-next">Experimente a seguir: "seguir com <a class="dv-oid" href="#2a">2a</a> + <a class="dv-oid" href="#2b">2b</a> + <a class="dv-oid" href="#2c">2c</a> e montar as 9 telas" · "texto ainda maior" · "versão clara (fundo branco) para sol forte"</p>
+</section>
+
+<section class="dv-turn" id="t1">
+  <div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">variações da tela-assinatura — mostradores de pneu + instrumento de sync offline</span></div>
+  <div class="dv-opts">
+
+    <!-- 1a: mostradores radiais em volta do veículo -->
+    <div class="dv-opt" id="1a">
+      <div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>pneus como dials radiais — o veículo visto de cima, 4 mostradores nos cantos que enchem com foto+estado</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none">
+            <span>9:41</span>
+            <span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:16px">signal_cellular_alt_2_bar</span><span class="ms" style="font-size:17px">battery_5_bar</span></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:6px 12px 8px;flex:none">
+            <div style="width:44px;height:44px;border-radius:12px;background:#151d2c;border:1px solid #26334a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:22px;color:#a9b6c9">arrow_back</span></div>
+            <div style="flex:1">
+              <div style="font:600 16px/1 'Saira',sans-serif;color:#e9eef7">vistoria de pneus</div>
+              <div style="font:500 11px/1.4 'IBM Plex Mono',monospace;color:#6b7a92;margin-top:3px">RQF-2318 · sprinter 415</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:10px;background:#1c2638;font:500 13px 'IBM Plex Mono',monospace;color:#e9eef7"><span style="color:#2fd08a">2</span>/4</div>
+          </div>
+          <div style="padding:0 16px 4px;flex:none">
+            <div style="position:relative;height:8px;border-radius:3px;background:repeating-linear-gradient(90deg,rgba(233,238,247,.14) 0 1px,transparent 1px 7px)">
+              <div style="position:absolute;top:0;bottom:0;left:0;width:50%;background:linear-gradient(90deg,transparent 8%,#5cb3ff);border-right:2px solid #5cb3ff;border-radius:3px"></div>
+            </div>
+          </div>
+
+          <div style="position:relative;flex:1;margin:8px 10px 0">
+            <!-- veículo -->
+            <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:92px;height:236px;border-radius:26px;background:linear-gradient(#141d2c,#101828);border:1px solid #26334a;box-shadow:inset 0 0 0 1px rgba(92,179,255,.05)">
+              <div style="position:absolute;left:14px;right:14px;top:22px;height:34px;border-radius:8px 8px 12px 12px;background:#0d1320;border:1px solid #26334a"></div>
+              <div style="position:absolute;left:16px;right:16px;bottom:26px;top:78px;border-radius:10px;background:repeating-linear-gradient(0deg,rgba(233,238,247,.05) 0 1px,transparent 1px 16px)"></div>
+              <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center"><span class="ms" style="font-size:22px;color:#33425f">airport_shuttle</span></div>
+            </div>
+            <!-- FL done ok -->
+            <div style="position:absolute;left:0;top:6px;width:94px;display:flex;flex-direction:column;align-items:center;gap:5px">
+              <div style="position:relative;width:86px;height:86px">
+                <svg width="86" height="86" viewBox="0 0 86 86" style="display:block"><circle cx="43" cy="43" r="34" fill="none" stroke="#26334a" stroke-width="6"/><circle cx="43" cy="43" r="34" fill="none" stroke="#2fd08a" stroke-width="6" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="0" transform="rotate(-90 43 43)"/></svg>
+                <div style="position:absolute;inset:15px;border-radius:50%;overflow:hidden;background:repeating-linear-gradient(45deg,#1c2638 0 5px,#151d2c 5px 10px);display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:26px;color:#2fd08a;font-variation-settings:'FILL' 1">check_circle</span></div>
+              </div>
+              <div style="text-align:center"><div style="font:500 9.5px 'IBM Plex Mono',monospace;color:#6b7a92">diant. esq</div><div style="font:600 11px 'Saira',sans-serif;color:#2fd08a">ok</div></div>
+            </div>
+            <!-- FR done warn -->
+            <div style="position:absolute;right:0;top:6px;width:94px;display:flex;flex-direction:column;align-items:center;gap:5px">
+              <div style="position:relative;width:86px;height:86px">
+                <svg width="86" height="86" viewBox="0 0 86 86" style="display:block"><circle cx="43" cy="43" r="34" fill="none" stroke="#26334a" stroke-width="6"/><circle cx="43" cy="43" r="34" fill="none" stroke="#f5b23d" stroke-width="6" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="0" transform="rotate(-90 43 43)"/></svg>
+                <div style="position:absolute;inset:15px;border-radius:50%;overflow:hidden;background:repeating-linear-gradient(45deg,#1c2638 0 5px,#151d2c 5px 10px);display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:26px;color:#f5b23d;font-variation-settings:'FILL' 1">warning</span></div>
+              </div>
+              <div style="text-align:center"><div style="font:500 9.5px 'IBM Plex Mono',monospace;color:#6b7a92">diant. dir</div><div style="font:600 11px 'Saira',sans-serif;color:#f5b23d">atenção</div></div>
+            </div>
+            <!-- RL empty (próximo) -->
+            <div style="position:absolute;left:0;bottom:2px;width:94px;display:flex;flex-direction:column;align-items:center;gap:5px">
+              <div style="position:relative;width:86px;height:86px;animation:vv-pulse 2.4s ease-in-out infinite">
+                <svg width="86" height="86" viewBox="0 0 86 86" style="display:block"><circle cx="43" cy="43" r="34" fill="none" stroke="#5cb3ff" stroke-width="6" stroke-linecap="round" stroke-dasharray="5 9"/></svg>
+                <div style="position:absolute;inset:15px;border-radius:50%;background:#101828;border:1px dashed #33425f;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:26px;color:#5cb3ff">photo_camera</span></div>
+              </div>
+              <div style="text-align:center"><div style="font:500 9.5px 'IBM Plex Mono',monospace;color:#6b7a92">tras. esq</div><div style="font:600 11px 'Saira',sans-serif;color:#5cb3ff">medir</div></div>
+            </div>
+            <!-- RR empty -->
+            <div style="position:absolute;right:0;bottom:2px;width:94px;display:flex;flex-direction:column;align-items:center;gap:5px">
+              <div style="position:relative;width:86px;height:86px">
+                <svg width="86" height="86" viewBox="0 0 86 86" style="display:block"><circle cx="43" cy="43" r="34" fill="none" stroke="#26334a" stroke-width="6" stroke-linecap="round" stroke-dasharray="5 9"/></svg>
+                <div style="position:absolute;inset:15px;border-radius:50%;background:#101828;border:1px dashed #26334a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:24px;color:#6b7a92">radio_button_unchecked</span></div>
+              </div>
+              <div style="text-align:center"><div style="font:500 9.5px 'IBM Plex Mono',monospace;color:#6b7a92">tras. dir</div><div style="font:500 11px 'IBM Plex Sans',sans-serif;color:#6b7a92">pendente</div></div>
+            </div>
+          </div>
+
+          <div style="padding:10px 16px 8px;flex:none">
+            <button style="width:100%;height:56px;border:none;border-radius:16px;background:#5cb3ff;color:#06121f;font:600 16px 'Saira',sans-serif;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 8px 20px rgba(92,179,255,.28)"><span class="ms" style="font-size:23px">photo_camera</span>medir traseiro esquerdo</button>
+            <div style="text-align:center;font:500 10.5px 'IBM Plex Mono',monospace;color:#6b7a92;margin-top:9px">faltam 2 pneus para revisar</div>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1b: mostradores em barra de ticks (padrão instrumento literal) -->
+    <div class="dv-opt" id="1b">
+      <div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>pneus como escala de ticks do vetor — cada posição é uma agulha na régua de sulco, mais próximo do padrão do painel</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none">
+            <span>9:41</span>
+            <span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:16px">signal_cellular_alt_2_bar</span><span class="ms" style="font-size:17px">battery_5_bar</span></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:6px 12px 8px;flex:none">
+            <div style="width:44px;height:44px;border-radius:12px;background:#151d2c;border:1px solid #26334a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:22px;color:#a9b6c9">arrow_back</span></div>
+            <div style="flex:1"><div style="font:600 16px/1 'Saira',sans-serif;color:#e9eef7">sulco dos pneus</div><div style="font:500 11px/1.4 'IBM Plex Mono',monospace;color:#6b7a92;margin-top:3px">RQF-2318 · limite legal 1,6 mm</div></div>
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:10px;background:#1c2638;font:500 13px 'IBM Plex Mono',monospace;color:#e9eef7"><span style="color:#2fd08a">2</span>/4</div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:8px 16px 0;display:flex;flex-direction:column;gap:11px">
+            <!-- linha pneu: FL ok -->
+            <div style="background:#151d2c;border:1px solid #26334a;border-radius:14px;padding:13px 14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+                <div style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:20px;color:#2fd08a;font-variation-settings:'FILL' 1">trip_origin</span><span style="font:600 13.5px 'Saira',sans-serif;color:#e9eef7">dianteiro esquerdo</span></div>
+                <div style="display:flex;align-items:center;gap:6px;padding:4px 9px;border-radius:8px;background:rgba(47,208,138,.14);color:#2fd08a;font:600 11px 'IBM Plex Sans',sans-serif"><span class="ms" style="font-size:14px">check</span>ok</div>
+              </div>
+              <div style="position:relative;height:10px;border-radius:3px;background:repeating-linear-gradient(90deg,rgba(233,238,247,.14) 0 1px,transparent 1px 8px)">
+                <div style="position:absolute;top:0;bottom:0;left:0;width:74%;background:linear-gradient(90deg,transparent 6%,#2fd08a);border-right:2px solid #2fd08a;border-radius:3px"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:6px;font:500 10px 'IBM Plex Mono',monospace;color:#6b7a92"><span>0 careca</span><span style="color:#2fd08a">6,2 mm</span><span>9 novo</span></div>
+            </div>
+            <!-- FR warn -->
+            <div style="background:#151d2c;border:1px solid #26334a;border-radius:14px;padding:13px 14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+                <div style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:20px;color:#f5b23d;font-variation-settings:'FILL' 1">trip_origin</span><span style="font:600 13.5px 'Saira',sans-serif;color:#e9eef7">dianteiro direito</span></div>
+                <div style="display:flex;align-items:center;gap:6px;padding:4px 9px;border-radius:8px;background:rgba(245,178,61,.14);color:#f5b23d;font:600 11px 'IBM Plex Sans',sans-serif"><span class="ms" style="font-size:14px">warning</span>atenção</div>
+              </div>
+              <div style="position:relative;height:10px;border-radius:3px;background:repeating-linear-gradient(90deg,rgba(233,238,247,.14) 0 1px,transparent 1px 8px)">
+                <div style="position:absolute;top:0;bottom:0;left:0;width:33%;background:linear-gradient(90deg,transparent 6%,#f5b23d);border-right:2px solid #f5b23d;border-radius:3px"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:6px;font:500 10px 'IBM Plex Mono',monospace;color:#6b7a92"><span>0 careca</span><span style="color:#f5b23d">2,8 mm</span><span>9 novo</span></div>
+            </div>
+            <!-- RL próximo -->
+            <div style="background:#131b29;border:1px solid #33425f;border-radius:14px;padding:13px 14px;box-shadow:0 0 0 1px rgba(92,179,255,.15)">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+                <div style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:20px;color:#5cb3ff">trip_origin</span><span style="font:600 13.5px 'Saira',sans-serif;color:#e9eef7">traseiro esquerdo</span></div>
+                <div style="display:flex;align-items:center;gap:6px;padding:4px 9px;border-radius:8px;background:rgba(92,179,255,.14);color:#5cb3ff;font:600 11px 'IBM Plex Sans',sans-serif">próximo</div>
+              </div>
+              <div style="height:10px;border-radius:3px;background:repeating-linear-gradient(90deg,rgba(233,238,247,.14) 0 1px,transparent 1px 8px)"></div>
+              <div style="display:flex;justify-content:space-between;margin-top:6px;font:500 10px 'IBM Plex Mono',monospace;color:#6b7a92"><span>0 careca</span><span>— toque para medir</span><span>9 novo</span></div>
+            </div>
+            <!-- RR pendente -->
+            <div style="background:#111826;border:1px solid #1c2638;border-radius:14px;padding:13px 14px;opacity:.72">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:20px;color:#6b7a92">trip_origin</span><span style="font:600 13.5px 'Saira',sans-serif;color:#a9b6c9">traseiro direito</span></div>
+                <span style="font:500 11px 'IBM Plex Mono',monospace;color:#6b7a92">pendente</span>
+              </div>
+            </div>
+          </div>
+          <div style="padding:10px 16px 8px;flex:none">
+            <button style="width:100%;height:56px;border:none;border-radius:16px;background:#5cb3ff;color:#06121f;font:600 16px 'Saira',sans-serif;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 8px 20px rgba(92,179,255,.28)"><span class="ms" style="font-size:23px">straighten</span>medir traseiro esquerdo</button>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1c: grade 2x2 de tiles grandes (glove-friendly) -->
+    <div class="dv-opt" id="1c">
+      <div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>grade 2×2 de tiles grandes — alvos enormes p/ luva e sol, foto embutida em cada mostrador</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none">
+            <span>9:41</span>
+            <span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:16px">signal_cellular_alt_2_bar</span><span class="ms" style="font-size:17px">battery_5_bar</span></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:6px 12px 10px;flex:none">
+            <div style="width:44px;height:44px;border-radius:12px;background:#151d2c;border:1px solid #26334a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:22px;color:#a9b6c9">arrow_back</span></div>
+            <div style="flex:1"><div style="font:600 16px/1 'Saira',sans-serif;color:#e9eef7">pneus</div><div style="font:500 11px/1.4 'IBM Plex Mono',monospace;color:#6b7a92;margin-top:3px">2 de 4 medidos · 1 alerta</div></div>
+            <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,178,61,.14);display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:22px;color:#f5b23d;font-variation-settings:'FILL' 1">warning</span></div>
+          </div>
+          <div style="flex:1;padding:2px 14px 0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px">
+            <!-- FL ok -->
+            <div style="position:relative;border-radius:18px;overflow:hidden;background:repeating-linear-gradient(45deg,#1c2638 0 7px,#151d2c 7px 14px);border:2px solid #2fd08a">
+              <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,19,32,.1),rgba(13,19,32,.82))"></div>
+              <div style="position:absolute;left:11px;top:10px;padding:3px 8px;border-radius:7px;background:rgba(5,7,12,.6);font:500 10px 'IBM Plex Mono',monospace;color:#c9d4e3">diant. esq</div>
+              <div style="position:absolute;left:11px;right:11px;bottom:11px">
+                <div style="display:flex;align-items:center;gap:6px;color:#2fd08a"><span class="ms" style="font-size:20px;font-variation-settings:'FILL' 1">check_circle</span><span style="font:600 15px 'Saira',sans-serif">ok</span></div>
+                <div style="font:500 11px 'IBM Plex Mono',monospace;color:#a9b6c9;margin-top:2px">6,2 mm sulco</div>
+              </div>
+            </div>
+            <!-- FR warn -->
+            <div style="position:relative;border-radius:18px;overflow:hidden;background:repeating-linear-gradient(45deg,#1c2638 0 7px,#151d2c 7px 14px);border:2px solid #f5b23d">
+              <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,19,32,.1),rgba(13,19,32,.82))"></div>
+              <div style="position:absolute;left:11px;top:10px;padding:3px 8px;border-radius:7px;background:rgba(5,7,12,.6);font:500 10px 'IBM Plex Mono',monospace;color:#c9d4e3">diant. dir</div>
+              <div style="position:absolute;left:11px;right:11px;bottom:11px">
+                <div style="display:flex;align-items:center;gap:6px;color:#f5b23d"><span class="ms" style="font-size:20px;font-variation-settings:'FILL' 1">warning</span><span style="font:600 15px 'Saira',sans-serif">atenção</span></div>
+                <div style="font:500 11px 'IBM Plex Mono',monospace;color:#a9b6c9;margin-top:2px">2,8 mm sulco</div>
+              </div>
+            </div>
+            <!-- RL próximo -->
+            <div style="position:relative;border-radius:18px;background:#101828;border:2px dashed #5cb3ff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;animation:vv-pulse 2.4s ease-in-out infinite">
+              <div style="width:52px;height:52px;border-radius:14px;background:rgba(92,179,255,.14);display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:28px;color:#5cb3ff">photo_camera</span></div>
+              <div style="text-align:center"><div style="font:600 13px 'Saira',sans-serif;color:#e9eef7">tras. esq</div><div style="font:500 10.5px 'IBM Plex Mono',monospace;color:#5cb3ff">tocar p/ medir</div></div>
+            </div>
+            <!-- RR pendente -->
+            <div style="position:relative;border-radius:18px;background:#0f1622;border:2px solid #1c2638;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px">
+              <div style="width:52px;height:52px;border-radius:14px;background:#151d2c;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:26px;color:#6b7a92">add_a_photo</span></div>
+              <div style="text-align:center"><div style="font:600 13px 'Saira',sans-serif;color:#a9b6c9">tras. dir</div><div style="font:500 10.5px 'IBM Plex Mono',monospace;color:#6b7a92">pendente</div></div>
+            </div>
+          </div>
+          <div style="padding:12px 16px 8px;flex:none">
+            <button style="width:100%;height:56px;border:none;border-radius:16px;background:#5cb3ff;color:#06121f;font:600 16px 'Saira',sans-serif;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 8px 20px rgba(92,179,255,.28)"><span class="ms" style="font-size:23px">photo_camera</span>continuar vistoria</button>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1d: sync como instrumento radial -->
+    <div class="dv-opt" id="1d">
+      <div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>sync offline como mostrador radial — "3 registros aguardando sinal" no centro, fila abaixo</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none">
+            <span>9:41</span>
+            <span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#f5b23d">wifi_off</span><span class="ms" style="font-size:16px">signal_cellular_alt_2_bar</span><span class="ms" style="font-size:17px">battery_5_bar</span></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:11px;padding:8px 16px 6px;flex:none">
+            <div style="width:40px;height:40px;border-radius:11px;background:#0f3f7a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:20px;color:#bcdcff">sensors</span></div>
+            <div style="flex:1"><div style="font:600 15px/1 'Saira',sans-serif;color:#e9eef7">sincronização</div><div style="font:500 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b7a92;margin-top:3px">marcos oliveira · motorista</div></div>
+          </div>
+          <div style="margin:6px 16px;padding:9px 13px;border-radius:12px;background:rgba(245,178,61,.12);border:1px solid rgba(245,178,61,.3);display:flex;align-items:center;gap:9px;flex:none">
+            <span class="ms" style="font-size:19px;color:#f5b23d">wifi_off</span><span style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#f5d9a0">sem sinal — trabalhando offline</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;padding:10px 0 4px;flex:none">
+            <div style="position:relative;width:200px;height:200px">
+              <svg width="200" height="200" viewBox="0 0 200 200" style="display:block">
+                <circle cx="100" cy="100" r="82" fill="none" stroke="#1c2638" stroke-width="14"/>
+                <circle cx="100" cy="100" r="82" fill="none" stroke="#f5b23d" stroke-width="14" stroke-linecap="round" stroke-dasharray="515" stroke-dashoffset="386" transform="rotate(-90 100 100)"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font:600 58px/1 'IBM Plex Mono',monospace;color:#e9eef7">3</div>
+                <div style="font:500 11px 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-top:2px">registros na fila</div>
+                <div style="display:flex;align-items:center;gap:5px;margin-top:8px;padding:3px 9px;border-radius:8px;background:rgba(245,178,61,.14);color:#f5b23d;font:600 10.5px 'IBM Plex Mono',monospace"><span class="ms" style="font-size:13px">schedule</span>aguardando sinal</div>
+              </div>
+            </div>
+            <div style="font:500 10.5px 'IBM Plex Mono',monospace;color:#6b7a92;margin-top:2px">1 enviado hoje · 3 pendentes</div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:6px 16px 0;display:flex;flex-direction:column;gap:8px">
+            <div style="font:500 10.5px 'IBM Plex Mono',monospace;color:#6b7a92;padding:0 2px">fila de envio</div>
+            <div style="display:flex;align-items:center;gap:11px;padding:11px 12px;background:#151d2c;border:1px solid #26334a;border-radius:12px">
+              <span class="ms" style="font-size:20px;color:#f5b23d">schedule</span>
+              <div style="flex:1;min-width:0"><div style="font:600 13px 'IBM Plex Mono',monospace;color:#e9eef7">RQF-2318</div><div style="font:500 10.5px 'IBM Plex Sans',sans-serif;color:#6b7a92">vistoria completa · 1 alerta de pneu</div></div>
+              <div style="font:500 10px 'IBM Plex Mono',monospace;color:#6b7a92;text-align:right">2,4 mb</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:11px;padding:11px 12px;background:#151d2c;border:1px solid #26334a;border-radius:12px">
+              <span class="ms" style="font-size:20px;color:#f5b23d">schedule</span>
+              <div style="flex:1;min-width:0"><div style="font:600 13px 'IBM Plex Mono',monospace;color:#e9eef7">MTP-4471</div><div style="font:500 10.5px 'IBM Plex Sans',sans-serif;color:#6b7a92">vistoria completa · sem alertas</div></div>
+              <div style="font:500 10px 'IBM Plex Mono',monospace;color:#6b7a92;text-align:right">1,8 mb</div>
+            </div>
+          </div>
+          <div style="padding:10px 16px 8px;flex:none">
+            <button style="width:100%;height:54px;border:1px solid #33425f;border-radius:16px;background:#151d2c;color:#6b7a92;font:600 14px 'Saira',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px"><span class="ms" style="font-size:20px">sync</span>sincronizar quando houver sinal</button>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1e: sync como régua de ticks (sinal) -->
+    <div class="dv-opt" id="1e">
+      <div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>sync como régua de sinal (ticks + agulha do vetor) no topo da home — a fila esvazia conforme o sinal volta</div>
+      <div style="width:360px;height:740px;background:#05070c;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(3,8,18,.6);border:1px solid #1a2334">
+        <div style="position:relative;width:100%;height:100%;background:#0d1320;border-radius:34px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 12px 'IBM Plex Mono',monospace;color:#e9eef7;flex:none">
+            <span>9:41</span>
+            <span style="display:flex;align-items:center;gap:9px"><span class="ms" style="font-size:16px;color:#2fd08a">wifi</span><span class="ms" style="font-size:16px">signal_cellular_alt</span><span class="ms" style="font-size:17px">battery_5_bar</span></span>
+          </div>
+          <div style="padding:10px 16px 4px;flex:none">
+            <div style="font:500 11px 'IBM Plex Mono',monospace;color:#6b7a92">bom dia,</div>
+            <div style="font:700 21px/1.1 'Saira',sans-serif;color:#e9eef7;margin-top:1px">marcos oliveira</div>
+          </div>
+          <!-- instrumento de sinal -->
+          <div style="margin:12px 16px 0;padding:15px 16px;border-radius:16px;background:linear-gradient(#141d2c,#111826);border:1px solid #26334a;flex:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px">
+              <div style="display:flex;align-items:center;gap:8px"><span class="ms" style="font-size:19px;color:#2fd08a">cell_tower</span><span style="font:600 13px 'Saira',sans-serif;color:#e9eef7">sinal recuperando</span></div>
+              <div style="font:600 12px 'IBM Plex Mono',monospace;color:#2fd08a">enviando 1/3</div>
+            </div>
+            <div style="position:relative;height:14px;border-radius:4px;background:repeating-linear-gradient(90deg,rgba(233,238,247,.14) 0 1px,transparent 1px 9px)">
+              <div style="position:absolute;top:0;bottom:0;left:0;width:38%;background:linear-gradient(90deg,transparent 4%,#2fd08a);border-right:3px solid #2fd08a;border-radius:4px"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:9px;font:500 10.5px 'IBM Plex Mono',monospace;color:#6b7a92"><span style="color:#2fd08a">2 enviados</span><span>3 na fila</span></div>
+          </div>
+          <!-- veículo de hoje -->
+          <div style="margin:12px 16px 0;padding:14px 15px;border-radius:16px;background:#151d2c;border:1px solid #26334a;flex:none">
+            <div style="font:500 10.5px 'IBM Plex Mono',monospace;color:#6b7a92;margin-bottom:10px">veículo de hoje</div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:48px;height:48px;border-radius:12px;background:#1c2638;border:1px solid #26334a;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:26px;color:#5cb3ff">airport_shuttle</span></div>
+              <div style="flex:1"><div style="font:600 17px 'IBM Plex Mono',monospace;color:#e9eef7">RQF-2318</div><div style="font:500 12px 'IBM Plex Sans',sans-serif;color:#a9b6c9;margin-top:1px">mercedes sprinter 415 · van de carga</div></div>
+              <div style="display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:8px;background:rgba(47,208,138,.14);color:#2fd08a;font:600 10.5px 'IBM Plex Sans',sans-serif"><span style="width:6px;height:6px;border-radius:50%;background:#2fd08a"></span>vinculado</div>
+            </div>
+          </div>
+          <div style="padding:14px 16px 6px;flex:none">
+            <button style="width:100%;height:60px;border:none;border-radius:16px;background:#5cb3ff;color:#06121f;font:600 17px 'Saira',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 24px rgba(92,179,255,.3)"><span class="ms" style="font-size:25px">assignment</span>iniciar vistoria</button>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:8px 16px 0">
+            <div style="font:500 10.5px 'IBM Plex Mono',monospace;color:#6b7a92;margin-bottom:8px">últimas vistorias</div>
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 0;border-top:1px solid #26334a">
+              <span class="ms" style="font-size:19px;color:#2fd08a;font-variation-settings:'FILL' 1">check_circle</span>
+              <div style="flex:1"><div style="font:600 12.5px 'IBM Plex Mono',monospace;color:#e9eef7">MTP-4471</div><div style="font:500 10.5px 'IBM Plex Sans',sans-serif;color:#6b7a92">ontem · 16:20 · enviada</div></div>
+              <span class="ms" style="font-size:18px;color:#6b7a92">chevron_right</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 0;border-top:1px solid #26334a">
+              <span class="ms" style="font-size:19px;color:#f5b23d">schedule</span>
+              <div style="flex:1"><div style="font:600 12.5px 'IBM Plex Mono',monospace;color:#e9eef7">RQF-2318</div><div style="font:500 10.5px 'IBM Plex Sans',sans-serif;color:#6b7a92">hoje · 08:05 · na fila offline</div></div>
+              <span class="ms" style="font-size:18px;color:#6b7a92">chevron_right</span>
+            </div>
+          </div>
+          <div style="height:22px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:120px;height:4px;border-radius:3px;background:#33425f"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <p class="dv-next">Experimente a seguir: "seguir com <a class="dv-oid" href="#1a">1a</a> + sync <a class="dv-oid" href="#1d">1d</a> e montar as 9 telas" · "combinar dial de <a class="dv-oid" href="#1a">1a</a> com a régua de sulco de <a class="dv-oid" href="#1b">1b</a>" · "ver <a class="dv-oid" href="#1c">1c</a> com a foto real de pneu no lugar da textura" · "mostrar o momento em que o sinal volta e a fila esvazia"</p>
+</section>
+
+</x-dc>
+</body>
+</html>

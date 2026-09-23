@@ -1,0 +1,22 @@
+<div class="tabs-shell">
+  <app-tabs-header />
+
+  <div class="tabs-shell__content">
+    <router-outlet />
+  </div>
+
+  <div class="tab-bar">
+    <a class="tab-bar__item" routerLink="/tabs" routerLinkActive="tab-bar__item--active" [routerLinkActiveOptions]="{ exact: true }">
+      <span class="ms">home</span>
+      <span>início</span>
+    </a>
+    <a class="tab-bar__item" routerLink="/tabs/historico" routerLinkActive="tab-bar__item--active">
+      <span class="ms">history</span>
+      <span>histórico</span>
+    </a>
+    <a class="tab-bar__item" routerLink="/tabs/perfil" routerLinkActive="tab-bar__item--active">
+      <span class="ms">person</span>
+      <span>perfil</span>
+    </a>
+  </div>
+</div>

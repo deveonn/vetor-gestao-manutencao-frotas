@@ -1,0 +1,26 @@
+<div class="tabs-header">
+  <div class="tabs-header__photo">
+    @if (vehicle.todaysVehicle(); as v) {
+      @if (v.photoDataUrl; as photo) {
+        <img [src]="photo" alt="" />
+      } @else {
+        <span class="ms">{{ typeMeta(v).icon }}</span>
+      }
+    } @else {
+      <span class="ms">directions_car</span>
+    }
+  </div>
+
+  <div class="tabs-header__info">
+    <div class="tabs-header__driver">{{ session.session()?.displayName }}</div>
+    @if (vehicle.todaysVehicle(); as v) {
+      <div class="tabs-header__vehicle">
+        <span class="tabular">{{ v.plate }}</span>
+        <span class="tabs-header__dot">·</span>
+        <span class="tabs-header__model">{{ v.model }}</span>
+      </div>
+    } @else {
+      <div class="tabs-header__vehicle tabs-header__vehicle--empty">nenhum veículo vinculado</div>
+    }
+  </div>
+</div>

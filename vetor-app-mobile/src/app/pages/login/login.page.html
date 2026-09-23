@@ -1,0 +1,63 @@
+<div class="login">
+  <div class="login__head">
+    <img class="login__logo" src="mark_only.svg" alt="vetor" />
+    <div class="login__title">bem-vindo de volta</div>
+    <div class="login__subtitle">entre com seu usuário e senha</div>
+  </div>
+
+  <form class="login__form" (ngSubmit)="submit()">
+    <div class="field">
+      <label class="field__label">usuário</label>
+      <div class="field__control">
+        <span class="ms">person</span>
+        <input
+          type="text"
+          name="username"
+          autocomplete="username"
+          placeholder="Usuário ..."
+          [ngModel]="username()"
+          (ngModelChange)="username.set($event)"
+        />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field__label">senha</label>
+      <div class="field__control" [class.field__control--error]="error()">
+        <span class="ms">lock</span>
+        <input
+          [type]="showPassword() ? 'text' : 'password'"
+          name="password"
+          autocomplete="current-password"
+          placeholder="••••••"
+          [ngModel]="password()"
+          (ngModelChange)="password.set($event)"
+        />
+        <span class="ms field__toggle" (click)="showPassword.set(!showPassword())">{{
+          showPassword() ? 'visibility_off' : 'visibility'
+        }}</span>
+      </div>
+      @if (error(); as msg) {
+        <div class="field__error">{{ msg }}</div>
+      }
+    </div>
+
+    <button type="submit" class="btn-primary" [disabled]="loading()">
+      @if (loading()) {
+        <span class="ms spin">progress_activity</span>
+        entrando…
+      } @else {
+        entrar
+        <span class="ms">arrow_forward</span>
+      }
+    </button>
+
+    <a class="link login__forgot">esqueci minha senha</a>
+  </form>
+
+  <div class="login__offline">
+    <app-offline-banner
+      message="sem internet — se você já entrou antes neste celular, dá para entrar e trabalhar normal. tudo é enviado depois."
+    />
+  </div>
+</div>

@@ -1,0 +1,51 @@
+<div class="history">
+  <div class="history__head">
+    <div class="history__title">suas vistorias</div>
+  </div>
+
+  @if (sync.syncing()) {
+    <div class="history__banner">
+      <div class="soft-banner soft-banner--ok">
+        <span class="ms pulse">sync</span>
+        <div>
+          internet voltou! enviando
+          <b class="tabular">{{ sync.sendingCount() }} de {{ sync.totalToSend() }}</b>
+          vistorias…
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="history__list">
+    @if (groups().length === 0) {
+      <div class="empty-state">
+        <span class="ms">history</span>
+        <div>nenhuma vistoria ainda</div>
+      </div>
+    } @else {
+      @for (group of groups(); track group.label) {
+        <div class="history__day-label">{{ group.label }}</div>
+        @for (item of group.items; track item.id) {
+          <div class="list-row" (click)="retry(item)">
+            <span
+              class="ms"
+              [class.fill]="queueStatusIsFilled(item.status)"
+              [class.pulse]="item.status === 'sending'"
+              [style.color]="statusColor(item.status)"
+              >{{ queueStatusIcon(item.status) }}</span
+            >
+            <div class="list-row__body">
+              <div class="list-row__title">
+                {{ timeLabel(item.createdAt) }} · {{ vehicleArticleDe(item) }} {{ item.vehiclePlate }}
+              </div>
+              <div class="list-row__sub" [style.color]="statusColor(item.status)">
+                {{ queueStatusLabel(item.status, item.hasCriticalAlert, item.hasWarnAlert) }}
+              </div>
+            </div>
+            <span class="ms list-row__chevron">chevron_right</span>
+          </div>
+        }
+      }
+    }
+  </div>
+</div>

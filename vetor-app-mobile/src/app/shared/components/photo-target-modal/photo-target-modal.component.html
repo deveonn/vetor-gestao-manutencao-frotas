@@ -1,0 +1,20 @@
+<div class="ptm">
+  <div class="ptm__icon" [class.ptm__icon--image]="image">
+    @if (image) {
+      <img [src]="image" alt="" />
+    } @else {
+      <span class="ms">{{ icon }}</span>
+    }
+  </div>
+  <div class="ptm__title">agora é a vez de</div>
+  <div class="ptm__target">{{ targetLabel }}</div>
+  <div class="ptm__text">confira a posição antes de continuar.</div>
+
+  <div class="ptm__actions">
+    <button class="btn-secondary" (click)="cancel()">voltar</button>
+    <button class="btn-primary" (click)="confirm()">
+      continuar
+      <span class="ms">arrow_forward</span>
+    </button>
+  </div>
+</div>
