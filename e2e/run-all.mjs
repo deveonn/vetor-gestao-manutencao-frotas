@@ -1,11 +1,15 @@
 // Roda todas as suítes em sequência (cada uma sobe o próprio Chrome) e sai com código 1 se alguma falhar.
-// Uso: node e2e/run-all.mjs [suite ...]   ex.: node e2e/run-all.mjs veiculos combustivel
+// Uso: node e2e/run-all.mjs [grupo|suite ...]   ex.: node e2e/run-all.mjs web  ·  node e2e/run-all.mjs veiculos combustivel
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-// ordem = ordem do checklist (PENDENCIAS_DEPLOY.txt, seção WEB)
-const TODAS = ['login', 'conta', 'rastreamento', 'veiculos', 'motoristas', 'combustivel', 'manutencao', 'pneus', 'painel'];
-const escolhidas = process.argv.slice(2).length ? process.argv.slice(2) : TODAS;
+// ordem = ordem do checklist (PENDENCIAS_DEPLOY.txt); "web" precisa do painel em :4200, "mobile" do app em :8100
+const GRUPOS = {
+  web: ['login', 'conta', 'rastreamento', 'veiculos', 'motoristas', 'combustivel', 'manutencao', 'pneus', 'painel'],
+  mobile: ['mobile-login'],
+};
+const args = process.argv.slice(2);
+const escolhidas = (args.length ? args : ['web', 'mobile']).flatMap((a) => GRUPOS[a] ?? [a]);
 
 let pass = 0;
 let fail = 0;

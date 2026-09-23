@@ -8,11 +8,13 @@ import { fileURLToPath } from 'node:url';
 
 export const APP = process.env.APP_URL ?? 'http://localhost:4200';
 export const API = process.env.API_URL ?? 'http://localhost:3000/api';
+export const APP_MOBILE = process.env.APP_MOBILE_URL ?? 'http://localhost:8100';
 const CHROME = process.env.CHROME_BIN ?? 'google-chrome';
 const PORTA_CDP = Number(process.env.CDP_PORT ?? 9333);
 const BACKEND_DIR = fileURLToPath(new URL('../vetor-backend', import.meta.url));
 
 export const ADMIN = { login: 'rui@transportesalmeida.com.br', senha: 'demo123' };
+export const MOTORISTA = { login: 'joao.prates', senha: 'demo123', nome: 'João Prates' };
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** SQL direto no banco do backend (via Prisma, usando o .env do vetor-backend) — só pra preparar/limpar dados de teste. */
@@ -111,7 +113,7 @@ export async function suite(nome, corpo) {
     await send('Page.enable');
     await send('Runtime.enable');
 
-    await corpo({ APP, API, send, evalJs, goto, url, tokens, texto, typeLogin, loginAdmin, api, check, sleep, sql });
+    await corpo({ APP, API, APP_MOBILE, send, evalJs, goto, url, tokens, texto, typeLogin, loginAdmin, api, check, sleep, sql });
   } catch (e) {
     erro = e;
   } finally {

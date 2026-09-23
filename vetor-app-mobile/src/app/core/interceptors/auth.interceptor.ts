@@ -55,7 +55,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             const recusado =
               refreshErr instanceof HttpErrorResponse && (refreshErr.status === 401 || refreshErr.status === 400);
             if (recusado) {
-              void tokens.clear();
+              // logout também limpa os tokens; o POST /auth/logout dele falha à toa (refresh já inválido)
               void injector.get(SessionService).logout();
               void router.navigateByUrl('/login');
             }

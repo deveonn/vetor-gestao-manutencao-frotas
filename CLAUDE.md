@@ -8,11 +8,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `vetor-app-web/` — Angular 21 manager dashboard ("painel do gestor"). **Fully wired to the real API (no mock data left).**
 - `vetor-app-mobile/` — Ionic 8 + Angular 21 + Capacitor Android app for drivers ("motorista") to run vehicle inspections offline. **Fully implemented, uses local device storage (Capacitor Preferences) instead of a real backend.**
-- `vetor-backend/` — NestJS 11 + Prisma 6 + JWT API, implemented against the contract in `/endpoints.md`. **Real code; the web app is fully wired to it, the mobile app is not yet** — see below.
+- `vetor-backend/` — NestJS 11 + Prisma 6 + JWT API, implemented against the contract in `/endpoints.md`. **Real code; the web app is fully wired to it, the mobile app partially (auth)** — see below.
 
 The API is the sole client of an external vehicle-tracking platform (internally called **Hapolo** in the web app's code — the README genericizes this as "plataforma de rastreamento"; the backend calls it "integração de rastreamento" and only has the token-connect plumbing so far, not an actual call to the external service). It owns multi-tenant isolation (every domain row scoped by `empresaId`, read from the JWT), auth (root / admin / motorista roles), and business rules (km/L calculation, consumption-anomaly flagging, tire-status rollup from inspections). See the root `README.md` for the architecture diagram and `vetor-backend/README-backend.md` for setup/run instructions, and `/endpoints.md` for the endpoint-by-endpoint contract (each one tagged ✅/🆕 against what the frontend mocks implied).
 
-**Frontend wiring is tracked item by item in `/PENDENCIAS_DEPLOY.txt`.** `vetor-app-web` is done: auth (login/refresh/logout/me) and every screen load from and write to the API — `mock-data.ts` no longer exists. `vetor-app-mobile` still uses mock/no-op auth (`SessionService.login` accepts any non-empty username+password) plus a local Capacitor-persisted queue that simulates sync with fake network delays. Wiring a frontend to the real backend (replacing a `FleetStore` mutation or a mobile service call with an HTTP call) is done one checklist item at a time — check `/endpoints.md` for the target route/payload shape before doing it.
+**Frontend wiring is tracked item by item in `/PENDENCIAS_DEPLOY.txt`.** `vetor-app-web` is done: auth (login/refresh/logout/me) and every screen load from and write to the API — `mock-data.ts` no longer exists. `vetor-app-mobile` has real auth against the API (Mobile #1–#2) but still uses a local Capacitor-persisted queue that simulates inspection sync with fake network delays. Wiring a frontend to the real backend (replacing a `FleetStore` mutation or a mobile service call with an HTTP call) is done one checklist item at a time — check `/endpoints.md` for the target route/payload shape before doing it.
 
 ## Commands
 
@@ -54,7 +54,7 @@ npm run build                      # nest build
 npm run prisma:generate            # regenerate Prisma Client after editing schema.prisma
 npm run prisma:studio              # DB GUI
 ```
-No unit test suite or linter configured yet (matches the frontends — neither has one either). There is an e2e suite at the repo root, `e2e/` (web panel + real API, headless Chrome via CDP, no npm deps): with the API on :3000 and `ng serve` on :4200, run `node e2e/run-all.mjs` — see `e2e/README.md`. It writes to the dev database and cleans up after itself.
+No unit test suite or linter configured yet (matches the frontends — neither has one either). There is an e2e suite at the repo root, `e2e/` (web panel + mobile app in the browser + real API, headless Chrome via CDP, no npm deps): with the API on :3000, the web on :4200 and the mobile on :8100, run `node e2e/run-all.mjs` (or `web` / `mobile`) — see `e2e/README.md`. It writes to the dev database and cleans up after itself.
 
 Neither web nor mobile `package.json` defines a `lint` script — there's no configured linter in either frontend currently.
 
@@ -73,7 +73,7 @@ Neither web nor mobile `package.json` defines a `lint` script — there's no con
 ### Mobile app (`vetor-app-mobile`)
 - Ionic pages under `src/app/pages/`, standalone components, lazy-loaded routes (`app.routes.ts`). Non-tab flow (splash → login → confirm-vehicle → checklist → checklist-rate → review → confirmation) sits outside `ion-tabs`; home/history/profile are tabbed children.
 - **Offline-first is the core design constraint**, not an edge case — inspections are always written locally first:
-  - `SessionService` persists login session to `Preferences` (`vetor.session`) for offline re-entry; `SessionService.login` is still mock auth (any non-empty username/password succeeds) until Mobile #2.
+  - `SessionService` logs in via `POST /auth/login` (only `MOTORISTA` accounts; seed driver `joao.prates` / `demo123`) and persists the session to `Preferences` (`vetor.session`). On app start the saved session is restored **before** any network call (so reopening offline works) and then revalidated in the background with `GET /auth/me`; a server rejection ends it, a network failure doesn't. A saved session without tokens (from the old mock login) is discarded.
   - HTTP base is in place (Mobile #1): `src/environments/` (API URL), `TokenService` (access/refresh pair in `Preferences`, `vetor.tokens`, async — await `ready`), and `core/interceptors/auth.interceptor.ts` (Bearer + one shared refresh on 401). Unlike the web, a refresh that fails for **network** reasons keeps tokens and session — only a server rejection (401/400) signs the driver out; never log a driver out just because they're offline.
   - `QueueService` persists inspections to `Preferences` (`vetor.queue`) as `QueuedInspection` records with status `queued → sending → sent`.
   - `SyncService` is an Angular `effect()` that watches `NetworkService.online()` + the queue; when back online and items are queued, it drains the queue one item at a time with a simulated 1200ms send delay per item (`SEND_DELAY_MS`) — there is no real network call yet, this is a stand-in for the future backend sync endpoint.

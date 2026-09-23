@@ -41,14 +41,13 @@ export class LoginPage implements OnInit {
     }
 
     this.loading.set(true);
-    await new Promise((r) => setTimeout(r, 500));
-    const ok = await this.session.login(this.username(), this.password());
+    const res = await this.session.login(this.username(), this.password());
     this.loading.set(false);
 
-    if (ok) {
+    if (res.ok) {
       this.router.navigateByUrl('/tabs', { replaceUrl: true });
     } else {
-      this.error.set('usuário ou senha inválidos.');
+      this.error.set(res.error);
     }
   }
 }

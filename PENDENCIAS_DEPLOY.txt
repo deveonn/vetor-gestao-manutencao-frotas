@@ -234,9 +234,24 @@ MOBILE (vetor-app-mobile)
      (requisição nativa) + network_security_config permitindo cleartext só pros hosts de dev. Fazer quando for
      testar no aparelho, provavelmente junto do Mobile #2.
 
-2. Login real
+2. [CONCLUÍDO 23/09/2026] Login real
    - SessionService.login via POST /auth/login, e GET /auth/me pra restaurar sessão ao reabrir o app offline.
    - Teste: login com um motorista do seed, fecha e reabre o app.
+   - Feito: SessionService.login chama POST /auth/login; só papel MOTORISTA entra (gestor recebe "este app é para
+     motoristas..." e o refresh emitido é revogado). Erros: 401 -> "usuário ou senha inválidos.", sem rede -> "sem
+     internet. o primeiro acesso neste celular precisa de conexão.". Sessão ganhou `nome` (completo, no perfil);
+     displayName segue o estilo do HANDOFF (primeiro nome minúsculo, "joão"). Ao abrir o app, a sessão salva é
+     restaurada ANTES de qualquer rede (reabrir offline funciona) e GET /auth/me revalida em segundo plano: recusa do
+     servidor encerra a sessão (via interceptor), falha de rede não. Sessão salva sem token (do login simulado
+     antigo) é descartada. Logout revoga o refresh no servidor (se houver rede) e sempre limpa o local. Removido o
+     atraso artificial de 500 ms do login.
+   - Teste: e2e/mobile-login.mjs (no repo, 12 cenários ok) no browser (:8100) — sem sessão -> /login; senha errada;
+     gestor barrado; sem internet no 1º acesso; login do joao.prates grava tokens/sessão; reabrir -> /tabs; perfil
+     com nome/@usuário; reabrir SEM internet (API bloqueada no Chrome) segue logado; access vencido renova no boot;
+     refresh revogado ao reabrir -> /login; sessão antiga do mock descartada; sair pelo perfil revoga no servidor.
+     Regressão: web 86/86.
+   - PENDENTE (Android real): igual ao mobile #1 — sem emulador (nenhum AVD/system image) nem aparelho conectado
+     (adb devices vazio). Ainda falta URL por plataforma + liberar HTTP em dev antes de testar no Android.
 
 3. Veículo do dia
    - GET /motorista/veiculo-do-dia na tela confirm-vehicle.
