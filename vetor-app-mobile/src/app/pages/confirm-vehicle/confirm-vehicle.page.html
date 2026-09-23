@@ -20,7 +20,7 @@
       </div>
       <div class="cv__details">
         <div class="cv__plate tabular">{{ v.plate }}</div>
-        <div class="cv__model">{{ v.model }} · {{ v.color }}</div>
+        <div class="cv__model">{{ v.model }}@if (v.color) { · {{ v.color }} }</div>
         <div class="cv__km tabular"><span class="ms">speed</span>km atual: {{ v.odometerKm.toLocaleString('pt-BR') }}</div>
       </div>
     </div>
@@ -40,8 +40,11 @@
   } @else {
     <div class="empty-state">
       <span class="ms">directions_car</span>
-      <div>nenhum veículo vinculado a você ainda</div>
-      <button class="btn-secondary">vincular veículo</button>
+      <div>nenhum veículo vinculado a você hoje. fale com o gestor da frota para vincular.</div>
+      <button class="btn-secondary" (click)="vehicle.atualizar()" [disabled]="vehicle.loading()">
+        <span class="ms">refresh</span>
+        {{ vehicle.loading() ? 'verificando…' : 'verificar de novo' }}
+      </button>
     </div>
   }
 </div>

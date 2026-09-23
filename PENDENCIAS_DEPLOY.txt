@@ -253,8 +253,24 @@ MOBILE (vetor-app-mobile)
    - PENDENTE (Android real): igual ao mobile #1 — sem emulador (nenhum AVD/system image) nem aparelho conectado
      (adb devices vazio). Ainda falta URL por plataforma + liberar HTTP em dev antes de testar no Android.
 
-3. Veículo do dia
+3. [CONCLUÍDO 23/09/2026] Veículo do dia
    - GET /motorista/veiculo-do-dia na tela confirm-vehicle.
+   - Feito: VehicleService troca o veículo fixo do mock (RQF-2318) por GET /motorista/veiculo-do-dia, com cache no
+     Preferences ("vetor.veiculo-do-dia") pra começar vistoria offline: erro de rede mantém o cache, 404 (sem
+     vínculo) limpa. Acompanha a sessão via effect (entrou/reabriu -> carrega; saiu -> esquece). Vehicle ganhou `id`
+     (vai ser usado no POST /vistorias). Tipo mapeado como no schema: UTILITARIO->carro, VAN_CARGA->van,
+     CAMINHAO_LEVE->caminhao; modelo exibido em minúsculas no estilo do app. Estado "sem veículo": o botão
+     "vincular veículo" não fazia nada (motorista não vincula veículo) -> virou texto "fale com o gestor da frota"
+     + botão "verificar de novo" que consulta a API (home e confirmar veículo).
+   - Teste: e2e/mobile-veiculo.mjs (9 cenários ok): cabeçalho/cache após login, confirmar veículo com placa/modelo/km
+     da API e "este carro", reabrir SEM internet usa o cache e abre a vistoria, motorista sem veículo (paulo.cezar),
+     gestor vincula um caminhão durante o teste e "verificar de novo" traz ("este caminhão?"), desvincular -> 404
+     limpa o cache, van ("esta van?"), sair limpa o cache. Vínculo de teste desfeito. Regressão completa 107/107.
+   - Obs: a API não tem cor de veículo (o mock mostrava "· branca") — a tela omite a cor. Adicionar `cor` exigiria
+     migration + seed + form de veículo no web.
+   - ATENÇÃO pro mobile #5: o schema diz CAMINHAO_LEVE = 6 posições de pneu (traseiro duplo) e o app usa 6 no
+     diagrama do caminhão, mas POST /veiculos e o seed criam sempre 4 posições e o painel web desenha 4. A
+     vistoria de caminhão vai mandar "traseiro esquerdo interno/externo" etc. — decidir como o backend/web tratam.
 
 4. Upload de mídia
    - PhotoCaptureService enviando pra POST /midia antes de referenciar midiaId na vistoria.

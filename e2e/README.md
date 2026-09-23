@@ -38,5 +38,5 @@ Depois de uma rodada completa, o banco volta ao estado do seed. **Não rode cont
 
 - `lib.mjs`: sobe o Chrome, conecta via CDP e expõe `suite(nome, corpo)`. O contexto passado ao `corpo` traz `goto`, `evalJs`, `texto`, `loginAdmin`, `api` (usa o token da sessão do navegador), `sql` (via `prisma db execute` do backend) e `check(cenario, ok, extra)`.
 - Uma suíte por módulo do painel: `login`, `conta`, `rastreamento`, `veiculos`, `motoristas`, `combustivel`, `manutencao`, `pneus`, `painel`.
-- Mobile: `mobile-login` (login real, reabrir o app com e sem internet, sessão revogada, logout).
+- Mobile: `mobile-login` (login real, reabrir o app com e sem internet, sessão revogada, logout) e `mobile-veiculo` (veículo do dia, cache offline, motorista sem veículo, vínculo feito pelo gestor durante o teste).
 - `run-all.mjs`: roda as suítes em sequência e soma os resultados.

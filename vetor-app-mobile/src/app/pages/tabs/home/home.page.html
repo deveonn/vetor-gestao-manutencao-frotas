@@ -43,9 +43,12 @@
         <span class="hero-btn__sub">leva uns 5 minutos</span>
       </button>
     } @else {
-      <button class="btn-secondary">
-        <span class="ms">directions_car</span>
-        vincular veículo
+      <div class="empty-state">
+        <div>nenhum veículo vinculado a você hoje. fale com o gestor da frota para vincular.</div>
+      </div>
+      <button class="btn-secondary" (click)="vehicle.atualizar()" [disabled]="vehicle.loading()">
+        <span class="ms">refresh</span>
+        {{ vehicle.loading() ? 'verificando…' : 'verificar de novo' }}
       </button>
     }
   </div>
