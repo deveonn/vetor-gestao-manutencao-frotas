@@ -65,72 +65,72 @@ temp/
 # ------------------------------------------------------------------
 #  Backend — NestJS
 # ------------------------------------------------------------------
-backend/dist/
-backend/coverage/
-backend/.nestcli.json
+vetor-backend/dist/
+vetor-backend/coverage/
+vetor-backend/.nestcli.json
 # uploads locais / mídia gerada em desenvolvimento (ajuste ao seu caso)
-backend/uploads/
-backend/tmp/
+vetor-backend/uploads/
+vetor-backend/tmp/
 
 
 # ------------------------------------------------------------------
 #  Web — Angular
 # ------------------------------------------------------------------
-web/dist/
-web/tmp/
-web/out-tsc/
-web/.angular/
-web/coverage/
-web/connect.lock
-web/.sass-cache/
-web/libpeerconnection.log
-web/testem.log
-web/typings/
+vetor-app-web/dist/
+vetor-app-web/tmp/
+vetor-app-web/out-tsc/
+vetor-app-web/.angular/
+vetor-app-web/coverage/
+vetor-app-web/connect.lock
+vetor-app-web/.sass-cache/
+vetor-app-web/libpeerconnection.log
+vetor-app-web/testem.log
+vetor-app-web/typings/
 
 
 # ------------------------------------------------------------------
 #  Mobile — Ionic / Angular
 # ------------------------------------------------------------------
-mobile/dist/
-mobile/www/
-mobile/.angular/
-mobile/out-tsc/
-mobile/coverage/
-mobile/.sourcemaps/
-mobile/.ionic/
-mobile/.tmp/
+vetor-app-mobile/dist/
+vetor-app-mobile/www/
+vetor-app-mobile/.angular/
+vetor-app-mobile/out-tsc/
+vetor-app-mobile/coverage/
+vetor-app-mobile/.sourcemaps/
+vetor-app-mobile/.ionic/
+vetor-app-mobile/.tmp/
 
 
 # ------------------------------------------------------------------
 #  Mobile — Capacitor (assets gerados e projetos nativos sincronizados)
 # ------------------------------------------------------------------
 # ícones/splash gerados por @capacitor/assets a partir do source
-mobile/resources/android/
-mobile/resources/ios/
+vetor-app-mobile/resources/android/
+vetor-app-mobile/resources/ios/
 
 # --- Android nativo ---
-mobile/android/.gradle/
-mobile/android/build/
-mobile/android/app/build/
-mobile/android/captures/
-mobile/android/.idea/
-mobile/android/local.properties
-mobile/android/app/release/
-mobile/android/app/src/main/assets/public/
-mobile/android/app/src/main/assets/capacitor.config.json
-mobile/android/app/src/main/assets/capacitor.plugins.json
-mobile/android/app/src/main/res/xml/config.xml
+vetor-app-mobile/android/.gradle/
+vetor-app-mobile/android/build/
+vetor-app-mobile/android/app/build/
+vetor-app-mobile/android/captures/
+vetor-app-mobile/android/.idea/
+vetor-app-mobile/android/local.properties
+vetor-app-mobile/android/app/release/
+vetor-app-mobile/android/app/src/main/assets/public/
+vetor-app-mobile/android/app/src/main/assets/capacitor.config.json
+vetor-app-mobile/android/app/src/main/assets/capacitor.plugins.json
+vetor-app-mobile/android/app/src/main/res/xml/config.xml
 *.apk
 *.aab
 
 # --- iOS nativo (caso adicione a plataforma) ---
-mobile/ios/App/build/
-mobile/ios/App/Pods/
-mobile/ios/App/output/
-mobile/ios/App/App/public/
-mobile/ios/App/App/capacitor.config.json
-mobile/ios/App/App/config.xml
-mobile/ios/DerivedData/
+vetor-app-mobile/ios/App/build/
+vetor-app-mobile/ios/App/Pods/
+vetor-app-mobile/ios/App/output/
+vetor-app-mobile/ios/App/App/public/
+vetor-app-mobile/ios/App/App/capacitor.config.json
+vetor-app-mobile/ios/App/App/config.xml
+vetor-app-mobile/ios/DerivedData/
 *.ipa
 xcuserdata/
 
