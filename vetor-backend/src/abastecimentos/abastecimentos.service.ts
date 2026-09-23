@@ -40,7 +40,7 @@ export class AbastecimentosService {
     let anomalo = false;
     if (kmL != null) {
       const ultimos = await this.prisma.abastecimento.findMany({
-        where: { veiculoId: dto.veiculoId, kmL: { not: null } },
+        where: { veiculoId: dto.veiculoId, kmL: { not: null }, data: { lt: data } },
         orderBy: { data: 'desc' },
         take: 5,
       });
@@ -65,25 +65,35 @@ export class AbastecimentosService {
       include: { veiculo: true, fornecedor: true },
     });
 
-    await this.prisma.veiculo.update({
-      where: { id: dto.veiculoId },
-      data: { hodometro: dto.hodometro, ...(kmL != null ? { kmL } : {}) },
-    });
+    // lançamento retroativo (hodômetro abaixo do atual) não pode fazer o hodômetro/km-L do veículo voltar no tempo
+    if (dto.hodometro >= veiculo.hodometro) {
+      await this.prisma.veiculo.update({
+        where: { id: dto.veiculoId },
+        data: { hodometro: dto.hodometro, ...(kmL != null ? { kmL } : {}) },
+      });
+    }
 
     return abastecimento;
   }
 
+  /** Sempre devolve `semanas` pontos (a semana atual é a última); semana sem leitura vem com kmLMedio null. */
   async kmLSemanal(empresaId: string, semanas: number) {
-    const desde = new Date();
-    desde.setDate(desde.getDate() - semanas * 7);
-
-    const linhas = await this.prisma.$queryRaw<{ semana: Date; media: number }[]>`
-      SELECT date_trunc('week', "data") AS semana, AVG("kmL") AS media
-      FROM "abastecimentos"
-      WHERE "empresaId" = ${empresaId} AND "data" >= ${desde} AND "kmL" IS NOT NULL
-      GROUP BY semana
-      ORDER BY semana ASC
+    const n = Math.min(Math.max(Number.isFinite(semanas) ? semanas : 8, 1), 52);
+    const linhas = await this.prisma.$queryRaw<{ semana: Date; media: number | null }[]>`
+      SELECT s.semana, AVG(a."kmL") AS media
+      FROM generate_series(
+        date_trunc('week', now()) - (${n - 1}::int * interval '1 week'),
+        date_trunc('week', now()),
+        interval '1 week'
+      ) AS s(semana)
+      LEFT JOIN "abastecimentos" a
+        ON date_trunc('week', a."data") = s.semana AND a."empresaId" = ${empresaId} AND a."kmL" IS NOT NULL
+      GROUP BY s.semana
+      ORDER BY s.semana ASC
     `;
-    return linhas.map((l) => ({ semana: l.semana, kmLMedio: Number(l.media) }));
+    return linhas.map((l) => ({
+      semana: l.semana,
+      kmLMedio: l.media == null ? null : Math.round(Number(l.media) * 10) / 10,
+    }));
   }
 }

@@ -27,18 +27,21 @@ export interface Alert {
 }
 
 export interface FuelEntry {
+  id: string;
+  /** data completa (ISO), pra filtros por período; `data` é o rótulo curto exibido */
+  iso: string;
   data: string;
   v: string;
   l: number;
   val: number;
   hod: number;
-  fornecedorId: number;
+  fornecedorId: string;
   kml: number | null;
   anom: boolean;
 }
 
 export interface Fornecedor {
-  id: number;
+  id: string;
   nome: string;
   endereco: string;
   cidade: string;
@@ -47,7 +50,8 @@ export interface Fornecedor {
 
 export interface WeekPoint {
   lbl: string;
-  val: number;
+  /** null = semana sem leitura */
+  val: number | null;
 }
 
 export interface MaintenanceItem {

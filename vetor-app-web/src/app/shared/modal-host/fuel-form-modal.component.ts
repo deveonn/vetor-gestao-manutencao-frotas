@@ -47,7 +47,7 @@ import { ModalService } from '../../core/modal.service';
         <p class="mono" style="font-size:11.5px;color:var(--dim);margin:0">o km/L é calculado contra o abastecimento anterior deste veículo</p>
         <div style="display:flex;justify-content:flex-end;gap:10px">
           <button class="btn btn-ghost" (click)="modal.close()">Cancelar</button>
-          <button class="btn btn-primary" (click)="salvar()">Registrar abastecimento</button>
+          <button class="btn btn-primary" (click)="salvar()" [disabled]="salvando()">{{ salvando() ? 'Salvando…' : 'Registrar abastecimento' }}</button>
         </div>
       </div>
     </div>
@@ -64,22 +64,36 @@ export class FuelFormModalComponent {
   litros = '';
   valor = '';
   hodo = '';
-  fornecedorId = this.fornecedores()[0]?.id ?? 0;
+  fornecedorId = this.fornecedores()[0]?.id ?? '';
   private erroSig = signal('');
   erro = this.erroSig.asReadonly();
+  salvando = signal(false);
 
-  salvar(): void {
+  async salvar(): Promise<void> {
     if (!this.litros || !this.valor || !this.hodo) {
       this.erroSig.set('Preencha litros, valor e hodômetro — são obrigatórios para calcular o km/L.');
       return;
     }
-    this.store.addFuelEntry({
-      veic: this.veic || this.placas()[0],
-      litros: parseFloat(String(this.litros).replace(',', '.')) || 0,
-      valor: parseFloat(String(this.valor).replace(',', '.')) || 0,
-      hodo: parseInt(this.hodo, 10) || 0,
-      fornecedorId: this.fornecedorId,
+    if (!this.fornecedorId) {
+      this.erroSig.set('Cadastre um fornecedor antes de registrar o abastecimento.');
+      return;
+    }
+    const litros = parseFloat(String(this.litros).replace(',', '.'));
+    const valor = parseFloat(String(this.valor).replace(',', '.'));
+    const hodo = parseInt(String(this.hodo).replace(/\D/g, ''), 10);
+    if (!(litros > 0) || !(valor > 0) || !(hodo >= 0)) {
+      this.erroSig.set('Litros, valor e hodômetro precisam ser números maiores que zero.');
+      return;
+    }
+    this.salvando.set(true);
+    const erro = await this.store.addFuelEntry({
+      veic: this.veic || this.placas()[0], data: this.data, litros, valor, hodo, fornecedorId: this.fornecedorId,
     });
+    this.salvando.set(false);
+    if (erro) {
+      this.erroSig.set(erro);
+      return;
+    }
     this.modal.close();
   }
 }

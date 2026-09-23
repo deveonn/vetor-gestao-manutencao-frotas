@@ -28,3 +28,15 @@ export function mesAno(iso: string): string {
   const d = new Date(iso);
   return `${MESES[d.getMonth()]} ${d.getFullYear()}`;
 }
+
+/** Dia e mês pt-BR, ex.: "2026-07-19T..." -> "19 jul" */
+export function diaMes(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getDate()} ${MESES[d.getMonth()]}`;
+}
+
+/** Semana vinda da API como meia-noite UTC — lê em UTC pra não virar o domingo anterior no Brasil. */
+export function diaMesUtc(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getUTCDate()} ${MESES[d.getUTCMonth()]}`;
+}

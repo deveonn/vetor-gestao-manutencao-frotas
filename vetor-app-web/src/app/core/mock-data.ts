@@ -1,5 +1,5 @@
 import {
-  Alert, FlaggedTire, Fornecedor, FuelEntry, Inspection, MaintenanceHistoryEntry,
+  Alert, FlaggedTire, Inspection, MaintenanceHistoryEntry,
   MaintenanceItem, MaintenancePlan, ReportCategory, ReportVehicleCost, WeekPoint,
 } from './models';
 
@@ -10,29 +10,6 @@ export const MOCK_ALERTS: Alert[] = [
   { nv: 'atencao', t: 'CNH de Marcos Teixeira vence em 12 dias', v: 'TQJ-1F77', acao: 'motoristas' },
   { nv: 'atencao', t: 'Troca de óleo em 850 km', v: 'RKM-2E88', acao: 'manutencao' },
   { nv: 'info', t: 'Vistoria recebida do app — sem apontamentos', v: 'RYD-5H36', acao: 'pneus' },
-];
-
-export const MOCK_FORNECEDORES: Fornecedor[] = [
-  { id: 1, nome: 'Ipiranga BR-116', endereco: 'BR-116, km 234', cidade: 'Guarulhos', telefone: '(11) 4123-5566' },
-  { id: 2, nome: 'Shell Anchieta', endereco: 'Rod. Anchieta, km 18', cidade: 'São Bernardo do Campo', telefone: null },
-  { id: 3, nome: 'Posto Alvorada', endereco: 'Av. Alvorada, 900', cidade: 'São Paulo', telefone: '(11) 3345-8820' },
-  { id: 4, nome: 'Petrobras Centro', endereco: 'Rua XV de Novembro, 120', cidade: 'São Paulo', telefone: null },
-];
-
-export const MOCK_FUEL: FuelEntry[] = [
-  { data: '19 jul', v: 'SQP-7D45', l: 62.4, val: 387.5, hod: 121480, fornecedorId: 1, kml: 7.1, anom: false },
-  { data: '19 jul', v: 'RKM-2E88', l: 58.0, val: 359.6, hod: 97115, fornecedorId: 2, kml: 6.4, anom: true },
-  { data: '18 jul', v: 'RTX-4B21', l: 41.2, val: 255.4, hod: 84312, fornecedorId: 3, kml: 9.4, anom: false },
-  { data: '18 jul', v: 'RYD-5H36', l: 64.8, val: 401.8, hod: 143972, fornecedorId: 1, kml: 7.6, anom: false },
-  { data: '17 jul', v: 'TAV-9C10', l: 38.5, val: 238.7, hod: 45902, fornecedorId: 4, kml: 11.8, anom: false },
-  { data: '16 jul', v: 'TQJ-1F77', l: 40.0, val: 248.0, hod: 58660, fornecedorId: 3, kml: 9.9, anom: false },
-  { data: '15 jul', v: 'SBF-6A03', l: 70.3, val: 435.9, hod: 132240, fornecedorId: 2, kml: 6.9, anom: false },
-  { data: '14 jul', v: 'RKM-2E88', l: 55.1, val: 341.6, hod: 96204, fornecedorId: 1, kml: 8.1, anom: false },
-];
-
-export const MOCK_KML_SEMANAL: WeekPoint[] = [
-  { lbl: '25 mai', val: 8.2 }, { lbl: '1 jun', val: 8.5 }, { lbl: '8 jun', val: 8.3 }, { lbl: '15 jun', val: 8.6 },
-  { lbl: '22 jun', val: 8.1 }, { lbl: '29 jun', val: 8.9 }, { lbl: '6 jul', val: 7.4 }, { lbl: '13 jul', val: 8.7 },
 ];
 
 export const MOCK_CUSTO_SEMANAL: number[] = [15980, 15420, 16210, 15760, 14980, 16480, 15120, 15890];

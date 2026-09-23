@@ -2,13 +2,13 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { dataCurta, dec, fmt, mesAno, money } from './format';
+import { dataCurta, dec, diaMes, diaMesUtc, fmt, mesAno, money } from './format';
 import {
-  MOCK_ALERTS, MOCK_CUSTO_SEMANAL, MOCK_FLAGGED_TIRES, MOCK_FORNECEDORES,
-  MOCK_FUEL, MOCK_INSPECTIONS, MOCK_KML_SEMANAL, MOCK_MAINTENANCE, MOCK_MAINTENANCE_HISTORY, MOCK_PLANS,
+  MOCK_ALERTS, MOCK_CUSTO_SEMANAL, MOCK_FLAGGED_TIRES,
+  MOCK_INSPECTIONS, MOCK_MAINTENANCE, MOCK_MAINTENANCE_HISTORY, MOCK_PLANS,
   MOCK_REPORT_CATEGORIES, MOCK_REPORT_COSTS, MOCK_WEEK_CATEGORIES,
 } from './mock-data';
-import { AlertLevel, CompanyAccount, DataState, Driver, Fornecedor, FuelEntry, HapoloStatus, Severity, Vehicle, VehicleType } from './models';
+import { AlertLevel, CompanyAccount, DataState, Driver, Fornecedor, FuelEntry, HapoloStatus, Severity, Vehicle, VehicleType, WeekPoint } from './models';
 import { ToastService } from './toast.service';
 
 const SEVERITY_COLOR: Record<AlertLevel, string> = {
@@ -110,6 +110,38 @@ function paraMotorista(m: MotoristaApi): Driver {
   };
 }
 
+/** Abastecimento como vem de GET/POST /abastecimentos. kmL/anomalo são calculados no backend. */
+interface AbastecimentoApi {
+  id: string;
+  data: string;
+  litros: number;
+  valor: number;
+  hodometro: number;
+  kmL: number | null;
+  anomalo: boolean;
+  fornecedorId: string;
+  veiculo: { placa: string };
+}
+
+interface FornecedorApi {
+  id: string;
+  nome: string;
+  endereco: string | null;
+  cidade: string | null;
+  telefone: string | null;
+}
+
+function paraAbastecimento(a: AbastecimentoApi): FuelEntry {
+  return {
+    id: a.id, iso: a.data, data: diaMes(a.data), v: a.veiculo.placa, l: a.litros, val: a.valor,
+    hod: a.hodometro, fornecedorId: a.fornecedorId, kml: a.kmL, anom: a.anomalo,
+  };
+}
+
+function paraFornecedor(f: FornecedorApi): Fornecedor {
+  return { id: f.id, nome: f.nome, endereco: f.endereco ?? '', cidade: f.cidade ?? '', telefone: f.telefone };
+}
+
 interface VinculoApi {
   de: string;
   ate: string | null;
@@ -153,8 +185,9 @@ export class FleetStore {
   /** Vem da API (GET /veiculos) — carregada pelo shell; dataState acompanha o carregamento. */
   readonly vehicles = signal<Vehicle[]>([]);
   readonly alerts = signal(MOCK_ALERTS);
-  readonly fuelEntries = signal<FuelEntry[]>(MOCK_FUEL);
-  readonly kmlWeekly = signal(MOCK_KML_SEMANAL);
+  /** Vêm da API (GET /abastecimentos, /abastecimentos/km-l-semanal, /fornecedores) — carregados pelo shell. */
+  readonly fuelEntries = signal<FuelEntry[]>([]);
+  readonly kmlWeekly = signal<WeekPoint[]>([]);
   readonly custoWeekly = signal(MOCK_CUSTO_SEMANAL);
   readonly maintenanceItems = signal(MOCK_MAINTENANCE);
   readonly maintenanceHistory = signal(MOCK_MAINTENANCE_HISTORY);
@@ -163,7 +196,7 @@ export class FleetStore {
   readonly inspections = signal(MOCK_INSPECTIONS);
   /** Vem da API (GET /motoristas) — carregada pelo shell. */
   readonly drivers = signal<Driver[]>([]);
-  readonly fornecedores = signal<Fornecedor[]>(MOCK_FORNECEDORES);
+  readonly fornecedores = signal<Fornecedor[]>([]);
   readonly reportCosts = signal(MOCK_REPORT_COSTS);
   /** Vem da API (GET /empresa) — carregada pelo shell ao entrar no painel. */
   readonly account = signal<CompanyAccount>(CONTA_VAZIA);
@@ -225,7 +258,7 @@ export class FleetStore {
   readonly kpiTargets = computed(() => {
     const custo = MOCK_WEEK_CATEGORIES.reduce((sum, c) => sum + c.atu, 0);
     const kmlSerie = this.kmlWeekly();
-    const kmlMedia = kmlSerie.length ? kmlSerie[kmlSerie.length - 1].val : 0;
+    const kmlMedia = [...kmlSerie].reverse().find((x) => x.val != null)?.val ?? 0;
     const { manutencao, total } = this.dispCounts();
     return {
       custo,
@@ -265,7 +298,7 @@ export class FleetStore {
       lF: dec(r.l.toFixed(1)),
       valF: 'R$ ' + dec(r.val.toFixed(2)),
       hodF: fmt(r.hod),
-      kmlF: r.kml == null ? '—' : dec(r.kml),
+      kmlF: r.kml == null ? '—' : dec(r.kml.toFixed(1)),
       kmlCor: r.anom ? 'var(--warn)' : 'var(--txt)',
       postoNome: fornecedores.find((f) => f.id === r.fornecedorId)?.nome ?? '—',
     }));
@@ -283,9 +316,9 @@ export class FleetStore {
 
   readonly weeklyBars = computed(() => this.kmlWeekly().map((x) => ({
     ...x,
-    valF: dec(x.val),
-    hPct: Math.round((x.val / 13) * 100),
-    cor: x.val < 7.6 ? 'var(--warn)' : 'var(--brand)',
+    valF: x.val == null ? '—' : dec(x.val.toFixed(1)),
+    hPct: x.val == null ? 0 : Math.round((x.val / 13) * 100),
+    cor: x.val == null ? 'var(--dim)' : x.val < 7.6 ? 'var(--warn)' : 'var(--brand)',
   })));
 
   readonly maintenanceEnriched = computed(() => this.maintenanceItems().map((m) => ({
@@ -347,32 +380,86 @@ export class FleetStore {
   }
 
   // --- mutações ---
-  addFuelEntry(payload: { veic: string; litros: number; valor: number; hodo: number; fornecedorId: number }): void {
-    this.fuelEntries.update((list) => [
-      { data: '20 jul', v: payload.veic, l: payload.litros, val: payload.valor, hod: payload.hodo, fornecedorId: payload.fornecedorId, kml: null, anom: false },
-      ...list,
+  async loadFuel(): Promise<void> {
+    const [abastecimentos, fornecedores] = await Promise.all([
+      firstValueFrom(this.http.get<AbastecimentoApi[]>(`${environment.apiUrl}/abastecimentos`)),
+      firstValueFrom(this.http.get<FornecedorApi[]>(`${environment.apiUrl}/fornecedores`)),
+      this.loadKmlWeekly(),
     ]);
-    this.toast.show(`Abastecimento registrado — ${payload.veic}`);
+    this.fuelEntries.set(abastecimentos.map(paraAbastecimento));
+    this.fornecedores.set(fornecedores.map(paraFornecedor));
   }
 
-  addFornecedor(payload: { nome: string; endereco: string; cidade: string; telefone: string }): Fornecedor {
-    const fornecedor: Fornecedor = {
-      id: Date.now(),
-      nome: payload.nome,
-      endereco: payload.endereco,
-      cidade: payload.cidade,
-      telefone: payload.telefone || null,
+  private async loadKmlWeekly(): Promise<void> {
+    const serie = await firstValueFrom(
+      this.http.get<{ semana: string; kmLMedio: number | null }[]>(`${environment.apiUrl}/abastecimentos/km-l-semanal?semanas=8`),
+    );
+    this.kmlWeekly.set(serie.map((s) => ({ lbl: diaMesUtc(s.semana), val: s.kmLMedio })));
+  }
+
+  /**
+   * `data` é a data do input (yyyy-mm-dd) ou vazio (= agora). O km/L e a flag de anomalia vêm calculados do backend.
+   * Retorna a mensagem de erro, ou null se registrou.
+   */
+  async addFuelEntry(payload: { veic: string; data: string; litros: number; valor: number; hodo: number; fornecedorId: string }): Promise<string | null> {
+    const veiculo = this.vehicles().find((v) => v.placa === payload.veic);
+    if (!veiculo) return 'Selecione o veículo.';
+    const hoje = new Date();
+    const hojeIso = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+    // data passada vai ao meio-dia local (não vira o dia anterior em UTC); hoje/vazio = agora, pra ficar depois dos de hoje
+    const data = payload.data && payload.data !== hojeIso ? new Date(`${payload.data}T12:00:00`).toISOString() : undefined;
+    try {
+      const criado = await firstValueFrom(this.http.post<AbastecimentoApi>(`${environment.apiUrl}/abastecimentos`, {
+        veiculoId: veiculo.id, fornecedorId: payload.fornecedorId, litros: payload.litros, valor: payload.valor,
+        hodometro: payload.hodo, ...(data ? { data } : {}),
+      }));
+      const novo = paraAbastecimento(criado);
+      this.fuelEntries.update((list) => [...list, novo].sort((a, b) => b.iso.localeCompare(a.iso)));
+      // backend atualiza hodômetro/km-L do veículo e a série semanal — recarrega sem piscar o estado de carregamento
+      this.loadVehicles(true);
+      this.loadKmlWeekly().catch(() => {});
+      const kml = novo.kml == null ? 'km/L não calculado (sem abastecimento anterior)' : `${dec(novo.kml)} km/L`;
+      this.toast.show(`Abastecimento registrado — ${payload.veic} · ${kml}${novo.anom ? ' · consumo anômalo' : ''}`, novo.anom ? 'info' : 'ok');
+      return null;
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && err.status === 400) {
+        return 'Dados inválidos — confira litros, valor e hodômetro.';
+      }
+      return 'Não foi possível registrar o abastecimento. Tente novamente.';
+    }
+  }
+
+  /** Retorna a mensagem de erro, ou null se cadastrou. */
+  async addFornecedor(payload: { nome: string; endereco: string; cidade: string; telefone: string }): Promise<string | null> {
+    const body = {
+      nome: payload.nome.trim(),
+      ...(payload.endereco.trim() ? { endereco: payload.endereco.trim() } : {}),
+      ...(payload.cidade.trim() ? { cidade: payload.cidade.trim() } : {}),
+      ...(payload.telefone.trim() ? { telefone: payload.telefone.trim() } : {}),
     };
-    this.fornecedores.update((list) => [...list, fornecedor]);
-    this.toast.show(`Fornecedor cadastrado — ${fornecedor.nome}`);
-    return fornecedor;
+    try {
+      const criado = await firstValueFrom(this.http.post<FornecedorApi>(`${environment.apiUrl}/fornecedores`, body));
+      this.fornecedores.update((list) => [...list, paraFornecedor(criado)].sort((a, b) => a.nome.localeCompare(b.nome)));
+      this.toast.show(`Fornecedor cadastrado — ${body.nome}`);
+      return null;
+    } catch {
+      return 'Não foi possível cadastrar o fornecedor. Tente novamente.';
+    }
   }
 
-  deleteFornecedor(id: number): void {
+  async deleteFornecedor(id: string): Promise<void> {
     const fornecedor = this.fornecedores().find((f) => f.id === id);
     if (!fornecedor) return;
-    this.fornecedores.update((list) => list.filter((f) => f.id !== id));
-    this.toast.show(`Fornecedor excluído — ${fornecedor.nome}`, 'info');
+    try {
+      await firstValueFrom(this.http.delete(`${environment.apiUrl}/fornecedores/${id}`));
+      this.fornecedores.update((list) => list.filter((f) => f.id !== id));
+      this.toast.show(`Fornecedor excluído — ${fornecedor.nome}`, 'info');
+    } catch (err) {
+      const msg = err instanceof HttpErrorResponse && err.status === 409
+        ? `${fornecedor.nome} tem abastecimentos registrados e não pode ser excluído`
+        : `Não foi possível excluir ${fornecedor.nome}. Tente novamente.`;
+      this.toast.show(msg, 'info');
+    }
   }
 
   async loadDrivers(): Promise<void> {
@@ -398,14 +485,15 @@ export class FleetStore {
     }
   }
 
-  async loadVehicles(): Promise<void> {
-    this.dataStateRaw.set('carregando');
+  /** `silencioso`: recarrega sem passar por 'carregando' (ex.: depois de um abastecimento mudar o hodômetro). */
+  async loadVehicles(silencioso = false): Promise<void> {
+    if (!silencioso) this.dataStateRaw.set('carregando');
     try {
       const lista = await firstValueFrom(this.http.get<VeiculoApi[]>(`${environment.apiUrl}/veiculos`));
       this.vehicles.set(lista.map(paraVeiculo));
       this.dataStateRaw.set('normal');
     } catch {
-      this.dataStateRaw.set('erro');
+      if (!silencioso) this.dataStateRaw.set('erro');
     }
   }
 

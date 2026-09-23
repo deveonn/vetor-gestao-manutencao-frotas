@@ -20,7 +20,8 @@ export class FuelComponent {
   sortDir = signal(1);
 
   resumo = computed(() => {
-    const entries = this.store.fuelEntries();
+    const desde = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const entries = this.store.fuelEntries().filter((r) => new Date(r.iso).getTime() >= desde);
     const litros = entries.reduce((s, r) => s + r.l, 0);
     const valor = entries.reduce((s, r) => s + r.val, 0);
     const precoMedio = litros ? valor / litros : 0;
@@ -63,7 +64,7 @@ export class FuelComponent {
     this.modal.open('fornecedor');
   }
 
-  excluirFornecedor(id: number): void {
+  excluirFornecedor(id: string): void {
     this.store.deleteFornecedor(id);
   }
 

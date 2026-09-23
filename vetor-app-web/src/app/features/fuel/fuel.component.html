@@ -1,6 +1,6 @@
 <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
   <p style="margin:0;color:var(--mut);font-size:13.5px">
-    {{ fmtMoney(resumo().valor) }} em diesel nesta semana · {{ fmtDec(resumo().litros.toFixed(1)) }} L · preço médio {{ fmtMoney(resumo().precoMedio) }}/L
+    {{ fmtMoney(resumo().valor) }} em diesel nos últimos 7 dias · {{ fmtDec(resumo().litros.toFixed(1)) }} L · preço médio {{ fmtMoney(resumo().precoMedio) }}/L
   </p>
   <button (click)="abrirAbast()" class="btn btn-primary">
     <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;margin-right:6px">add</span>Registrar abastecimento

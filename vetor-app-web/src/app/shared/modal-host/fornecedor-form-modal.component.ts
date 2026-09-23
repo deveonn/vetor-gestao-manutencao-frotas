@@ -32,7 +32,7 @@ import { ModalService } from '../../core/modal.service';
         </div>
         <div style="display:flex;justify-content:flex-end;gap:10px">
           <button class="btn btn-ghost" (click)="modal.close()">Cancelar</button>
-          <button class="btn btn-primary" (click)="salvar()">Cadastrar fornecedor</button>
+          <button class="btn btn-primary" (click)="salvar()" [disabled]="salvando()">{{ salvando() ? 'Salvando…' : 'Cadastrar fornecedor' }}</button>
         </div>
       </div>
     </div>
@@ -48,13 +48,20 @@ export class FornecedorFormModalComponent {
   telefone = '';
   private erroSig = signal('');
   erro = this.erroSig.asReadonly();
+  salvando = signal(false);
 
-  salvar(): void {
+  async salvar(): Promise<void> {
     if (!this.nome.trim()) {
       this.erroSig.set('Informe o nome do fornecedor.');
       return;
     }
-    this.store.addFornecedor({ nome: this.nome, endereco: this.endereco, cidade: this.cidade, telefone: this.telefone });
+    this.salvando.set(true);
+    const erro = await this.store.addFornecedor({ nome: this.nome, endereco: this.endereco, cidade: this.cidade, telefone: this.telefone });
+    this.salvando.set(false);
+    if (erro) {
+      this.erroSig.set(erro);
+      return;
+    }
     this.modal.close();
   }
 }

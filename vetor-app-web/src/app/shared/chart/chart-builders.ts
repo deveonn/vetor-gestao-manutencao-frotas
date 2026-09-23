@@ -2,7 +2,7 @@ import { ChartConfiguration } from 'chart.js';
 import { ThemeColors } from './chart.component';
 
 /** Barra (custo) + linha (km/L) combinadas, dois eixos Y — "Custo e eficiência por semana". */
-export function buildTrendChart(labels: string[], custoSem: number[], kmlSem: number[]) {
+export function buildTrendChart(labels: string[], custoSem: number[], kmlSem: (number | null)[]) {
   return (c: ThemeColors): ChartConfiguration<any> => ({
     type: 'bar',
     data: {
@@ -16,7 +16,7 @@ export function buildTrendChart(labels: string[], custoSem: number[], kmlSem: nu
         {
           type: 'line', label: 'km/L', data: kmlSem,
           borderColor: c.ok, backgroundColor: c.ok, borderWidth: 2, tension: .35,
-          pointRadius: 3, pointBackgroundColor: c.ok, yAxisID: 'y1', order: 1,
+          pointRadius: 3, pointBackgroundColor: c.ok, yAxisID: 'y1', order: 1, spanGaps: true,
         },
       ],
     },

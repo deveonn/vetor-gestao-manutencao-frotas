@@ -123,9 +123,25 @@ WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por 
      vencida e sem validade, persistência após reload, vínculo novo aparece e some quando o veículo é arquivado.
      Regressão veículos (10) + rastreamento (7) + conta (7) + login (12) ok. Dados de teste removidos do banco.
 
-7. Combustível
+7. [CONCLUÍDO 23/09/2026] Combustível
    - Abastecimentos + fornecedores.
    - Conferir se o km/L exibido bate com o calculado pelo backend (módulo com mais campos calculados).
+   - Feito: fuelEntries, fornecedores e kmlWeekly vêm da API (loadFuel, chamado pelo shell). addFuelEntry -> POST
+     /abastecimentos (agora envia a data do form, que o mock ignorava) e mostra no toast o km/L calculado pelo backend
+     e se foi anômalo; depois recarrega veículos (silencioso) e a série semanal. addFornecedor/deleteFornecedor via API.
+     FuelEntry/Fornecedor com id string; WeekPoint.val aceita null (semana sem leitura: barra vazia "—", linha do
+     gráfico do painel pula o ponto). Resumo do topo virou "últimos 7 dias" (antes somava tudo e dizia "nesta
+     semana"). km/L exibido sempre com 1 casa. MOCK_FUEL, MOCK_FORNECEDORES e MOCK_KML_SEMANAL removidos.
+     Backend: (a) abastecimento retroativo não faz mais o hodômetro/km-L do veículo voltar; (b) média da anomalia
+     só considera abastecimentos anteriores à data; (c) km-l-semanal sempre devolve N semanas (antes só as com dado,
+     desalinhando o gráfico do painel com a série de custo); (d) excluir fornecedor com abastecimentos -> 409 (era 500).
+   - Teste: e2e Chrome headless (11 cenários ok), com veículo de teste novo pra conferir a fórmula: 1º abastecimento
+     sem km/L, 2º (10400-10000)/40 = 10,0, 3º 200/50 = 4,0 -> anômalo (ícone + card), retroativo não mexe no
+     hodômetro; lista e gráfico = API; fornecedor cadastrado/excluído; fornecedor com uso recusado.
+     Regressão motoristas (8) + veículos (10) + rastreamento (7) + conta (7) + login (12) ok. Dados de teste removidos.
+   - Obs: o km/L dos 8 abastecimentos do seed é valor fixo copiado do mock e NÃO bate com a fórmula (ex.: RKM-2E88
+     96204 -> 97115 km com 58 L daria 15,7, seed diz 6,4). A tela mostra o que está gravado; só os novos são calculados.
+   - Obs: abastecimento retroativo não recalcula o km/L do abastecimento seguinte já gravado.
 
 8. Manutenção
    - Pendentes/concluir/histórico/planos.

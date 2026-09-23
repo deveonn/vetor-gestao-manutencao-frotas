@@ -98,10 +98,10 @@ Tela: `features/fuel` (web). Fonte: `fuelEntries`/`addFuelEntry`/`fornecedores`/
 |---|---|
 | `GET /abastecimentos` ✅ — histórico (data, veículo, fornecedor, litros, valor, hodômetro, km/L calculado, flag de consumo anômalo) | `[admin]` |
 | `POST /abastecimentos` ✅ — body: `{ veiculoId, fornecedorId, litros, valor, hodometro, data }`. O km/L é calculado no backend contra o abastecimento anterior do mesmo veículo (hoje só um comentário decorativo no form, `fuel-form-modal.component.ts:41`) | `[admin]` |
-| `GET /abastecimentos/km-l-semanal?semanas=8` ✅ — série pro gráfico do painel (`kmlWeekly`) | `[admin]` |
+| `GET /abastecimentos/km-l-semanal?semanas=8` ✅ — série pro gráfico do painel (`kmlWeekly`); sempre `semanas` pontos, a atual por último, `kmLMedio: null` em semana sem leitura | `[admin]` |
 | `GET /fornecedores` ✅ — locais/postos cadastrados (nome, endereço, cidade, telefone, contagem de abastecimentos) | `[admin]` |
 | `POST /fornecedores` ✅ — body: `{ nome, endereco, cidade, telefone }` | `[admin]` |
-| `DELETE /fornecedores/:id` ✅ | `[admin]` |
+| `DELETE /fornecedores/:id` ✅ — 409 se o fornecedor tiver abastecimentos | `[admin]` |
 
 ---
 
