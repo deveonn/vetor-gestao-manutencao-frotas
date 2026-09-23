@@ -1,5 +1,5 @@
 import {
-  Alert, Driver, FlaggedTire, Fornecedor, FuelEntry, Inspection, MaintenanceHistoryEntry,
+  Alert, FlaggedTire, Fornecedor, FuelEntry, Inspection, MaintenanceHistoryEntry,
   MaintenanceItem, MaintenancePlan, ReportCategory, ReportVehicleCost, WeekPoint,
 } from './models';
 
@@ -69,16 +69,6 @@ export const MOCK_INSPECTIONS: Inspection[] = [
   { v: 'RYD-5H36', data: '19 jul · 08:12', mot: 'Ana Beltrão', itens: [{ n: 'Pneus', ok: true, obs: '' }, { n: 'Luzes e setas', ok: true, obs: '' }, { n: 'Nível de óleo', ok: true, obs: '' }, { n: 'Lataria', ok: true, obs: '' }, { n: 'Documentos', ok: true, obs: '' }] },
   { v: 'SQP-7D45', data: '18 jul · 07:48', mot: 'Carla Nunes', itens: [{ n: 'Pneus', ok: false, obs: 'traseiro esquerdo sinalizado' }, { n: 'Luzes e setas', ok: true, obs: '' }, { n: 'Nível de óleo', ok: false, obs: 'nível baixo' }, { n: 'Lataria', ok: true, obs: '' }, { n: 'Documentos', ok: true, obs: '' }] },
   { v: 'RKM-2E88', data: '16 jul · 09:05', mot: 'Otávio Dias', itens: [{ n: 'Pneus', ok: false, obs: 'dianteiro direito com bolha' }, { n: 'Luzes e setas', ok: true, obs: '' }, { n: 'Nível de óleo', ok: true, obs: '' }, { n: 'Lataria', ok: false, obs: 'risco na porta lateral' }, { n: 'Documentos', ok: true, obs: '' }] },
-];
-
-export const MOCK_DRIVERS: Driver[] = [
-  { nome: 'João Prates', cat: 'C', val: '03/2028', dias: null, v: 'RTX-4B21', desde: 'fev 2025' },
-  { nome: 'Carla Nunes', cat: 'D', val: '11/2027', dias: null, v: 'SQP-7D45', desde: 'ago 2024' },
-  { nome: 'Diego Ramos', cat: 'B', val: '07/2029', dias: null, v: 'TAV-9C10', desde: 'jan 2026' },
-  { nome: 'Otávio Dias', cat: 'C', val: '01/2027', dias: null, v: 'RKM-2E88', desde: 'mai 2025' },
-  { nome: 'Marcos Teixeira', cat: 'C', val: '01/08/2026', dias: 12, v: 'TQJ-1F77', desde: 'out 2024' },
-  { nome: 'Ana Beltrão', cat: 'D', val: '05/2028', dias: null, v: 'RYD-5H36', desde: 'mar 2025' },
-  { nome: 'Paulo Cezar', cat: 'B', val: '09/2026', dias: 62, v: null, desde: null },
 ];
 
 export const MOCK_REPORT_COSTS: ReportVehicleCost[] = [

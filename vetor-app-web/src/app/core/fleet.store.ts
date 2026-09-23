@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { dataCurta, dec, fmt, mesAno, money } from './format';
 import {
-  MOCK_ALERTS, MOCK_CUSTO_SEMANAL, MOCK_DRIVERS, MOCK_FLAGGED_TIRES, MOCK_FORNECEDORES,
+  MOCK_ALERTS, MOCK_CUSTO_SEMANAL, MOCK_FLAGGED_TIRES, MOCK_FORNECEDORES,
   MOCK_FUEL, MOCK_INSPECTIONS, MOCK_KML_SEMANAL, MOCK_MAINTENANCE, MOCK_MAINTENANCE_HISTORY, MOCK_PLANS,
   MOCK_REPORT_CATEGORIES, MOCK_REPORT_COSTS, MOCK_WEEK_CATEGORIES,
 } from './mock-data';
@@ -82,6 +82,34 @@ interface VeiculoApi {
   pneus: { posicao: string; severidade: 'OK' | 'ATENCAO' | 'CRITICO' }[];
 }
 
+/** Motorista como vem de GET/POST /motoristas (POST não traz veiculoAtual/vinculos). */
+interface MotoristaApi {
+  id: string;
+  nome: string;
+  categoriaCnh: string;
+  validadeCnh: string | null;
+  veiculoAtual?: { id: string; placa: string }[];
+  vinculos?: { veiculoId: string; de: string }[];
+}
+
+const DIA_MS = 24 * 60 * 60 * 1000;
+
+function paraMotorista(m: MotoristaApi): Driver {
+  const veiculo = m.veiculoAtual?.[0] ?? null;
+  const vinculo = veiculo ? m.vinculos?.find((h) => h.veiculoId === veiculo.id) : undefined;
+  const validade = m.validadeCnh ? new Date(m.validadeCnh) : null;
+  return {
+    id: m.id,
+    nome: m.nome,
+    cat: m.categoriaCnh,
+    // validade é só data (meia-noite UTC) — lê em UTC pra não voltar um dia no fuso do Brasil
+    val: validade ? `${String(validade.getUTCMonth() + 1).padStart(2, '0')}/${validade.getUTCFullYear()}` : '—',
+    dias: validade ? Math.ceil((validade.getTime() - Date.now()) / DIA_MS) : null,
+    v: veiculo?.placa ?? null,
+    desde: vinculo ? mesAno(vinculo.de) : null,
+  };
+}
+
 interface VinculoApi {
   de: string;
   ate: string | null;
@@ -133,7 +161,8 @@ export class FleetStore {
   readonly plans = signal(MOCK_PLANS);
   readonly flaggedTires = signal(MOCK_FLAGGED_TIRES);
   readonly inspections = signal(MOCK_INSPECTIONS);
-  readonly drivers = signal<Driver[]>(MOCK_DRIVERS);
+  /** Vem da API (GET /motoristas) — carregada pelo shell. */
+  readonly drivers = signal<Driver[]>([]);
   readonly fornecedores = signal<Fornecedor[]>(MOCK_FORNECEDORES);
   readonly reportCosts = signal(MOCK_REPORT_COSTS);
   /** Vem da API (GET /empresa) — carregada pelo shell ao entrar no painel. */
@@ -293,9 +322,9 @@ export class FleetStore {
     ...m,
     vTxt: m.v || 'sem vínculo',
     desdeTxt: m.desde ? `desde ${m.desde}` : '—',
-    cnhCor: m.dias != null && m.dias <= 30 ? 'var(--warn)' : 'var(--ok)',
-    cnhTxt: m.dias != null && m.dias <= 30 ? `vence em ${m.dias} dias` : 'em dia',
-    cnhBg: m.dias != null && m.dias <= 30 ? 'var(--warn-bg)' : 'var(--ok-bg)',
+    cnhCor: m.dias == null ? 'var(--dim)' : m.dias < 0 ? 'var(--crit)' : m.dias <= 30 ? 'var(--warn)' : 'var(--ok)',
+    cnhTxt: m.dias == null ? 'sem validade' : m.dias < 0 ? 'vencida' : m.dias <= 30 ? `vence em ${m.dias} dias` : 'em dia',
+    cnhBg: m.dias == null ? 'var(--surf2)' : m.dias < 0 ? 'var(--crit-bg)' : m.dias <= 30 ? 'var(--warn-bg)' : 'var(--ok-bg)',
   })));
 
   readonly reportCostsEnriched = computed(() => this.reportCosts().map((r) => ({
@@ -346,12 +375,27 @@ export class FleetStore {
     this.toast.show(`Fornecedor excluído — ${fornecedor.nome}`, 'info');
   }
 
-  addDriver(payload: { nome: string; cat: string; val: string }): void {
-    this.drivers.update((list) => [
-      { nome: payload.nome, cat: payload.cat || 'B', val: payload.val || '—', dias: null, v: null, desde: null },
-      ...list,
-    ]);
-    this.toast.show(`Motorista cadastrado — ${payload.nome}`);
+  async loadDrivers(): Promise<void> {
+    const lista = await firstValueFrom(this.http.get<MotoristaApi[]>(`${environment.apiUrl}/motoristas`));
+    this.drivers.set(lista.map(paraMotorista));
+  }
+
+  /** `val` é a data do input (yyyy-mm-dd) ou vazio. Retorna a mensagem de erro, ou null se cadastrou. */
+  async addDriver(payload: { nome: string; cat: string; val: string }): Promise<string | null> {
+    const nome = payload.nome.trim();
+    try {
+      const criado = await firstValueFrom(this.http.post<MotoristaApi>(`${environment.apiUrl}/motoristas`, {
+        nome, categoriaCnh: payload.cat || 'B', ...(payload.val ? { validadeCnh: payload.val } : {}),
+      }));
+      this.drivers.update((list) => [...list, paraMotorista(criado)].sort((a, b) => a.nome.localeCompare(b.nome)));
+      this.toast.show(`Motorista cadastrado — ${nome}`);
+      return null;
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && err.status === 400) {
+        return 'Dados inválidos — confira o nome e a validade da CNH.';
+      }
+      return 'Não foi possível cadastrar o motorista. Tente novamente.';
+    }
   }
 
   async loadVehicles(): Promise<void> {

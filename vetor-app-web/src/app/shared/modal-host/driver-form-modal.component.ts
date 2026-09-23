@@ -31,7 +31,7 @@ import { ModalService } from '../../core/modal.service';
         </div>
         <div style="display:flex;justify-content:flex-end;gap:10px">
           <button class="btn btn-ghost" (click)="modal.close()">Cancelar</button>
-          <button class="btn btn-primary" (click)="salvar()">Cadastrar motorista</button>
+          <button class="btn btn-primary" (click)="salvar()" [disabled]="salvando()">{{ salvando() ? 'Salvando…' : 'Cadastrar motorista' }}</button>
         </div>
       </div>
     </div>
@@ -46,13 +46,20 @@ export class DriverFormModalComponent {
   val = '';
   private erroSig = signal('');
   erro = this.erroSig.asReadonly();
+  salvando = signal(false);
 
-  salvar(): void {
-    if (!this.nome) {
+  async salvar(): Promise<void> {
+    if (!this.nome.trim()) {
       this.erroSig.set('Informe o nome do motorista.');
       return;
     }
-    this.store.addDriver({ nome: this.nome, cat: this.cat, val: this.val || '—' });
+    this.salvando.set(true);
+    const erro = await this.store.addDriver({ nome: this.nome, cat: this.cat, val: this.val });
+    this.salvando.set(false);
+    if (erro) {
+      this.erroSig.set(erro);
+      return;
+    }
     this.modal.close();
   }
 }

@@ -11,7 +11,7 @@
   <div class="col-head mono">
     <span>nome</span><span>CNH</span><span>validade</span><span>situação</span><span>veículo</span><span>vínculo</span>
   </div>
-  @for (m of store.driversEnriched(); track m.nome) {
+  @for (m of store.driversEnriched(); track m.id) {
     <div class="row">
       <span style="font-weight:500">{{ m.nome }}</span>
       <span class="mono" style="font-size:12.5px">{{ m.cat }}</span>

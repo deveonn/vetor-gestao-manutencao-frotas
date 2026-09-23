@@ -111,8 +111,17 @@ WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por 
    - Obs: métricas por veículo (hodômetro, combustível, km/L, km hoje) vêm do cache no banco, populado pelo seed —
      não há telemetria real atualizando (depende do backend #4).
 
-6. Motoristas
+6. [CONCLUÍDO 23/09/2026] Motoristas
    - Listar/criar.
+   - Feito: FleetStore.drivers vem de GET /motoristas (loadDrivers, chamado pelo shell); addDriver -> POST /motoristas
+     com erro/"Salvando…" no modal. Driver ganhou id (cuid). paraMotorista() calcula val (mm/aaaa, lido em UTC),
+     dias até o vencimento da CNH, veículo atual e "desde". Situação da CNH ganhou "vencida" e "sem validade" (antes
+     só havia "em dia"/"vence em N dias"). MOCK_DRIVERS removido.
+     Backend: GET /motoristas agora traz os vínculos abertos (pro "vínculo desde", que o contrato prometia e não
+     vinha) e não conta mais veículo arquivado como veículo atual do motorista.
+   - Teste: e2e Chrome headless (8 cenários ok): lista e vínculos = API, nome vazio, cadastro com CNH vencendo, em dia,
+     vencida e sem validade, persistência após reload, vínculo novo aparece e some quando o veículo é arquivado.
+     Regressão veículos (10) + rastreamento (7) + conta (7) + login (12) ok. Dados de teste removidos do banco.
 
 7. Combustível
    - Abastecimentos + fornecedores.

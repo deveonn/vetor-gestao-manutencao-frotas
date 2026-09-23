@@ -83,7 +83,7 @@ Tela: `features/drivers` (web). Fonte: `drivers`/`addDriver` (`core/fleet.store.
 
 | Endpoint | Papel |
 |---|---|
-| `GET /motoristas` ✅ — nome, categoria/validade da CNH, veículo vinculado, vínculo desde | `[admin]` |
+| `GET /motoristas` ✅ — nome, categoria/validade da CNH, veículo vinculado (`veiculoAtual`, sem arquivados), vínculo desde (`vinculos` abertos) | `[admin]` |
 | `POST /motoristas` ✅ — body: `{ nome, categoriaCnh, validadeCnh }` | `[admin]` |
 
 Sem exclusão/edição no mock — a UI atual (`drivers.component.html`) só cadastra e lista.

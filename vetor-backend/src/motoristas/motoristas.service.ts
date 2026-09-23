@@ -9,7 +9,12 @@ export class MotoristasService {
   listar(empresaId: string) {
     return this.prisma.motorista.findMany({
       where: { empresaId },
-      include: { veiculoAtual: true },
+      include: {
+        // veículo arquivado mantém motoristaAtualId, mas não conta mais como vínculo ativo
+        veiculoAtual: { where: { arquivadoEm: null } },
+        // vínculos abertos, pra exibir o "vínculo desde" do veículo atual
+        vinculos: { where: { ate: null, veiculo: { arquivadoEm: null } }, orderBy: { de: 'desc' } },
+      },
       orderBy: { nome: 'asc' },
     });
   }

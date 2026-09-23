@@ -100,6 +100,7 @@ export interface Inspection {
 }
 
 export interface Driver {
+  id: string;
   nome: string;
   cat: string;
   val: string;
