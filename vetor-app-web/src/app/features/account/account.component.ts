@@ -37,8 +37,8 @@ export class AccountComponent {
     this.salvando.set(false);
   }
 
-  hapConectar(): void {
-    const err = this.store.hapoloConnect(this.hapToken);
+  async hapConectar(): Promise<void> {
+    const err = await this.store.hapoloConnect(this.hapToken);
     if (err) {
       this.hapErr.set(err.error);
       return;

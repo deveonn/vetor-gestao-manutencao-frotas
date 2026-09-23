@@ -44,6 +44,7 @@ export class ShellComponent {
 
   constructor() {
     this.store.loadAccount().catch(() => {});
+    this.store.loadHapolo().catch(() => {});
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
       this.currentUrl.set(this.router.url);
       this.menuOpen.set(false);

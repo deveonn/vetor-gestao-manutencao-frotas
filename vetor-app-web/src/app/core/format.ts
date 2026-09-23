@@ -14,3 +14,11 @@ export function dec(n: number | string): string {
 export function money(n: number): string {
   return 'R$ ' + nf.format(Math.round(n));
 }
+
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+/** Data curta pt-BR, ex.: "2026-03-04T..." -> "04 mar 2026" */
+export function dataCurta(iso: string): string {
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, '0')} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
+}

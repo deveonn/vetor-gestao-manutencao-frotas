@@ -81,9 +81,17 @@ WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por 
      mostra erro sem salvar, placa duplicada em POST /veiculos -> 409. Regressão do login (12 cenários) ok.
    - Obs: CNPJ duplicado não testado pela tela (seed só tem 1 empresa), mas cai no mesmo filtro -> 409 com mensagem própria.
 
-4. Integração de rastreamento
+4. [CONCLUÍDO 23/09/2026] Integração de rastreamento
    - Conectar/testar/remover token.
-   - Teste: fluxo completo na tela de conta.
+   - Feito: hapoloConnect/Test/Remove no FleetStore chamam /integracoes/rastreamento (conectar/testar/DELETE) e o
+     estado é carregado pelo shell (loadHapolo), junto com a conta. hapoloStatus começa null (sem flash do banner).
+     Validação de prefixo "hap_" continua só no front. Removidos textos mock: "hap_live_" fixo na cauda, "última
+     leitura 09:12 · 8 veículos reportando", horários fixos do topo (agora "rastreamento ok"/"sem rastreamento") e o
+     banner que dizia "plataforma não responde desde 14:32" — agora diz que não há token e aponta pra Integrações.
+   - Teste: e2e Chrome headless (7 cenários ok): estado inicial do seed, testar -> toast, remover -> SEM na API + banner,
+     persiste após reload, token sem hap_ recusado sem chamar API, conectar -> CONECTADO com cauda nova, estado do seed
+     restaurado. Regressão conta (7) + login (12) ok.
+   - Obs: "testar" do backend ainda responde OK sem chamar o rastreador real (backend #4, fora de escopo).
 
 5. Veículos
    - Listar/criar/excluir.

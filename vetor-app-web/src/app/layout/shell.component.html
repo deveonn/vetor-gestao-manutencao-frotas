@@ -28,7 +28,7 @@
       <div style="display:flex;align-items:center;gap:14px">
         <span class="mono" style="font-size:12px;color:var(--dim);display:flex;align-items:center;gap:7px">
           <span style="width:6px;height:6px;border-radius:50%" [style.background]="store.offline() ? 'var(--warn)' : 'var(--ok)'"></span>
-          {{ store.offline() ? 'offline 14:32' : 'sync 09:12' }}
+          {{ store.offline() ? 'sem rastreamento' : 'rastreamento ok' }}
         </span>
         <button routerLink="/painel" class="chip-btn" style="color:var(--warn)">
           <span class="material-symbols-outlined" style="font-size:15px;animation:pulse 2.2s infinite">warning</span>
@@ -64,7 +64,7 @@
     @if (store.offline()) {
       <div role="alert" class="offline-banner">
         <span class="material-symbols-outlined" style="color:var(--warn);font-size:18px;flex-shrink:0">cloud_off</span>
-        <span><strong>Rastreamento indisponível</strong> — a plataforma de telemetria não responde desde 14:32. Hodômetro e posição estão pausados na última leitura; combustível, manutenção e vistorias seguem operando. Reconexão automática em andamento.</span>
+        <span><strong>Rastreamento desconectado</strong> — nenhum token de integração cadastrado. Hodômetro e posição ficam pausados na última leitura; combustível, manutenção e vistorias seguem operando. Conecte um token em Configurações da conta → Integrações.</span>
       </div>
     }
 

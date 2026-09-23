@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { dec, fmt, money } from './format';
+import { dataCurta, dec, fmt, money } from './format';
 import {
   MOCK_ALERTS, MOCK_CUSTO_SEMANAL, MOCK_DRIVERS, MOCK_FLAGGED_TIRES, MOCK_FORNECEDORES,
   MOCK_FUEL, MOCK_INSPECTIONS, MOCK_KML_SEMANAL, MOCK_MAINTENANCE, MOCK_MAINTENANCE_HISTORY, MOCK_PLANS,
@@ -59,6 +59,13 @@ function paraEmpresaApi(c: Partial<CompanyAccount>): Partial<EmpresaApi> {
   return body;
 }
 
+/** Integração como vem de GET /integracoes/rastreamento. */
+interface IntegracaoApi {
+  status: 'CONECTADO' | 'SEM';
+  tokenCauda: string | null;
+  conectadoEm: string | null;
+}
+
 const CONTA_VAZIA: CompanyAccount = { empresa: '', cnpj: '', nome: '', email: '', fone: '' };
 
 function severityColor(s: Severity | AlertLevel): string {
@@ -83,9 +90,11 @@ export class FleetStore {
   readonly reportCosts = signal(MOCK_REPORT_COSTS);
   /** Vem da API (GET /empresa) — carregada pelo shell ao entrar no painel. */
   readonly account = signal<CompanyAccount>(CONTA_VAZIA);
-  readonly hapoloStatus = signal<HapoloStatus>('conectado');
+  /** null até GET /integracoes/rastreamento responder (carregada pelo shell, junto com a conta). */
+  readonly hapoloStatus = signal<HapoloStatus | null>(null);
   readonly hapoloValidating = signal(false);
-  readonly hapoloTokenTail = signal('x4T9');
+  readonly hapoloTokenTail = signal('');
+  readonly hapoloConectadoEm = signal('');
 
   /** Estado real de carregamento — 'vazio' é derivado automaticamente da lista de veículos. */
   private readonly dataStateRaw = signal<DataState>('carregando');
@@ -348,26 +357,53 @@ export class FleetStore {
     }
   }
 
-  hapoloConnect(token: string): { error: string } | null {
+  async loadHapolo(): Promise<void> {
+    this.aplicarIntegracao(await firstValueFrom(this.http.get<IntegracaoApi>(`${environment.apiUrl}/integracoes/rastreamento`)));
+  }
+
+  async hapoloConnect(token: string): Promise<{ error: string } | null> {
     const t = token.trim();
     if (!t) return { error: 'Cole o token gerado no painel Hapolo — o campo está vazio.' };
     if (!t.startsWith('hap_')) return { error: 'Token não reconhecido — tokens Hapolo começam com "hap_live_" ou "hap_test_". Confira se copiou o valor inteiro.' };
     this.hapoloValidating.set(true);
-    setTimeout(() => {
-      this.hapoloValidating.set(false);
-      this.hapoloStatus.set('conectado');
+    try {
+      this.aplicarIntegracao(
+        await firstValueFrom(this.http.post<IntegracaoApi>(`${environment.apiUrl}/integracoes/rastreamento/conectar`, { token: t })),
+      );
       this.toast.show('Token Hapolo conectado — telemetria sincronizando');
-    }, 1400);
-    return null;
+      return null;
+    } catch {
+      return { error: 'Não foi possível conectar o token. Tente novamente.' };
+    } finally {
+      this.hapoloValidating.set(false);
+    }
   }
 
-  hapoloTest(): void {
-    this.toast.show('Conexão com a Hapolo OK — 8 veículos reportando, latência 320 ms', 'info');
+  async hapoloTest(): Promise<void> {
+    try {
+      const res = await firstValueFrom(
+        this.http.post<{ ok: boolean; mensagem: string }>(`${environment.apiUrl}/integracoes/rastreamento/testar`, {}),
+      );
+      this.toast.show(res.ok ? 'Conexão com a Hapolo OK' : `Teste falhou — ${res.mensagem}`, res.ok ? 'ok' : 'info');
+    } catch {
+      this.toast.show('Não foi possível testar a conexão agora', 'info');
+    }
   }
 
-  hapoloRemove(): void {
-    this.hapoloStatus.set('sem');
-    this.toast.show('Token removido — a telemetria para de sincronizar até um novo token ser conectado', 'info');
+  async hapoloRemove(): Promise<void> {
+    try {
+      await firstValueFrom(this.http.delete(`${environment.apiUrl}/integracoes/rastreamento`));
+      this.aplicarIntegracao({ status: 'SEM', tokenCauda: null, conectadoEm: null });
+      this.toast.show('Token removido — a telemetria para de sincronizar até um novo token ser conectado', 'info');
+    } catch {
+      this.toast.show('Não foi possível remover o token agora', 'info');
+    }
+  }
+
+  private aplicarIntegracao(i: IntegracaoApi): void {
+    this.hapoloStatus.set(i.status === 'CONECTADO' ? 'conectado' : 'sem');
+    this.hapoloTokenTail.set(i.tokenCauda ?? '');
+    this.hapoloConectadoEm.set(i.conectadoEm ? dataCurta(i.conectadoEm) : '');
   }
 
   retryLoad(): void {

@@ -46,13 +46,13 @@
     @if (store.hapoloStatus() === 'conectado') {
       <div style="display:flex;flex-direction:column;gap:10px;background:var(--surf2);border:1px solid var(--line);border-radius:10px;padding:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-          <span class="mono" style="font-size:13px">hap_live_ ····· ····· {{ store.hapoloTokenTail() }}</span>
+          <span class="mono" style="font-size:13px">hap_ ····· ····· {{ store.hapoloTokenTail() }}</span>
           <div style="display:flex;gap:10px">
             <button (click)="hapTestar()" class="btn btn-ghost">Testar conexão</button>
             <button (click)="hapRemover()" class="btn btn-ghost" style="color:var(--crit)">Remover token</button>
           </div>
         </div>
-        <span class="mono" style="font-size:11.5px;color:var(--dim)">conectado desde 04 mar 2026 · última leitura 09:12 · 8 veículos reportando</span>
+        <span class="mono" style="font-size:11.5px;color:var(--dim)">conectado desde {{ store.hapoloConectadoEm() }}</span>
       </div>
     } @else {
       <div style="display:flex;flex-direction:column;gap:12px">
