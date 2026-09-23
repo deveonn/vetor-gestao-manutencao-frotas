@@ -17,6 +17,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { RelatoriosModule } from './relatorios/relatorios.module';
 import { VeiculosModule } from './veiculos/veiculos.module';
 import { VistoriasModule } from './vistorias/vistorias.module';
+import { PneusModule } from './pneus/pneus.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { VistoriasModule } from './vistorias/vistorias.module';
     AbastecimentosModule,
     ManutencoesModule,
     VistoriasModule,
+    PneusModule,
     MidiaModule,
     DashboardModule,
     RelatoriosModule,

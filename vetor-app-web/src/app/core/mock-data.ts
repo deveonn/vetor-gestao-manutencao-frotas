@@ -1,4 +1,4 @@
-import { Alert, FlaggedTire, Inspection, ReportCategory, ReportVehicleCost } from './models';
+import { Alert, ReportCategory, ReportVehicleCost } from './models';
 
 export const MOCK_ALERTS: Alert[] = [
   { nv: 'critico', t: 'Troca de óleo vencida há 340 km', v: 'SQP-7D45', acao: 'manutencao' },
@@ -10,18 +10,6 @@ export const MOCK_ALERTS: Alert[] = [
 ];
 
 export const MOCK_CUSTO_SEMANAL: number[] = [15980, 15420, 16210, 15760, 14980, 16480, 15120, 15890];
-
-export const MOCK_FLAGGED_TIRES: FlaggedTire[] = [
-  { v: 'SQP-7D45', pos: 'Traseiro esquerdo', obs: 'Desgaste irregular na banda interna — recomendada troca imediata', vist: '18 jul', nv: 'critico' },
-  { v: 'RKM-2E88', pos: 'Dianteiro direito', obs: 'Bolha na lateral externa — monitorar e evitar carga máxima', vist: '16 jul', nv: 'atencao' },
-  { v: 'RYD-5H36', pos: 'Dianteiro direito', obs: 'Sulco em 2,1 mm — próximo do limite legal de 1,6 mm', vist: '15 jul', nv: 'atencao' },
-];
-
-export const MOCK_INSPECTIONS: Inspection[] = [
-  { v: 'RYD-5H36', data: '19 jul · 08:12', mot: 'Ana Beltrão', itens: [{ n: 'Pneus', ok: true, obs: '' }, { n: 'Luzes e setas', ok: true, obs: '' }, { n: 'Nível de óleo', ok: true, obs: '' }, { n: 'Lataria', ok: true, obs: '' }, { n: 'Documentos', ok: true, obs: '' }] },
-  { v: 'SQP-7D45', data: '18 jul · 07:48', mot: 'Carla Nunes', itens: [{ n: 'Pneus', ok: false, obs: 'traseiro esquerdo sinalizado' }, { n: 'Luzes e setas', ok: true, obs: '' }, { n: 'Nível de óleo', ok: false, obs: 'nível baixo' }, { n: 'Lataria', ok: true, obs: '' }, { n: 'Documentos', ok: true, obs: '' }] },
-  { v: 'RKM-2E88', data: '16 jul · 09:05', mot: 'Otávio Dias', itens: [{ n: 'Pneus', ok: false, obs: 'dianteiro direito com bolha' }, { n: 'Luzes e setas', ok: true, obs: '' }, { n: 'Nível de óleo', ok: true, obs: '' }, { n: 'Lataria', ok: false, obs: 'risco na porta lateral' }, { n: 'Documentos', ok: true, obs: '' }] },
-];
 
 export const MOCK_REPORT_COSTS: ReportVehicleCost[] = [
   { placa: 'RTX-4B21', km: 4410, custo: 4980 }, { placa: 'SQP-7D45', km: 3980, custo: 6120 },

@@ -124,7 +124,7 @@ Telas: `features/tires` (web), fluxo `pages/checklist*` + `pages/review` (mobile
 
 | Endpoint | Papel |
 |---|---|
-| `GET /pneus/sinalizados` ✅ — pneus sinalizados pra troca/monitorar, originados de vistorias (`flaggedTires`) | `[admin]` |
+| `GET /pneus/sinalizados` ✅ — pneus sinalizados pra troca/monitorar, originados de vistorias (`flaggedTires`). Resposta: `[{ veiculo: { id, placa }, posicao, severidade, observacao, vistoriaEm }]`, críticos primeiro; ignora veículos arquivados (módulo `pneus/`) | `[admin]` |
 | `GET /vistorias` ✅ — vistorias recebidas do app, com itens do checklist e observações (`inspections`) | `[admin]` |
 | `POST /vistorias` 🆕 — o que `SyncService.drain()` (`core/services/sync.service.ts:27`) **deveria** chamar por item da fila em vez de só simular um delay de 1200ms. Body: `{ veiculoPlaca, veiculoTipo, iniciadoEm, itens: [{ stepId, subItens: [{ label, avaliacao: 'ok'\|'atencao'\|'trocar', midiaId?, observacao? }] }] }` | `[motorista]` |
 | `POST /midia` 🆕 *(multipart/form-data)* — upload da foto tirada com `PhotoCaptureService` (`core/services/photo-capture.service.ts`), que hoje só produz um `dataUrl` base64 local; precisa subir antes de `POST /vistorias` referenciar o `midiaId`. Resposta: `{ id, url }` | `[motorista]` |

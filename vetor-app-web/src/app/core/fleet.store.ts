@@ -2,13 +2,12 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { dataCurta, dec, diaMes, diaMesUtc, fmt, mesAno, money } from './format';
+import { dataCurta, dec, diaMes, diaMesHora, diaMesUtc, fmt, mesAno, money } from './format';
 import {
-  MOCK_ALERTS, MOCK_CUSTO_SEMANAL, MOCK_FLAGGED_TIRES,
-  MOCK_INSPECTIONS,
+  MOCK_ALERTS, MOCK_CUSTO_SEMANAL,
   MOCK_REPORT_CATEGORIES, MOCK_REPORT_COSTS, MOCK_WEEK_CATEGORIES,
 } from './mock-data';
-import { AlertLevel, CompanyAccount, DataState, Driver, Fornecedor, FuelEntry, HapoloStatus, MaintenanceHistoryEntry, MaintenanceItem, MaintenancePlan, Severity, Vehicle, VehicleType, WeekPoint } from './models';
+import { AlertLevel, CompanyAccount, DataState, Driver, FlaggedTire, Inspection, InspectionItem, Fornecedor, FuelEntry, HapoloStatus, MaintenanceHistoryEntry, MaintenanceItem, MaintenancePlan, Severity, Vehicle, VehicleType, WeekPoint } from './models';
 import { ToastService } from './toast.service';
 
 const SEVERITY_COLOR: Record<AlertLevel, string> = {
@@ -174,6 +173,51 @@ function paraHistorico(m: ManutencaoApi): MaintenanceHistoryEntry {
   };
 }
 
+/** GET /pneus/sinalizados — estado atual por posição + vistoria mais recente daquela posição. */
+interface PneuSinalizadoApi {
+  veiculo: { placa: string };
+  posicao: string;
+  severidade: 'ATENCAO' | 'CRITICO';
+  observacao: string | null;
+  vistoriaEm: string | null;
+}
+
+/** GET /vistorias — itens vêm por sub-item (ex.: um por pneu); a tela agrupa por etapa do checklist. */
+interface VistoriaApi {
+  id: string;
+  iniciadoEm: string;
+  veiculo: { placa: string };
+  motorista: { nome: string };
+  itens: { stepId: string; label: string; avaliacao: 'OK' | 'ATENCAO' | 'TROCAR'; observacao: string | null }[];
+}
+
+/** Etapas do checklist do app (CHECKLIST_CONFIG em vetor-app-mobile/.../inspection.model.ts), na ordem do app. */
+const ETAPAS_VISTORIA: Record<string, string> = {
+  pneus: 'Pneus', 'oleo-agua': 'Óleo e água', 'luzes-setas': 'Luzes e setas', freios: 'Freios', lataria: 'Lataria',
+};
+
+const capitalizar = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+function paraPneuSinalizado(p: PneuSinalizadoApi): FlaggedTire {
+  return {
+    v: p.veiculo.placa, pos: capitalizar(p.posicao), obs: p.observacao ?? '—',
+    vist: p.vistoriaEm ? diaMes(p.vistoriaEm) : '—', nv: p.severidade === 'CRITICO' ? 'critico' : 'atencao',
+  };
+}
+
+function paraVistoria(vi: VistoriaApi): Inspection {
+  const ordem = Object.keys(ETAPAS_VISTORIA);
+  const etapas = [...new Set(vi.itens.map((i) => i.stepId))]
+    .sort((a, b) => (ordem.indexOf(a) + 1 || 99) - (ordem.indexOf(b) + 1 || 99));
+  const itens: InspectionItem[] = etapas.map((stepId) => {
+    const sub = vi.itens.filter((i) => i.stepId === stepId);
+    const nv: Severity = sub.some((i) => i.avaliacao === 'TROCAR') ? 'critico' : sub.some((i) => i.avaliacao === 'ATENCAO') ? 'atencao' : 'ok';
+    const obs = sub.filter((i) => i.avaliacao !== 'OK').map((i) => i.observacao || i.label).join('; ');
+    return { n: ETAPAS_VISTORIA[stepId] ?? stepId, ok: nv === 'ok', nv, obs };
+  });
+  return { id: vi.id, v: vi.veiculo.placa, data: diaMesHora(vi.iniciadoEm), mot: vi.motorista.nome, itens };
+}
+
 interface VinculoApi {
   de: string;
   ate: string | null;
@@ -225,8 +269,9 @@ export class FleetStore {
   readonly maintenanceItems = signal<MaintenanceItem[]>([]);
   readonly maintenanceHistory = signal<MaintenanceHistoryEntry[]>([]);
   readonly plans = signal<MaintenancePlan[]>([]);
-  readonly flaggedTires = signal(MOCK_FLAGGED_TIRES);
-  readonly inspections = signal(MOCK_INSPECTIONS);
+  /** Vêm da API (GET /pneus/sinalizados, /vistorias) — carregados pelo shell. Escritos só pelo app mobile. */
+  readonly flaggedTires = signal<FlaggedTire[]>([]);
+  readonly inspections = signal<Inspection[]>([]);
   /** Vem da API (GET /motoristas) — carregada pelo shell. */
   readonly drivers = signal<Driver[]>([]);
   readonly fornecedores = signal<Fornecedor[]>([]);
@@ -390,8 +435,8 @@ export class FleetStore {
     ...vi,
     itens: vi.itens.map((it) => ({
       ...it,
-      glifo: it.ok ? 'check_circle' : 'error',
-      cor: it.ok ? 'var(--ok)' : 'var(--crit)',
+      glifo: it.nv === 'ok' ? 'check_circle' : it.nv === 'atencao' ? 'warning' : 'error',
+      cor: SEVERITY_COLOR[it.nv],
       lbl: it.ok ? 'ok' : it.obs,
     })),
   })));
@@ -561,6 +606,15 @@ export class FleetStore {
       }
       return 'Não foi possível adicionar o veículo. Tente novamente.';
     }
+  }
+
+  async loadTiresAndInspections(): Promise<void> {
+    const [pneus, vistorias] = await Promise.all([
+      firstValueFrom(this.http.get<PneuSinalizadoApi[]>(`${environment.apiUrl}/pneus/sinalizados`)),
+      firstValueFrom(this.http.get<VistoriaApi[]>(`${environment.apiUrl}/vistorias`)),
+    ]);
+    this.flaggedTires.set(pneus.map(paraPneuSinalizado));
+    this.inspections.set(vistorias.map(paraVistoria));
   }
 
   async loadMaintenance(): Promise<void> {

@@ -1,7 +1,10 @@
 <div class="card">
   <h2 class="panel-title" style="margin:0 0 12px">Pneus sinalizados para troca</h2>
+  @if (store.flaggedTiresEnriched().length === 0) {
+    <p style="color:var(--mut);font-size:13.5px;margin:0">Nenhum pneu sinalizado — as últimas vistorias não apontaram problemas.</p>
+  }
   <div class="flagged-grid">
-    @for (p of store.flaggedTiresEnriched(); track $index) {
+    @for (p of store.flaggedTiresEnriched(); track p.v + p.pos) {
       <div style="display:flex;gap:14px;background:var(--surf2);border:1px solid var(--line);border-radius:12px;padding:14px">
         <div class="photo-placeholder">
           <span class="mono" style="font-size:9.5px;color:var(--dim);line-height:1.4">foto da<br>vistoria</span>
@@ -25,10 +28,13 @@
 <div class="card">
   <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px">
     <h2 class="panel-title">Vistorias recebidas do app</h2>
-    <span class="mono" style="font-size:11px;color:var(--dim)">últimos 7 dias</span>
+    <span class="mono" style="font-size:11px;color:var(--dim)">mais recentes primeiro</span>
   </div>
+  @if (store.inspectionsEnriched().length === 0) {
+    <p style="color:var(--mut);font-size:13.5px;margin:0">Nenhuma vistoria recebida do app ainda.</p>
+  }
   <div class="insp-grid">
-    @for (vi of store.inspectionsEnriched(); track $index) {
+    @for (vi of store.inspectionsEnriched(); track vi.id) {
       <div style="display:flex;flex-direction:column;gap:10px;background:var(--surf2);border:1px solid var(--line);border-radius:12px;padding:16px">
         <div style="display:flex;justify-content:space-between;align-items:baseline">
           <span class="mono" style="font-size:12.5px;font-weight:500">{{ vi.v }}</span>

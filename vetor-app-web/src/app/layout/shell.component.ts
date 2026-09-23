@@ -49,6 +49,7 @@ export class ShellComponent {
     this.store.loadDrivers().catch(() => {});
     this.store.loadFuel().catch(() => {});
     this.store.loadMaintenance().catch(() => {});
+    this.store.loadTiresAndInspections().catch(() => {});
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
       this.currentUrl.set(this.router.url);
       this.menuOpen.set(false);

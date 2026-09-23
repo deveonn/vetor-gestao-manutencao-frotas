@@ -95,10 +95,13 @@ export interface FlaggedTire {
 export interface InspectionItem {
   n: string;
   ok: boolean;
+  /** pior avaliação entre os sub-itens da etapa */
+  nv: Severity;
   obs: string;
 }
 
 export interface Inspection {
+  id: string;
   v: string;
   data: string;
   mot: string;

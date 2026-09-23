@@ -40,3 +40,9 @@ export function diaMesUtc(iso: string): string {
   const d = new Date(iso);
   return `${d.getUTCDate()} ${MESES[d.getUTCMonth()]}`;
 }
+
+/** Dia, mês e hora pt-BR, ex.: "19 jul · 08:12" */
+export function diaMesHora(iso: string): string {
+  const d = new Date(iso);
+  return `${diaMes(iso)} · ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}

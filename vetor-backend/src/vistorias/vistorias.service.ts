@@ -67,7 +67,8 @@ export class VistoriasService {
       await this.prisma.pneuPosicao.upsert({
         where: { veiculoId_posicao: { veiculoId: dto.veiculoId, posicao: item.label } },
         create: { veiculoId: dto.veiculoId, posicao: item.label, severidade: severidadeDoPneu(item.avaliacao), observacao: item.observacao },
-        update: { severidade: severidadeDoPneu(item.avaliacao), observacao: item.observacao },
+        // null explícito: sem observação nesta vistoria, a observação antiga do pneu não pode sobrar
+        update: { severidade: severidadeDoPneu(item.avaliacao), observacao: item.observacao ?? null },
       });
     }
 

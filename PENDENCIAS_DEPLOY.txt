@@ -161,8 +161,22 @@ WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por 
      modal pequeno. Também não existe criação de pendência pela API/tela (só vem do seed) e concluir uma troca de
      óleo não reinicia o "km até a troca" do veículo.
 
-9. Pneus e vistorias
+9. [CONCLUÍDO 23/09/2026] Pneus e vistorias
    - Somente leitura no painel (quem escreve é o mobile).
+   - Feito: flaggedTires e inspections vêm da API (loadTiresAndInspections, chamado pelo shell). A vistoria da API
+     vem por sub-item (um por pneu etc.); o web agrupa por etapa na ordem do checklist do app (Pneus, Óleo e água,
+     Luzes e setas, Freios, Lataria), com a pior avaliação da etapa — atenção agora aparece em amarelo (antes era
+     só ok/erro). Estados vazios nas duas listas; "últimos 7 dias" (não filtrava nada) virou "mais recentes
+     primeiro". MOCK_FLAGGED_TIRES e MOCK_INSPECTIONS removidos.
+     Backend: GET /pneus/sinalizados NÃO EXISTIA (contrato dizia ✅) — criado módulo pneus/. Vistoria nova sem
+     observação num pneu agora limpa a observação antiga daquele pneu (antes sobrava).
+   - Teste: e2e Chrome headless (9 cenários ok): pneus e vistorias = API, agregação por etapa, e o caminho completo
+     motorista -> painel: POST /vistorias como joao.prates com pneu TROCAR aparece como crítico em Pneus, no topo das
+     vistorias, no diagrama da lista de veículos e no detalhe; nova vistoria OK tira o pneu da lista e limpa a obs.
+     Vistorias de teste removidas e pneus restaurados no fim. Regressão das 7 suítes anteriores (63) ok.
+   - Obs: seed tem RYD-5H36 dianteiro direito em "atenção" sem vistoria correspondente (aparece com "—").
+   - Obs: foto da vistoria (midia) ainda não aparece no card — segue o placeholder "foto da vistoria". Depende do
+     upload real de mídia pelo mobile (mobile #4).
 
 10. Dashboard e relatórios
     - Geralmente mais fáceis por serem só leitura, mas dependem dos módulos acima terem dados reais pra fazer sentido visualmente.
