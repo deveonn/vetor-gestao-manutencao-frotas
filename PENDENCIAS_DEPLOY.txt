@@ -44,9 +44,16 @@ BACKEND (vetor-backend)
 WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por endpoint
 ===========================================
 
-1. Base HTTP
+1. [CONCLUÍDO 23/09/2026] Base HTTP
    - environment.ts / environment.prod.ts (URL da API), provideHttpClient, interceptor que injeta Bearer token e trata 401 (refresh ou logout).
-   - Teste: uma chamada simples (GET /empresa) funcionando end-to-end.
+   - Feito: src/environments/ (dev: http://localhost:3000/api; prod: /api, TODO até existir ambiente real) + fileReplacements
+     no angular.json; core/token.service.ts guarda o par access/refresh em localStorage (vetor.tokens); core/auth.interceptor.ts
+     injeta Bearer nas chamadas à API e, em 401, faz UM refresh compartilhado (rotaciona os tokens) e repete a requisição —
+     se o refresh falhar, limpa tokens, chama AuthService.logout() e navega pra /login.
+   - Teste: probe temporário (já removido) rodado em Chrome headless contra a API local com o usuário rui do seed:
+     A) token válido -> GET /empresa 200; B) access inválido + refresh válido -> 200 após refresh, tokens rotacionados e
+     persistidos; C) refresh já revogado -> 401, tokens limpos, redirecionado pra /login.
+   - Obs: AuthService.login ainda é o mock (item 2), então por enquanto nada no app popula os tokens.
 
 2. Login real
    - AuthService.login chamando POST /auth/login no lugar da regra hardcoded (email válido + senha "demo").
