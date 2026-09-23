@@ -32,7 +32,7 @@ npm test            # ng test
 ```bash
 cd vetor-app-mobile
 npm install
-npm start           # ng serve (browser preview, no native shell)
+npm start           # ng serve on :8100 (browser preview, no native shell; 4200 is the web panel)
 npm run build
 npm test            # ng test (uses @angular/build:unit-test + vitest/jsdom)
 npx cap sync         # sync web build into the native Android project
@@ -73,7 +73,8 @@ Neither web nor mobile `package.json` defines a `lint` script — there's no con
 ### Mobile app (`vetor-app-mobile`)
 - Ionic pages under `src/app/pages/`, standalone components, lazy-loaded routes (`app.routes.ts`). Non-tab flow (splash → login → confirm-vehicle → checklist → checklist-rate → review → confirmation) sits outside `ion-tabs`; home/history/profile are tabbed children.
 - **Offline-first is the core design constraint**, not an edge case — inspections are always written locally first:
-  - `SessionService` persists login session to `Preferences` (`vetor.session`) for offline re-entry; `SessionService.login` is mock auth (any non-empty username/password succeeds).
+  - `SessionService` persists login session to `Preferences` (`vetor.session`) for offline re-entry; `SessionService.login` is still mock auth (any non-empty username/password succeeds) until Mobile #2.
+  - HTTP base is in place (Mobile #1): `src/environments/` (API URL), `TokenService` (access/refresh pair in `Preferences`, `vetor.tokens`, async — await `ready`), and `core/interceptors/auth.interceptor.ts` (Bearer + one shared refresh on 401). Unlike the web, a refresh that fails for **network** reasons keeps tokens and session — only a server rejection (401/400) signs the driver out; never log a driver out just because they're offline.
   - `QueueService` persists inspections to `Preferences` (`vetor.queue`) as `QueuedInspection` records with status `queued → sending → sent`.
   - `SyncService` is an Angular `effect()` that watches `NetworkService.online()` + the queue; when back online and items are queued, it drains the queue one item at a time with a simulated 1200ms send delay per item (`SEND_DELAY_MS`) — there is no real network call yet, this is a stand-in for the future backend sync endpoint.
   - `NetworkService` wraps `@capacitor/network`.

@@ -211,9 +211,28 @@ WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por 
 MOBILE (vetor-app-mobile)
 ===========================================
 
-1. Base HTTP
+1. [CONCLUÍDO 23/09/2026] Base HTTP
    - Mesmo pacote de setup do web (environment, HttpClient, interceptor JWT).
    - Teste: uma chamada simples autenticada funcionando.
+   - Antes: vetor-app-mobile NÃO ESTAVA VERSIONADO — era um gitlink de submodule quebrado (sem .gitmodules, sem .git
+     próprio). Virou pasta normal no commit "mobile: versiona o vetor-app-mobile como pasta normal" (200 arquivos,
+     estado do disco; package-lock.json é o do npm install de 23/09 — o anterior não era recuperável).
+   - Feito: src/environments/ (dev http://localhost:3000/api; prod /api, TODO) + fileReplacements; TokenService
+     (Preferences "vetor.tokens", leitura assíncrona com `ready`); core/interceptors/auth.interceptor.ts (Bearer +
+     um refresh compartilhado em 401). Diferença proposital do web: refresh que falha por REDE mantém tokens e
+     sessão (offline-first); só 401/400 do servidor encerra a sessão (limpa tokens, SessionService.logout, /login).
+     Dev server do mobile passou pra porta 8100 (antes 4200, batia com o web). Backend: CORS_ORIGIN no .env.example
+     (e no .env local) ganhou http://localhost:8100, https://localhost (Capacitor Android) e capacitor://localhost (iOS).
+   - Teste: probe temporário (removido) no browser (ng serve :8100) via Chrome headless, motorista joao.prates:
+     token do Preferences no boot -> GET /motorista/veiculo-do-dia 200; access inválido -> refresh + retry 200 com
+     tokens rotacionados; /auth/refresh bloqueado (sem rede) -> erro devolvido mas sessão/tokens mantidos e sem ir
+     pro /login, e ao voltar a rede a mesma sessão renova; refresh revogado -> 401, sessão limpa, /login.
+     Preflight CORS conferido pras 4 origens (evil.com segue sem header). Regressão web e2e 86/86.
+   - PENDENTE (Android real): não testado em emulador/aparelho (adb/emulator fora do PATH). Pra funcionar lá falta:
+     URL da API por plataforma (emulador = http://10.0.2.2:3000/api, aparelho = IP da máquina) e liberar HTTP em
+     dev — a WebView roda em https://localhost e bloqueia http:// como mixed content; caminhos: CapacitorHttp
+     (requisição nativa) + network_security_config permitindo cleartext só pros hosts de dev. Fazer quando for
+     testar no aparelho, provavelmente junto do Mobile #2.
 
 2. Login real
    - SessionService.login via POST /auth/login, e GET /auth/me pra restaurar sessão ao reabrir o app offline.
