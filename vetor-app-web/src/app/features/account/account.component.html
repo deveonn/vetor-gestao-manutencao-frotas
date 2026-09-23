@@ -13,11 +13,17 @@
       <label class="field">Razão social <input [(ngModel)]="form.empresa"></label>
       <label class="field">CNPJ <input [(ngModel)]="form.cnpj" class="mono"></label>
       <label class="field">Nome do administrador <input [(ngModel)]="form.nome"></label>
-      <label class="field">E-mail de acesso <input type="email" [(ngModel)]="form.email"></label>
+      <label class="field">E-mail de contato <input type="email" [(ngModel)]="form.email"></label>
       <label class="field">Telefone <input [(ngModel)]="form.fone" class="mono"></label>
     </div>
+    @if (contaErr()) {
+      <div role="alert" class="form-error">
+        <span class="material-symbols-outlined" style="color:var(--crit);font-size:18px;flex-shrink:0">error</span>
+        <span>{{ contaErr() }}</span>
+      </div>
+    }
     <div style="display:flex;justify-content:flex-end;border-top:1px solid var(--line);padding-top:16px">
-      <button (click)="salvarConta()" class="btn btn-primary">Salvar alterações</button>
+      <button (click)="salvarConta()" [disabled]="salvando()" class="btn btn-primary">{{ salvando() ? 'Salvando…' : 'Salvar alterações' }}</button>
     </div>
   </div>
 }

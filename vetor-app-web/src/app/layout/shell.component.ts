@@ -43,6 +43,7 @@ export class ShellComponent {
   currentUrl = signal(this.router.url);
 
   constructor() {
+    this.store.loadAccount().catch(() => {});
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
       this.currentUrl.set(this.router.url);
       this.menuOpen.set(false);

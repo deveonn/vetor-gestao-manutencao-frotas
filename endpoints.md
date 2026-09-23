@@ -45,7 +45,7 @@ Tela: `features/account` (web). Fonte: `FleetStore.account` / `updateAccount` (`
 | Endpoint | Papel |
 |---|---|
 | `GET /empresa` ✅ | `[admin]` |
-| `PATCH /empresa` ✅ — body: `Partial<{ empresa, cnpj, nome, email, fone }>` | `[admin]` |
+| `PATCH /empresa` ✅ — body: `Partial<{ nome, cnpj, contatoNome, contatoEmail, contatoFone }>` (nomes do schema; o web mapeia de/para `CompanyAccount` `{ empresa, cnpj, nome, email, fone }` em `fleet.store.ts`) | `[admin]` |
 
 ---
 

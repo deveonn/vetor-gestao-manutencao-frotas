@@ -68,9 +68,18 @@ WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por 
      Não testado: mensagem de API fora do ar.
    - Obs: nome no topo do painel ainda vem do FleetStore mock (store.account()) — vira real no item 3.
 
-3. Empresa/Conta
+3. [CONCLUÍDO 23/09/2026] Empresa/Conta
    - GET/PATCH /empresa.
-   - Teste: tela de conta lê e salva de verdade.
+   - Feito: FleetStore.account começa vazio e é carregado de GET /empresa pelo shell ao montar (loadAccount);
+     updateAccount faz PATCH e devolve mensagem de erro pro form (tela mostra alerta + botão "Salvando…").
+     Mapeamento CompanyAccount <-> schema (empresa->nome, nome->contatoNome, email->contatoEmail, fone->contatoFone)
+     fica no fleet.store.ts. Campo "E-mail de acesso" renomeado pra "E-mail de contato" — ele edita contatoEmail da
+     empresa, não o e-mail de login do usuário. MOCK_ACCOUNT não é mais usado pelo store.
+     Backend: filtro global PrismaExceptionFilter (P2002 unique -> 409, P2025 not found -> 404), antes era 500.
+   - Teste: e2e em Chrome headless (CDP), 7 cenários ok: shell mostra empresa/contato da API, reload direto em /conta
+     preenche o form, salvar telefone persiste (confirmado via GET /empresa) e sobrevive a reload, e-mail inválido
+     mostra erro sem salvar, placa duplicada em POST /veiculos -> 409. Regressão do login (12 cenários) ok.
+   - Obs: CNPJ duplicado não testado pela tela (seed só tem 1 empresa), mas cai no mesmo filtro -> 409 com mensagem própria.
 
 4. Integração de rastreamento
    - Conectar/testar/remover token.

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FleetStore } from '../../core/fleet.store';
 
@@ -15,15 +15,26 @@ export class AccountComponent {
 
   tab = signal<Tab>('cadastro');
   form = { ...this.store.account() };
+  salvando = signal(false);
+  contaErr = signal('');
   hapToken = '';
   hapErr = signal('');
+
+  constructor() {
+    // a conta chega da API depois do shell montar (ex.: reload direto em /conta) — sincroniza o form
+    effect(() => {
+      this.form = { ...this.store.account() };
+    });
+  }
 
   setTab(t: Tab): void {
     this.tab.set(t);
   }
 
-  salvarConta(): void {
-    this.store.updateAccount(this.form);
+  async salvarConta(): Promise<void> {
+    this.salvando.set(true);
+    this.contaErr.set(await this.store.updateAccount(this.form) ?? '');
+    this.salvando.set(false);
   }
 
   hapConectar(): void {

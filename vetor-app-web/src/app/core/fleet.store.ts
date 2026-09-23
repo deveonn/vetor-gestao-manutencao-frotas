@@ -1,7 +1,10 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { dec, fmt, money } from './format';
 import {
-  MOCK_ACCOUNT, MOCK_ALERTS, MOCK_CUSTO_SEMANAL, MOCK_DRIVERS, MOCK_FLAGGED_TIRES, MOCK_FORNECEDORES,
+  MOCK_ALERTS, MOCK_CUSTO_SEMANAL, MOCK_DRIVERS, MOCK_FLAGGED_TIRES, MOCK_FORNECEDORES,
   MOCK_FUEL, MOCK_INSPECTIONS, MOCK_KML_SEMANAL, MOCK_MAINTENANCE, MOCK_MAINTENANCE_HISTORY, MOCK_PLANS,
   MOCK_REPORT_CATEGORIES, MOCK_REPORT_COSTS, MOCK_VEHICLES, MOCK_WEEK_CATEGORIES,
 } from './mock-data';
@@ -33,6 +36,31 @@ function tipoIcone(tipo: Vehicle['tipo']): string {
   return 'directions_car';
 }
 
+/** Empresa como vem de GET/PATCH /empresa (nomes do schema Prisma). */
+interface EmpresaApi {
+  nome: string;
+  cnpj: string;
+  contatoNome: string;
+  contatoEmail: string;
+  contatoFone: string;
+}
+
+function paraConta(e: EmpresaApi): CompanyAccount {
+  return { empresa: e.nome, cnpj: e.cnpj, nome: e.contatoNome, email: e.contatoEmail, fone: e.contatoFone };
+}
+
+function paraEmpresaApi(c: Partial<CompanyAccount>): Partial<EmpresaApi> {
+  const body: Partial<EmpresaApi> = {};
+  if (c.empresa !== undefined) body.nome = c.empresa;
+  if (c.cnpj !== undefined) body.cnpj = c.cnpj;
+  if (c.nome !== undefined) body.contatoNome = c.nome;
+  if (c.email !== undefined) body.contatoEmail = c.email;
+  if (c.fone !== undefined) body.contatoFone = c.fone;
+  return body;
+}
+
+const CONTA_VAZIA: CompanyAccount = { empresa: '', cnpj: '', nome: '', email: '', fone: '' };
+
 function severityColor(s: Severity | AlertLevel): string {
   return SEVERITY_COLOR[s as AlertLevel] ?? SEVERITY_COLOR.ok;
 }
@@ -53,7 +81,8 @@ export class FleetStore {
   readonly drivers = signal<Driver[]>(MOCK_DRIVERS);
   readonly fornecedores = signal<Fornecedor[]>(MOCK_FORNECEDORES);
   readonly reportCosts = signal(MOCK_REPORT_COSTS);
-  readonly account = signal(MOCK_ACCOUNT);
+  /** Vem da API (GET /empresa) — carregada pelo shell ao entrar no painel. */
+  readonly account = signal<CompanyAccount>(CONTA_VAZIA);
   readonly hapoloStatus = signal<HapoloStatus>('conectado');
   readonly hapoloValidating = signal(false);
   readonly hapoloTokenTail = signal('x4T9');
@@ -67,6 +96,8 @@ export class FleetStore {
   });
   /** Rastreamento Hapolo indisponível quando não há token conectado. */
   readonly offline = computed(() => this.hapoloStatus() === 'sem');
+
+  private http = inject(HttpClient);
 
   constructor(private toast: ToastService) {
     setTimeout(() => this.dataStateRaw.set('normal'), 900);
@@ -289,9 +320,32 @@ export class FleetStore {
     this.toast.show(`Veículo ${placa} excluído — histórico arquivado por 90 dias`, 'info');
   }
 
-  updateAccount(payload: Partial<CompanyAccount>): void {
-    this.account.update((acc) => ({ ...acc, ...payload }));
-    this.toast.show('Alterações salvas — cadastro da conta atualizado');
+  async loadAccount(): Promise<void> {
+    const empresa = await firstValueFrom(this.http.get<EmpresaApi>(`${environment.apiUrl}/empresa`));
+    this.account.set(paraConta(empresa));
+  }
+
+  /** Retorna a mensagem de erro, ou null se salvou. */
+  async updateAccount(payload: Partial<CompanyAccount>): Promise<string | null> {
+    try {
+      const empresa = await firstValueFrom(
+        this.http.patch<EmpresaApi>(`${environment.apiUrl}/empresa`, paraEmpresaApi(payload)),
+      );
+      this.account.set(paraConta(empresa));
+      this.toast.show('Alterações salvas — cadastro da conta atualizado');
+      return null;
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && err.status === 400) {
+        const msg = err.error?.message;
+        return Array.isArray(msg) && msg.some((m: string) => m.includes('contatoEmail'))
+          ? 'E-mail inválido — confira o formato.'
+          : 'Dados inválidos — confira os campos.';
+      }
+      if (err instanceof HttpErrorResponse && err.status === 409) {
+        return 'Este CNPJ já está cadastrado em outra conta.';
+      }
+      return 'Não foi possível salvar. Tente novamente.';
+    }
   }
 
   hapoloConnect(token: string): { error: string } | null {
