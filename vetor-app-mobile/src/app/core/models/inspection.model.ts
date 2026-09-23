@@ -15,6 +15,8 @@ export interface SubItemState {
   label: string;
   rating: Rating | null;
   photoDataUrl: string | null;
+  /** id da foto já enviada (POST /midia) — preenchido na sincronização, evita reenviar a mesma foto */
+  midiaId?: string | null;
   /** diagrama do veículo destacando a posição (ex.: pneu) — só quando aplicável */
   image?: string;
   /** breve descrição do problema — preenchida quando a avaliação é atenção/trocar, se o passo pedir */

@@ -58,6 +58,12 @@ export class QueueService {
     await this.persist();
   }
 
+  /** Grava o progresso da sincronização (ex.: midiaId das fotos já enviadas) no item da fila. */
+  async updateSteps(id: string, steps: ChecklistStepState[]): Promise<void> {
+    this.items.update((list) => list.map((i) => (i.id === id ? { ...i, steps } : i)));
+    await this.persist();
+  }
+
   getById(id: string): QueuedInspection | undefined {
     return this.items().find((i) => i.id === id);
   }

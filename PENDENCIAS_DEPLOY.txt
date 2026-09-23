@@ -272,8 +272,26 @@ MOBILE (vetor-app-mobile)
      diagrama do caminhão, mas POST /veiculos e o seed criam sempre 4 posições e o painel web desenha 4. A
      vistoria de caminhão vai mandar "traseiro esquerdo interno/externo" etc. — decidir como o backend/web tratam.
 
-4. Upload de mídia
+4. [CONCLUÍDO 23/09/2026] Upload de mídia
    - PhotoCaptureService enviando pra POST /midia antes de referenciar midiaId na vistoria.
+   - Feito (desenho offline-first): a foto NÃO sobe na hora da captura (o motorista pode estar sem rede) — continua
+     na fila local e sobe na sincronização. MidiaService.upload converte o dataUrl em Blob e manda multipart
+     (campo "arquivo") pra POST /midia. SyncService, por vistoria da fila, sobe primeiro as fotos sem midiaId e grava
+     cada midiaId no item da fila assim que volta (QueueService.updateSteps) — sincronização interrompida retoma sem
+     reenviar. Falha de rede -> item volta pra "queued" + pausa de 30 s antes de tentar de novo (antes, com a fila
+     reativa, ia virar loop sem conexão); servidor recusou (ex.: 400) -> "error" (botão "tentar de novo" do
+     histórico). O envio da vistoria em si continua simulado (mobile #5). SubItemState ganhou `midiaId`.
+   - Teste: e2e/mobile-fotos.mjs (7 cenários ok; a câmera não roda headless, então grava vistorias com foto direto
+     na fila): com rede sobem as 2 fotos e cada sub-item guarda seu id; vistoria sem foto é enviada sem upload; foto
+     servida em /uploads (200 image/png); API bloqueada -> segue "queued" sem subir nada, e ao voltar sincroniza;
+     retomada não reenvia foto que já tinha midiaId; arquivo não-imagem -> 400 -> "error". Fotos e registros de teste
+     apagados no fim. Regressão completa 114/114.
+   - ATENÇÃO pro mobile #5: (a) logout não limpa a fila local — se outro motorista entrar no mesmo celular, as
+     vistorias pendentes do anterior seriam enviadas com o token do novo (motoristaId vem do JWT). Decidir: bloquear
+     o logout com pendências, ou fila por usuário. (b) As fotos ficam em base64 dentro da fila no Preferences
+     (SharedPreferences no Android) — vistoria com várias fotos pode ficar grande; considerar reduzir a foto antes de
+     guardar ou mover pro Filesystem. (c) /uploads é público no backend (sem auth, nome aleatório) — rever junto do
+     storage S3 (backend #5).
 
 5. Envio de vistoria
    - SyncService.drain() chamando POST /vistorias de verdade no lugar do delay simulado (1200ms).
