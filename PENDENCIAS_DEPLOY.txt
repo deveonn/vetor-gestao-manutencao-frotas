@@ -143,8 +143,23 @@ WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por 
      96204 -> 97115 km com 58 L daria 15,7, seed diz 6,4). A tela mostra o que está gravado; só os novos são calculados.
    - Obs: abastecimento retroativo não recalcula o km/L do abastecimento seguinte já gravado.
 
-8. Manutenção
+8. [CONCLUÍDO 23/09/2026] Manutenção
    - Pendentes/concluir/histórico/planos.
+   - Feito: maintenanceItems, maintenanceHistory e plans vêm da API (loadMaintenance, chamado pelo shell).
+     completeMaintenance -> POST /manutencoes/:id/concluir (tela de manutenção e detalhe do veículo); a concluída
+     entra no topo do histórico; 409 (já concluída em outra aba) sincroniza a tela com aviso. Histórico mostra "—"
+     quando custo/oficina não foram informados. Título do plano monta "Tipo — modelos da frota" a partir dos veículos
+     (antes era texto fixo). MOCK_MAINTENANCE, MOCK_MAINTENANCE_HISTORY e MOCK_PLANS removidos.
+     Backend: pendentes de veículo arquivado não aparecem mais; concluir 2x -> 409 (antes sobrescrevia concluidoEm);
+     planos e itens com ordem estável; concluir devolve o veículo junto.
+   - Teste: e2e Chrome headless (8 cenários ok): pendentes/histórico/planos = API, concluir pela tela de manutenção
+     e pelo detalhe do veículo, 409 com tela desatualizada, pendência de veículo arquivado some. Itens concluídos
+     no teste voltam a PENDENTE no fim. Regressão combustível (11) + motoristas (8) + veículos (10) + rastreamento
+     (7) + conta (7) + login (12) ok.
+   - EM ABERTO: "Marcar como feita" não pede custo nem oficina (o mock também não pedia), então tudo que for
+     concluído pela tela entra no "Histórico com custos" sem custo. A API já aceita { custo, oficina } — falta um
+     modal pequeno. Também não existe criação de pendência pela API/tela (só vem do seed) e concluir uma troca de
+     óleo não reinicia o "km até a troca" do veículo.
 
 9. Pneus e vistorias
    - Somente leitura no painel (quem escreve é o mobile).

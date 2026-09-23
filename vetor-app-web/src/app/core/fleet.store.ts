@@ -5,10 +5,10 @@ import { environment } from '../../environments/environment';
 import { dataCurta, dec, diaMes, diaMesUtc, fmt, mesAno, money } from './format';
 import {
   MOCK_ALERTS, MOCK_CUSTO_SEMANAL, MOCK_FLAGGED_TIRES,
-  MOCK_INSPECTIONS, MOCK_MAINTENANCE, MOCK_MAINTENANCE_HISTORY, MOCK_PLANS,
+  MOCK_INSPECTIONS,
   MOCK_REPORT_CATEGORIES, MOCK_REPORT_COSTS, MOCK_WEEK_CATEGORIES,
 } from './mock-data';
-import { AlertLevel, CompanyAccount, DataState, Driver, Fornecedor, FuelEntry, HapoloStatus, Severity, Vehicle, VehicleType, WeekPoint } from './models';
+import { AlertLevel, CompanyAccount, DataState, Driver, Fornecedor, FuelEntry, HapoloStatus, MaintenanceHistoryEntry, MaintenanceItem, MaintenancePlan, Severity, Vehicle, VehicleType, WeekPoint } from './models';
 import { ToastService } from './toast.service';
 
 const SEVERITY_COLOR: Record<AlertLevel, string> = {
@@ -142,6 +142,38 @@ function paraFornecedor(f: FornecedorApi): Fornecedor {
   return { id: f.id, nome: f.nome, endereco: f.endereco ?? '', cidade: f.cidade ?? '', telefone: f.telefone };
 }
 
+/** Manutenção como vem de /manutencoes/pendentes, /historico e /:id/concluir. */
+interface ManutencaoApi {
+  id: string;
+  item: string;
+  kmRestante: number | null;
+  nivel: 'OK' | 'ATENCAO' | 'CRITICO' | null;
+  prazo: string | null;
+  custo: number | null;
+  oficina: string | null;
+  concluidoEm: string | null;
+  veiculo: { placa: string };
+}
+
+interface PlanoApi {
+  tipoVeiculo: VeiculoApi['tipo'];
+  itens: { item: string; km: string; tempo: string }[];
+}
+
+function paraPendente(m: ManutencaoApi): MaintenanceItem {
+  return {
+    id: m.id, v: m.veiculo.placa, item: m.item, resta: m.kmRestante ?? 0,
+    nv: (m.nivel?.toLowerCase() ?? 'ok') as MaintenanceItem['nv'], prazo: m.prazo ?? '—',
+  };
+}
+
+function paraHistorico(m: ManutencaoApi): MaintenanceHistoryEntry {
+  return {
+    id: m.id, data: m.concluidoEm ? diaMes(m.concluidoEm) : '—', v: m.veiculo.placa, item: m.item,
+    custo: m.custo, ofi: m.oficina,
+  };
+}
+
 interface VinculoApi {
   de: string;
   ate: string | null;
@@ -189,9 +221,10 @@ export class FleetStore {
   readonly fuelEntries = signal<FuelEntry[]>([]);
   readonly kmlWeekly = signal<WeekPoint[]>([]);
   readonly custoWeekly = signal(MOCK_CUSTO_SEMANAL);
-  readonly maintenanceItems = signal(MOCK_MAINTENANCE);
-  readonly maintenanceHistory = signal(MOCK_MAINTENANCE_HISTORY);
-  readonly plans = signal(MOCK_PLANS);
+  /** Vêm da API (GET /manutencoes/pendentes, /historico, /planos) — carregados pelo shell. */
+  readonly maintenanceItems = signal<MaintenanceItem[]>([]);
+  readonly maintenanceHistory = signal<MaintenanceHistoryEntry[]>([]);
+  readonly plans = signal<MaintenancePlan[]>([]);
   readonly flaggedTires = signal(MOCK_FLAGGED_TIRES);
   readonly inspections = signal(MOCK_INSPECTIONS);
   /** Vem da API (GET /motoristas) — carregada pelo shell. */
@@ -330,8 +363,20 @@ export class FleetStore {
 
   readonly maintenanceHistoryEnriched = computed(() => this.maintenanceHistory().map((h) => ({
     ...h,
-    custoF: money(h.custo),
+    custoF: h.custo == null ? '—' : money(h.custo),
+    ofiTxt: h.ofi || '—',
   })));
+
+  /** Rótulo do plano com os modelos da frota daquele tipo, ex.: "Utilitário — Fiorino, Saveiro". */
+  readonly plansEnriched = computed(() => {
+    const vehicles = this.vehicles();
+    return this.plans().map((p) => {
+      const modelos = [...new Set(vehicles.filter((v) => v.tipo === p.tipo && v.modelo !== '—')
+        // sem a marca: "Mercedes Sprinter 415" -> "Sprinter 415"
+        .map((v) => v.modelo.split(' ').slice(1).join(' ') || v.modelo))];
+      return { ...p, titulo: modelos.length ? `${p.tipo} — ${modelos.join(', ')}` : p.tipo };
+    });
+  });
 
   readonly flaggedTiresEnriched = computed(() => this.flaggedTires().map((p) => ({
     ...p,
@@ -518,11 +563,34 @@ export class FleetStore {
     }
   }
 
-  completeMaintenance(id: string): void {
+  async loadMaintenance(): Promise<void> {
+    const [pendentes, historico, planos] = await Promise.all([
+      firstValueFrom(this.http.get<ManutencaoApi[]>(`${environment.apiUrl}/manutencoes/pendentes`)),
+      firstValueFrom(this.http.get<ManutencaoApi[]>(`${environment.apiUrl}/manutencoes/historico`)),
+      firstValueFrom(this.http.get<PlanoApi[]>(`${environment.apiUrl}/manutencoes/planos`)),
+    ]);
+    this.maintenanceItems.set(pendentes.map(paraPendente));
+    this.maintenanceHistory.set(historico.map(paraHistorico));
+    this.plans.set(planos.map((p) => ({ tipo: TIPO_API[p.tipoVeiculo], itens: p.itens })));
+  }
+
+  async completeMaintenance(id: string): Promise<void> {
     const item = this.maintenanceItems().find((m) => m.id === id);
     if (!item) return;
-    this.maintenanceItems.update((list) => list.filter((m) => m.id !== id));
-    this.toast.show(`Manutenção marcada como feita — ${item.item} · ${item.v}`);
+    try {
+      const concluida = await firstValueFrom(this.http.post<ManutencaoApi>(`${environment.apiUrl}/manutencoes/${id}/concluir`, {}));
+      this.maintenanceItems.update((list) => list.filter((m) => m.id !== id));
+      this.maintenanceHistory.update((list) => [paraHistorico(concluida), ...list]);
+      this.toast.show(`Manutenção marcada como feita — ${item.item} · ${item.v}`);
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && err.status === 409) {
+        // já concluída em outra aba/sessão — sincroniza com o servidor
+        this.maintenanceItems.update((list) => list.filter((m) => m.id !== id));
+        this.toast.show(`Esta manutenção já tinha sido concluída — ${item.item} · ${item.v}`, 'info');
+        return;
+      }
+      this.toast.show(`Não foi possível concluir a manutenção — ${item.item} · ${item.v}`, 'info');
+    }
   }
 
   /** Retorna true se excluiu (arquivou) na API. */

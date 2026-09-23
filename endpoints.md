@@ -112,7 +112,7 @@ Tela: `features/maintenance` (web). Fonte: `maintenanceItems`/`completeMaintenan
 | Endpoint | Papel |
 |---|---|
 | `GET /manutencoes/pendentes` ✅ — item, veículo, km/tempo restante, nível de urgência, prazo | `[admin]` |
-| `POST /manutencoes/:id/concluir` ✅ — marca como feita (`completeMaintenance`, `core/fleet.store.ts:245`) | `[admin]` |
+| `POST /manutencoes/:id/concluir` ✅ — marca como feita (`completeMaintenance`); body opcional `{ custo, oficina }`; 409 se já concluída | `[admin]` |
 | `GET /manutencoes/historico` ✅ — data, veículo, item, custo, oficina | `[admin]` |
 | `GET /manutencoes/planos` ✅ — plano preventivo por tipo de veículo (item × km × tempo). Provavelmente configuração semi-estática por empresa, não por veículo individual | `[admin]` |
 

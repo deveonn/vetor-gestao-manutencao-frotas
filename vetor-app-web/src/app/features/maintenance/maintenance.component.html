@@ -22,12 +22,12 @@
     <div class="hist-head mono">
       <span>data</span><span>veículo</span><span>serviço</span><span>oficina</span><span style="text-align:right">custo</span>
     </div>
-    @for (h of store.maintenanceHistoryEnriched(); track $index) {
+    @for (h of store.maintenanceHistoryEnriched(); track h.id) {
       <div class="hist-row">
         <span class="mono" style="font-size:12px;color:var(--dim)">{{ h.data }}</span>
         <span class="mono" style="font-size:12.5px">{{ h.v }}</span>
         <span style="color:var(--mut)">{{ h.item }}</span>
-        <span style="color:var(--dim);font-size:12.5px">{{ h.ofi }}</span>
+        <span style="color:var(--dim);font-size:12.5px">{{ h.ofiTxt }}</span>
         <span class="mono tabular" style="font-size:12.5px;text-align:right">{{ h.custoF }}</span>
       </div>
     }
@@ -38,9 +38,9 @@
       <h2 class="panel-title">Plano por tipo de veículo</h2>
       <span class="mono" style="font-size:11px;color:var(--dim)">configurável</span>
     </div>
-    @for (pl of store.plans(); track pl.tipo) {
+    @for (pl of store.plansEnriched(); track pl.tipo) {
       <div style="display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line);padding-top:12px">
-        <span style="font-size:13px;font-weight:600;padding-bottom:4px">{{ pl.tipo }}</span>
+        <span style="font-size:13px;font-weight:600;padding-bottom:4px">{{ pl.titulo }}</span>
         @for (it of pl.itens; track it.item) {
           <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0">
             <span style="color:var(--mut)">{{ it.item }}</span>

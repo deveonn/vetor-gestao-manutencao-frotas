@@ -64,11 +64,13 @@ export interface MaintenanceItem {
 }
 
 export interface MaintenanceHistoryEntry {
+  id: string;
   data: string;
   v: string;
   item: string;
-  custo: number;
-  ofi: string;
+  /** null = concluída sem informar custo/oficina */
+  custo: number | null;
+  ofi: string | null;
 }
 
 export interface MaintenancePlanItem {
@@ -78,7 +80,7 @@ export interface MaintenancePlanItem {
 }
 
 export interface MaintenancePlan {
-  tipo: string;
+  tipo: VehicleType;
   itens: MaintenancePlanItem[];
 }
 

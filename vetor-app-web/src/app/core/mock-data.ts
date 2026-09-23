@@ -1,7 +1,4 @@
-import {
-  Alert, FlaggedTire, Inspection, MaintenanceHistoryEntry,
-  MaintenanceItem, MaintenancePlan, ReportCategory, ReportVehicleCost, WeekPoint,
-} from './models';
+import { Alert, FlaggedTire, Inspection, ReportCategory, ReportVehicleCost } from './models';
 
 export const MOCK_ALERTS: Alert[] = [
   { nv: 'critico', t: 'Troca de óleo vencida há 340 km', v: 'SQP-7D45', acao: 'manutencao' },
@@ -13,28 +10,6 @@ export const MOCK_ALERTS: Alert[] = [
 ];
 
 export const MOCK_CUSTO_SEMANAL: number[] = [15980, 15420, 16210, 15760, 14980, 16480, 15120, 15890];
-
-export const MOCK_MAINTENANCE: MaintenanceItem[] = [
-  { id: 'm1', v: 'SQP-7D45', item: 'Troca de óleo e filtro', resta: -340, nv: 'critico', prazo: 'vencida há 340 km' },
-  { id: 'm2', v: 'RKM-2E88', item: 'Troca de óleo e filtro', resta: 850, nv: 'atencao', prazo: 'em 850 km ou 12 dias' },
-  { id: 'm3', v: 'RYD-5H36', item: 'Correia dentada', resta: 1480, nv: 'atencao', prazo: 'em 1.480 km' },
-  { id: 'm4', v: 'RTX-4B21', item: 'Troca de óleo e filtro', resta: 1220, nv: 'atencao', prazo: 'em 1.220 km' },
-  { id: 'm5', v: 'SBF-6A03', item: 'Pastilhas de freio', resta: 2900, nv: 'ok', prazo: 'em 2.900 km' },
-];
-
-export const MOCK_MAINTENANCE_HISTORY: MaintenanceHistoryEntry[] = [
-  { data: '12 jul', v: 'SBF-6A03', item: 'Corretiva — pastilhas e discos de freio', custo: 1180, ofi: 'Oficina Mecvel' },
-  { data: '28 jun', v: 'RTX-4B21', item: 'Troca de óleo e filtro', custo: 420, ofi: 'Lubrax Express' },
-  { data: '21 jun', v: 'TAV-9C10', item: 'Troca de óleo e filtro', custo: 395, ofi: 'Lubrax Express' },
-  { data: '9 jun', v: 'RYD-5H36', item: 'Alinhamento e balanceamento', custo: 260, ofi: 'Pneuforte' },
-  { data: '2 jun', v: 'SQP-7D45', item: 'Troca de óleo e filtro', custo: 510, ofi: 'Oficina Mecvel' },
-];
-
-export const MOCK_PLANS: MaintenancePlan[] = [
-  { tipo: 'Utilitário — Fiorino, Saveiro', itens: [{ item: 'Óleo e filtro', km: '10.000 km', tempo: '6 meses' }, { item: 'Filtro de ar', km: '20.000 km', tempo: '12 meses' }, { item: 'Pastilhas de freio', km: '30.000 km', tempo: '—' }] },
-  { tipo: 'Van de carga — Master, Sprinter', itens: [{ item: 'Óleo e filtro', km: '15.000 km', tempo: '12 meses' }, { item: 'Correia dentada', km: '60.000 km', tempo: '48 meses' }, { item: 'Pastilhas de freio', km: '25.000 km', tempo: '—' }] },
-  { tipo: 'Caminhão leve — HR, Daily', itens: [{ item: 'Óleo e filtro', km: '15.000 km', tempo: '12 meses' }, { item: 'Filtro de combustível', km: '30.000 km', tempo: '—' }, { item: 'Pastilhas de freio', km: '25.000 km', tempo: '—' }] },
-];
 
 export const MOCK_FLAGGED_TIRES: FlaggedTire[] = [
   { v: 'SQP-7D45', pos: 'Traseiro esquerdo', obs: 'Desgaste irregular na banda interna — recomendada troca imediata', vist: '18 jul', nv: 'critico' },
