@@ -54,7 +54,7 @@ npm run build                      # nest build
 npm run prisma:generate            # regenerate Prisma Client after editing schema.prisma
 npm run prisma:studio              # DB GUI
 ```
-No test suite or linter configured yet (matches the frontends — neither has one either).
+No unit test suite or linter configured yet (matches the frontends — neither has one either). There is an e2e suite at the repo root, `e2e/` (web panel + real API, headless Chrome via CDP, no npm deps): with the API on :3000 and `ng serve` on :4200, run `node e2e/run-all.mjs` — see `e2e/README.md`. It writes to the dev database and cleans up after itself.
 
 Neither web nor mobile `package.json` defines a `lint` script — there's no configured linter in either frontend currently.
 

@@ -35,6 +35,9 @@ BACKEND (vetor-backend)
 
 6. Testes automatizados básicos
    - Hoje zero cobertura. Pelo menos e2e do fluxo de auth + isolamento multi-tenant (empresaId).
+   - Base já existe (23/09/2026): e2e/ na raiz — 9 suítes, 86 cenários do painel web contra a API real (as mesmas
+     usadas pra validar Web #1-#10), `node e2e/run-all.mjs`. Falta: isolamento multi-tenant (precisa de uma 2ª
+     empresa no seed), testes de unidade do backend (km/L, anomalia, alertas) e rodar isso em CI (item 7).
 
 7. Dockerfile de produção + pipeline CI
    - Só depois de tudo acima validado manualmente via Swagger.
