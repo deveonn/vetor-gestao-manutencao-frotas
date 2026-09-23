@@ -3,11 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { dataCurta, dec, diaMes, diaMesHora, diaMesUtc, fmt, mesAno, money } from './format';
-import {
-  MOCK_ALERTS, MOCK_CUSTO_SEMANAL,
-  MOCK_REPORT_CATEGORIES, MOCK_REPORT_COSTS, MOCK_WEEK_CATEGORIES,
-} from './mock-data';
-import { AlertLevel, CompanyAccount, DataState, Driver, FlaggedTire, Inspection, InspectionItem, Fornecedor, FuelEntry, HapoloStatus, MaintenanceHistoryEntry, MaintenanceItem, MaintenancePlan, Severity, Vehicle, VehicleType, WeekPoint } from './models';
+import { Alert, AlertLevel, CompanyAccount, DataState, Driver, FlaggedTire, Inspection, InspectionItem, Fornecedor, FuelEntry, HapoloStatus, MaintenanceHistoryEntry, MaintenanceItem, MaintenancePlan, ReportCategory, ReportVehicleCost, Severity, Vehicle, VehicleType, WeekPoint } from './models';
 import { ToastService } from './toast.service';
 
 const SEVERITY_COLOR: Record<AlertLevel, string> = {
@@ -218,6 +214,31 @@ function paraVistoria(vi: VistoriaApi): Inspection {
   return { id: vi.id, v: vi.veiculo.placa, data: diaMesHora(vi.iniciadoEm), mot: vi.motorista.nome, itens };
 }
 
+interface AlertaApi {
+  nivel: AlertLevel;
+  titulo: string;
+  veiculo: string | null;
+  acao: string;
+}
+
+interface CategoriaApi {
+  categoria: string;
+  atual: number;
+  anterior: number;
+}
+
+interface CustoVeiculoApi {
+  placa: string;
+  km: number;
+  custo: number;
+  custoPorKm: number | null;
+}
+
+const paraCategoria = (c: CategoriaApi): ReportCategory => ({ n: c.categoria, ant: c.anterior, atu: c.atual });
+
+/** "AAAA-MM" do mês que contém `d`. */
+const mesIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
 interface VinculoApi {
   de: string;
   ate: string | null;
@@ -260,11 +281,18 @@ export class FleetStore {
   // --- dados brutos ---
   /** Vem da API (GET /veiculos) — carregada pelo shell; dataState acompanha o carregamento. */
   readonly vehicles = signal<Vehicle[]>([]);
-  readonly alerts = signal(MOCK_ALERTS);
+  /** Dashboard e relatórios vêm da API (GET /dashboard/*, /relatorios/*) — ver loadDashboard/loadReports. */
+  readonly alerts = signal<Alert[]>([]);
   /** Vêm da API (GET /abastecimentos, /abastecimentos/km-l-semanal, /fornecedores) — carregados pelo shell. */
   readonly fuelEntries = signal<FuelEntry[]>([]);
   readonly kmlWeekly = signal<WeekPoint[]>([]);
-  readonly custoWeekly = signal(MOCK_CUSTO_SEMANAL);
+  readonly custoWeekly = signal<number[]>([]);
+  /** km/L médio da frota (média do km/L atual dos veículos ativos), de GET /dashboard/resumo. */
+  readonly kmlMedioFrota = signal(0);
+  /** Custo por categoria: últimos 7 dias × 7 dias anteriores. */
+  readonly weekCategories = signal<ReportCategory[]>([]);
+  /** Custo por categoria: mês anterior × mês atual (até hoje). */
+  readonly reportCategories = signal<ReportCategory[]>([]);
   /** Vêm da API (GET /manutencoes/pendentes, /historico, /planos) — carregados pelo shell. */
   readonly maintenanceItems = signal<MaintenanceItem[]>([]);
   readonly maintenanceHistory = signal<MaintenanceHistoryEntry[]>([]);
@@ -275,7 +303,8 @@ export class FleetStore {
   /** Vem da API (GET /motoristas) — carregada pelo shell. */
   readonly drivers = signal<Driver[]>([]);
   readonly fornecedores = signal<Fornecedor[]>([]);
-  readonly reportCosts = signal(MOCK_REPORT_COSTS);
+  /** Custo por veículo nos últimos 30 dias. */
+  readonly reportCosts = signal<ReportVehicleCost[]>([]);
   /** Vem da API (GET /empresa) — carregada pelo shell ao entrar no painel. */
   readonly account = signal<CompanyAccount>(CONTA_VAZIA);
   /** null até GET /integracoes/rastreamento responder (carregada pelo shell, junto com a conta). */
@@ -334,31 +363,37 @@ export class FleetStore {
   });
 
   readonly kpiTargets = computed(() => {
-    const custo = MOCK_WEEK_CATEGORIES.reduce((sum, c) => sum + c.atu, 0);
-    const kmlSerie = this.kmlWeekly();
-    const kmlMedia = [...kmlSerie].reverse().find((x) => x.val != null)?.val ?? 0;
+    const cats = this.weekCategories();
+    const custo = cats.reduce((sum, c) => sum + c.atu, 0);
+    const custoAnterior = cats.reduce((sum, c) => sum + c.ant, 0);
     const { manutencao, total } = this.dispCounts();
     return {
       custo,
-      kmlMedia,
+      custoAnterior,
+      kmlMedia: this.kmlMedioFrota(),
       disponiveis: total - manutencao,
       totalVeiculos: total,
       alertasCount: this.alerts().length,
     };
   });
 
-  readonly categoriesWithDelta = computed(() => MOCK_WEEK_CATEGORIES.map((c) => {
-    const d = Math.round((c.atu / c.ant - 1) * 100);
-    return {
-      ...c,
-      atuF: money(c.atu),
-      antF: money(c.ant),
-      pctAtu: Math.round((c.atu / 14000) * 100),
-      pctAnt: Math.round((c.ant / 14000) * 100),
-      delta: (d >= 0 ? '+' : '') + d + '%',
-      dCor: d > 25 ? 'var(--crit)' : d > 8 ? 'var(--warn)' : 'var(--mut)',
-    };
-  }));
+  readonly categoriesWithDelta = computed(() => {
+    const cats = this.weekCategories();
+    const escala = Math.max(1, ...cats.flatMap((c) => [c.atu, c.ant]));
+    return cats.map((c) => {
+      // sem gasto na semana anterior não há base pra percentual
+      const d = c.ant > 0 ? Math.round((c.atu / c.ant - 1) * 100) : null;
+      return {
+        ...c,
+        atuF: money(c.atu),
+        antF: money(c.ant),
+        pctAtu: Math.round((c.atu / escala) * 100),
+        pctAnt: Math.round((c.ant / escala) * 100),
+        delta: d == null ? '—' : (d >= 0 ? '+' : '') + d + '%',
+        dCor: d == null ? 'var(--dim)' : d > 25 ? 'var(--crit)' : d > 8 ? 'var(--warn)' : 'var(--mut)',
+      };
+    });
+  });
 
   readonly alertsEnriched = computed(() => this.alerts().map((a) => ({
     ...a,
@@ -454,16 +489,20 @@ export class FleetStore {
     ...r,
     kmF: fmt(r.km),
     custoF: money(r.custo),
-    ckmF: 'R$ ' + dec((r.custo / r.km).toFixed(2)),
+    ckmF: r.ckm == null ? '—' : 'R$ ' + dec(r.ckm.toFixed(2)),
   })));
 
-  readonly reportCategoriesEnriched = computed(() => MOCK_REPORT_CATEGORIES.map((c) => ({
-    ...c,
-    junF: money(c.jun),
-    julF: money(c.jul),
-    pctJun: Math.round((c.jun / 45000) * 100),
-    pctJul: Math.round((c.jul / 45000) * 100),
-  })));
+  readonly reportCategoriesEnriched = computed(() => {
+    const cats = this.reportCategories();
+    const escala = Math.max(1, ...cats.flatMap((c) => [c.atu, c.ant]));
+    return cats.map((c) => ({
+      ...c,
+      antF: money(c.ant),
+      atuF: money(c.atu),
+      pctAnt: Math.round((c.ant / escala) * 100),
+      pctAtu: Math.round((c.atu / escala) * 100),
+    }));
+  });
 
   findVehicleByPlaca(placa: string) {
     return this.vehiclesEnriched().find((v) => v.placa === placa) ?? null;
@@ -508,6 +547,7 @@ export class FleetStore {
       // backend atualiza hodômetro/km-L do veículo e a série semanal — recarrega sem piscar o estado de carregamento
       this.loadVehicles(true);
       this.loadKmlWeekly().catch(() => {});
+      this.refreshDashboard();
       const kml = novo.kml == null ? 'km/L não calculado (sem abastecimento anterior)' : `${dec(novo.kml)} km/L`;
       this.toast.show(`Abastecimento registrado — ${payload.veic} · ${kml}${novo.anom ? ' · consumo anômalo' : ''}`, novo.anom ? 'info' : 'ok');
       return null;
@@ -566,6 +606,7 @@ export class FleetStore {
       }));
       this.drivers.update((list) => [...list, paraMotorista(criado)].sort((a, b) => a.nome.localeCompare(b.nome)));
       this.toast.show(`Motorista cadastrado — ${nome}`);
+      this.refreshDashboard();
       return null;
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.status === 400) {
@@ -596,6 +637,7 @@ export class FleetStore {
       }));
       this.vehicles.update((list) => [...list, paraVeiculo(criado)].sort((a, b) => a.placa.localeCompare(b.placa)));
       this.toast.show(`Veículo adicionado à frota — ${placa}`);
+      this.refreshDashboard();
       return null;
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.status === 409) {
@@ -606,6 +648,39 @@ export class FleetStore {
       }
       return 'Não foi possível adicionar o veículo. Tente novamente.';
     }
+  }
+
+  /** Recarregado pelo shell e a cada visita ao painel; mutações que mudam custo/alertas chamam de novo. */
+  async loadDashboard(): Promise<void> {
+    const [alertas, resumo, custo, categorias] = await Promise.all([
+      firstValueFrom(this.http.get<AlertaApi[]>(`${environment.apiUrl}/dashboard/alertas`)),
+      firstValueFrom(this.http.get<{ kmLMedio: number }>(`${environment.apiUrl}/dashboard/resumo`)),
+      firstValueFrom(this.http.get<{ total: number }[]>(`${environment.apiUrl}/dashboard/custo-semanal?semanas=8`)),
+      firstValueFrom(this.http.get<CategoriaApi[]>(`${environment.apiUrl}/relatorios/categorias-semana`)),
+    ]);
+    this.alerts.set(alertas.map((a) => ({ nv: a.nivel, t: a.titulo, v: a.veiculo, acao: a.acao })));
+    this.kmlMedioFrota.set(resumo.kmLMedio);
+    this.custoWeekly.set(custo.map((c) => c.total));
+    this.weekCategories.set(categorias.map(paraCategoria));
+  }
+
+  /** Relatórios: custo por veículo (últimos 30 dias) e comparativo mês anterior × mês atual. */
+  async loadReports(): Promise<void> {
+    const hoje = new Date();
+    const mesAnterior = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+    const [custos, categorias] = await Promise.all([
+      firstValueFrom(this.http.get<CustoVeiculoApi[]>(`${environment.apiUrl}/relatorios/custo-por-veiculo`)),
+      firstValueFrom(this.http.get<CategoriaApi[]>(
+        `${environment.apiUrl}/relatorios/categorias-mensal?mesA=${mesIso(mesAnterior)}&mesB=${mesIso(hoje)}`,
+      )),
+    ]);
+    this.reportCosts.set(custos.map((c) => ({ placa: c.placa, km: c.km, custo: c.custo, ckm: c.custoPorKm })));
+    this.reportCategories.set(categorias.map(paraCategoria));
+  }
+
+  /** Depois de uma mutação que muda custo/alertas/frota — atualiza painel sem bloquear. */
+  private refreshDashboard(): void {
+    this.loadDashboard().catch(() => {});
   }
 
   async loadTiresAndInspections(): Promise<void> {
@@ -636,6 +711,7 @@ export class FleetStore {
       this.maintenanceItems.update((list) => list.filter((m) => m.id !== id));
       this.maintenanceHistory.update((list) => [paraHistorico(concluida), ...list]);
       this.toast.show(`Manutenção marcada como feita — ${item.item} · ${item.v}`);
+      this.refreshDashboard();
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.status === 409) {
         // já concluída em outra aba/sessão — sincroniza com o servidor
@@ -655,6 +731,7 @@ export class FleetStore {
       await firstValueFrom(this.http.delete(`${environment.apiUrl}/veiculos/${veiculo.id}`));
       this.vehicles.update((list) => list.filter((v) => v.id !== veiculo.id));
       this.toast.show(`Veículo ${placa} excluído — histórico arquivado por 90 dias`, 'info');
+      this.refreshDashboard();
       return true;
     } catch {
       this.toast.show(`Não foi possível excluir o veículo ${placa}. Tente novamente.`, 'info');

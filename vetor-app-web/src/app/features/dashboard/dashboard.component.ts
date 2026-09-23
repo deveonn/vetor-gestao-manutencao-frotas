@@ -1,11 +1,18 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FleetStore } from '../../core/fleet.store';
-import { dec, money } from '../../core/format';
+import { dec, intervalo, money } from '../../core/format';
 import { InstrumentBarComponent } from '../../shared/instrument-bar/instrument-bar.component';
 import { ChartComponent } from '../../shared/chart/chart.component';
 import { buildDisponibilidadeChart, buildTrendChart } from '../../shared/chart/chart-builders';
 import { ModalService } from '../../core/modal.service';
+
+/** Meta de consumo da frota (km/L). Configuração fixa por enquanto — não há tela nem endpoint pra ela. */
+const META_KML = 9;
+/** Escala das barras de km/L (a mesma do gráfico semanal da tela de combustível). */
+const KML_ESCALA = 13;
+
+const DIA_MS = 24 * 60 * 60 * 1000;
 
 @Component({
   selector: 'vetor-dashboard',
@@ -25,7 +32,71 @@ export class DashboardComponent {
 
   constructor() {
     this.countUp();
+    // painel sempre fresco ao entrar (o shell carrega uma vez; mutações em outras telas também recarregam)
+    this.store.loadDashboard().catch(() => {});
   }
+
+  /** Janelas usadas pelo backend em /relatorios/categorias-semana: últimos 7 dias × os 7 anteriores. */
+  periodoAtual = intervalo(new Date(Date.now() - 6 * DIA_MS), new Date());
+  periodoAnterior = intervalo(new Date(Date.now() - 13 * DIA_MS), new Date(Date.now() - 7 * DIA_MS));
+
+  custoKpi = computed(() => {
+    const { custo, custoAnterior } = this.store.kpiTargets();
+    const escala = Math.max(custo, custoAnterior, 1);
+    const pct = custoAnterior > 0 ? (custo / custoAnterior - 1) * 100 : null;
+    const subiu = custo > custoAnterior;
+    return {
+      deltaTxt: pct == null ? null : `${pct >= 0 ? '+' : ''}${dec(pct.toFixed(1))}%`,
+      pct,
+      cor: subiu ? 'var(--warn)' : 'var(--ok)',
+      bg: subiu ? 'var(--warn-bg)' : 'var(--ok-bg)',
+      barPct: Math.round((custo / escala) * 100),
+      markerPct: Math.round((custoAnterior / escala) * 100),
+      rodape: custoAnterior > 0
+        ? `semana anterior ${money(custoAnterior)} · ${subiu ? '+' : '−'}${money(Math.abs(custo - custoAnterior))}`
+        : 'sem gasto registrado na semana anterior',
+    };
+  });
+
+  kmlKpi = computed(() => {
+    const kml = this.store.kpiTargets().kmlMedia;
+    // variação: semana atual × anterior da série semanal, só quando as duas têm leitura
+    const serie = this.store.kmlWeekly();
+    const atual = serie[serie.length - 1]?.val ?? null;
+    const anterior = serie[serie.length - 2]?.val ?? null;
+    const d = atual != null && anterior != null ? Math.round((atual - anterior) * 10) / 10 : null;
+    return {
+      deltaTxt: d == null ? null : `${d >= 0 ? '▲' : '▼'} ${dec(Math.abs(d).toFixed(1))}`,
+      cor: d != null && d < 0 ? 'var(--warn)' : 'var(--ok)',
+      bg: d != null && d < 0 ? 'var(--warn-bg)' : 'var(--ok-bg)',
+      pct: Math.min(100, Math.round((kml / KML_ESCALA) * 100)),
+      markerPct: Math.round((META_KML / KML_ESCALA) * 100),
+      metaTxt: `meta ${dec(META_KML.toFixed(1))} km/L`,
+      naMeta: kml >= META_KML,
+    };
+  });
+
+  /** Categoria que mais subiu em R$ na semana, se alguma subiu. */
+  private maiorAlta = computed(() => {
+    const altas = this.store.weekCategories().map((c) => ({ n: c.n, diff: c.atu - c.ant })).filter((c) => c.diff > 0);
+    return altas.sort((a, b) => b.diff - a.diff)[0] ?? null;
+  });
+
+  resumoVariacao = computed(() => {
+    const { pct } = this.custoKpi();
+    if (pct == null) return 'sem base de comparação com a semana anterior';
+    const alta = this.maiorAlta();
+    const rel = `${Math.abs(Math.round(pct))}% ${pct >= 0 ? 'acima' : 'abaixo'} da anterior`;
+    return pct > 0 && alta ? `${rel}, puxado por ${alta.n.toLowerCase()}` : rel;
+  });
+
+  destaque = computed(() => {
+    const { custo, custoAnterior } = this.store.kpiTargets();
+    const alta = this.maiorAlta();
+    if (alta) return { titulo: `${alta.n} puxou a alta:`, texto: `+${money(alta.diff)} em relação a ${this.periodoAnterior}.` };
+    if (custo < custoAnterior) return { titulo: 'Custo em queda:', texto: `${money(custoAnterior - custo)} a menos que em ${this.periodoAnterior}.` };
+    return { titulo: 'Sem variação:', texto: 'o custo por categoria ficou igual ao da semana anterior.' };
+  });
 
   private countUp(): void {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) {

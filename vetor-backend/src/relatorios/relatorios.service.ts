@@ -11,12 +11,12 @@ export class RelatoriosService {
    * entra como um item de Manutencao (ver comentário em prisma/schema.prisma) e já soma em
    * "Manutenção" abaixo. Por isso só duas categorias reais, não as três do mock original.
    */
-  private async categoriasPeriodo(empresaId: string, inicioAtual: Date, inicioAnterior: Date, fimAnterior: Date) {
+  private async categoriasPeriodo(empresaId: string, inicioAtual: Date, fimAtual: Date, inicioAnterior: Date, fimAnterior: Date) {
     const [combustivelAtual, combustivelAnterior, manutencaoAtual, manutencaoAnterior] = await Promise.all([
-      this.prisma.abastecimento.aggregate({ where: { empresaId, data: { gte: inicioAtual } }, _sum: { valor: true } }),
+      this.prisma.abastecimento.aggregate({ where: { empresaId, data: { gte: inicioAtual, lt: fimAtual } }, _sum: { valor: true } }),
       this.prisma.abastecimento.aggregate({ where: { empresaId, data: { gte: inicioAnterior, lt: fimAnterior } }, _sum: { valor: true } }),
       this.prisma.manutencao.aggregate({
-        where: { empresaId, status: StatusManutencao.CONCLUIDA, concluidoEm: { gte: inicioAtual } },
+        where: { empresaId, status: StatusManutencao.CONCLUIDA, concluidoEm: { gte: inicioAtual, lt: fimAtual } },
         _sum: { custo: true },
       }),
       this.prisma.manutencao.aggregate({
@@ -36,13 +36,14 @@ export class RelatoriosService {
     inicioAtual.setDate(inicioAtual.getDate() - 7);
     const inicioAnterior = new Date();
     inicioAnterior.setDate(inicioAnterior.getDate() - 14);
-    return this.categoriasPeriodo(empresaId, inicioAtual, inicioAnterior, inicioAtual);
+    return this.categoriasPeriodo(empresaId, inicioAtual, new Date(), inicioAnterior, inicioAtual);
   }
 
   categoriasMensal(empresaId: string, mesA: string, mesB: string) {
     const [inicioA, fimA] = this.limitesDoMes(mesA);
-    const [inicioB] = this.limitesDoMes(mesB);
-    return this.categoriasPeriodo(empresaId, inicioB, inicioA, fimA);
+    // antes o mês B não tinha fim: somava tudo de inicioB até hoje
+    const [inicioB, fimB] = this.limitesDoMes(mesB);
+    return this.categoriasPeriodo(empresaId, inicioB, fimB, inicioA, fimA);
   }
 
   private limitesDoMes(mes: string): [Date, Date] {
@@ -60,6 +61,7 @@ export class RelatoriosService {
   async custoPorVeiculo(empresaId: string, de: Date, ate: Date, veiculoId?: string) {
     const veiculos = await this.prisma.veiculo.findMany({
       where: { empresaId, arquivadoEm: null, ...(veiculoId ? { id: veiculoId } : {}) },
+      orderBy: { placa: 'asc' },
     });
 
     return Promise.all(

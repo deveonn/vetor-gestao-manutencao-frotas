@@ -22,7 +22,8 @@ export interface Vehicle {
 export interface Alert {
   nv: AlertLevel;
   t: string;
-  v: string;
+  /** null = alerta sem veículo (ex.: CNH de motorista) */
+  v: string | null;
   acao: string;
 }
 
@@ -122,12 +123,15 @@ export interface ReportVehicleCost {
   placa: string;
   km: number;
   custo: number;
+  /** R$/km; null quando não há km rodado no período */
+  ckm: number | null;
 }
 
+/** Comparativo por categoria entre dois períodos (semana ou mês): anterior × atual. */
 export interface ReportCategory {
   n: string;
-  jun: number;
-  jul: number;
+  ant: number;
+  atu: number;
 }
 
 export interface CompanyAccount {

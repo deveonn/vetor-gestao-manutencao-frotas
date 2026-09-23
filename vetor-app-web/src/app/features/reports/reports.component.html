@@ -90,7 +90,7 @@
         </span>
         <div style="display:flex;flex-direction:column;gap:1px">
           <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:17px;margin:0">{{ relDef().titulo }}</h2>
-          <span class="mono" style="font-size:11.5px;color:var(--dim)">{{ relDef().periodo }} · {{ escopoLabel() }} · gerado 20 jul 2026</span>
+          <span class="mono" style="font-size:11.5px;color:var(--dim)">{{ relDef().periodo }} · {{ escopoLabel() }} · gerado {{ geradoEm() }}</span>
         </div>
       </div>
       <div style="display:flex;gap:10px">
@@ -105,26 +105,26 @@
           <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px">
             <h2 class="panel-title">Custo por categoria</h2>
             <span class="mono" style="display:flex;gap:12px;font-size:10.5px;color:var(--dim)">
-              <span style="color:var(--dim)">— jun</span><span style="color:var(--brand)">— jul</span>
+              <span style="color:var(--dim)">— {{ mesAnteriorCurto }}</span><span style="color:var(--brand)">— {{ mesAtualCurto }}</span>
             </span>
           </div>
           @for (c of store.reportCategoriesEnriched(); track c.n) {
             <div style="display:grid;grid-template-columns:96px 1fr 84px;gap:14px;align-items:center;padding:12px 0;border-top:1px solid var(--line)">
               <span style="font-size:13px">{{ c.n }}</span>
               <div style="display:flex;flex-direction:column;gap:5px">
-                <div class="tick-track" style="height:9px"><div style="position:absolute;top:0;bottom:0;left:0;background:var(--brand);opacity:.85;border-radius:2px" [style.width.%]="c.pctJul"></div></div>
-                <div style="position:relative;height:4px"><div style="position:absolute;top:0;bottom:0;left:0;background:var(--dim);opacity:.5;border-radius:2px" [style.width.%]="c.pctJun"></div></div>
+                <div class="tick-track" style="height:9px"><div style="position:absolute;top:0;bottom:0;left:0;background:var(--brand);opacity:.85;border-radius:2px" [style.width.%]="c.pctAtu"></div></div>
+                <div style="position:relative;height:4px"><div style="position:absolute;top:0;bottom:0;left:0;background:var(--dim);opacity:.5;border-radius:2px" [style.width.%]="c.pctAnt"></div></div>
               </div>
               <div style="display:flex;flex-direction:column;gap:2px;text-align:right" class="mono tabular">
-                <span style="font-size:12.5px">{{ c.julF }}</span>
-                <span style="font-size:11px;color:var(--dim)">{{ c.junF }}</span>
+                <span style="font-size:12.5px">{{ c.atuF }}</span>
+                <span style="font-size:11px;color:var(--dim)">{{ c.antF }}</span>
               </div>
             </div>
           }
-          <p style="margin:10px 0 0;padding:12px 14px;background:var(--surf2);border-radius:10px;font-size:12.5px;line-height:1.55;color:var(--mut)">Julho projeta fechar 4% abaixo de junho se o ritmo se mantiver — combustível é o principal fator da queda.</p>
+          <p style="margin:10px 0 0;padding:12px 14px;background:var(--surf2);border-radius:10px;font-size:12.5px;line-height:1.55;color:var(--mut)">{{ projecao() }}</p>
         </div>
         <div class="card" style="overflow-x:auto">
-          <h2 class="panel-title" style="margin:0 0 10px">Custo por veículo — julho</h2>
+          <h2 class="panel-title" style="margin:0 0 10px">Custo por veículo — últimos 30 dias</h2>
           <div class="mono" style="display:grid;grid-template-columns:100px 1fr 90px 90px;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:11px;color:var(--dim)">
             <span>veículo</span><span>km rodados</span><span style="text-align:right">custo</span><span style="text-align:right">R$/km</span>
           </div>

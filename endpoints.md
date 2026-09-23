@@ -141,8 +141,8 @@ Telas: `features/dashboard`, `features/reports` (web). Fonte: `kpiTargets`/`disp
 | Endpoint | Papel |
 |---|---|
 | `GET /dashboard/resumo` ✅ — KPIs (custo do período, km/L médio, veículos disponíveis, total de alertas) + contagem por status (rodando/manutenção/parado) | `[admin]` |
-| `GET /dashboard/alertas` ✅ — lista de alertas ativos com nível/ação sugerida | `[admin]` |
-| `GET /dashboard/custo-semanal` ✅ — série de custo total por semana | `[admin]` |
+| `GET /dashboard/alertas` ✅ — lista de alertas ativos com nível/ação sugerida; críticos primeiro, ignora veículos arquivados, consumo anômalo só dos últimos 30 dias | `[admin]` |
+| `GET /dashboard/custo-semanal` ✅ — série de custo total por semana; sempre `semanas` pontos (default 8), as mesmas semanas de `km-l-semanal` | `[admin]` |
 | `GET /relatorios/categorias-semana` ✅ — comparativo semana atual × anterior por categoria (combustível/manutenção/pneus), usado nos cards do painel | `[admin]` |
 | `GET /relatorios/categorias-mensal?mesA=&mesB=` ✅ — comparativo mensal por categoria (hoje fixo em "jun"/"jul" no mock — os parâmetros formalizam isso) | `[admin]` |
 | `GET /relatorios/custo-por-veiculo?de=&ate=&veiculoId=` ✅ — custo total, km rodado e R$/km por veículo, com filtro de escopo frota-inteira ou veículo único (`reports.component.ts` `escopoFiltro`) | `[admin]` |

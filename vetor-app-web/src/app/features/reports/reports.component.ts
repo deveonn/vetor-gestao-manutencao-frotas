@@ -3,6 +3,7 @@ import { FleetStore } from '../../core/fleet.store';
 import { ModalService } from '../../core/modal.service';
 import { ToastService } from '../../core/toast.service';
 import { ReportId, ReportScope } from '../../core/models';
+import { dataCurta, dec, nomeMes } from '../../core/format';
 import { ChartComponent } from '../../shared/chart/chart.component';
 import { buildDisponibilidadeChart } from '../../shared/chart/chart-builders';
 
@@ -31,11 +32,23 @@ export class ReportsComponent {
   veiculoSelecionado = signal<string | null>(null);
   gerando = signal(false);
   relatorioGerado = signal<ReportId | null>(null);
+  geradoEm = signal('');
+
+  constructor() {
+    this.store.loadReports().catch(() => {});
+  }
+
+  // comparativo mensal: mês anterior × mês atual (até hoje) — mesmo par pedido em FleetStore.loadReports
+  private hoje = new Date();
+  private idxAtual = this.hoje.getMonth();
+  private idxAnterior = (this.idxAtual + 11) % 12;
+  mesAtualCurto = nomeMes(this.idxAtual, true);
+  mesAnteriorCurto = nomeMes(this.idxAnterior, true);
 
   reportDefs = computed<ReportDef[]>(() => [
-    { id: 'comparativo', titulo: 'Comparativo de custos', desc: 'Custo por categoria jun × jul, com projeção de fechamento.', icon: 'compare_arrows', periodo: 'jun × jul 2026', linhas: '3 categorias' },
-    { id: 'veiculo', titulo: 'Custo por veículo', desc: 'Rateio de km rodados, custo total e R$/km de cada veículo.', icon: 'local_shipping', periodo: 'julho 2026', linhas: `${this.store.reportCosts().length} veículos` },
-    { id: 'consumo', titulo: 'Consumo e eficiência', desc: 'km/L por veículo, ordenado do mais eficiente ao mais gastador.', icon: 'speed', periodo: 'julho 2026', linhas: `${this.store.vehicles().length} veículos` },
+    { id: 'comparativo', titulo: 'Comparativo de custos', desc: `Custo por categoria ${this.mesAnteriorCurto} × ${this.mesAtualCurto}, com projeção de fechamento.`, icon: 'compare_arrows', periodo: `${this.mesAnteriorCurto} × ${this.mesAtualCurto} ${this.hoje.getFullYear()}`, linhas: `${this.store.reportCategories().length} categorias` },
+    { id: 'veiculo', titulo: 'Custo por veículo', desc: 'Rateio de km rodados, custo total e R$/km de cada veículo.', icon: 'local_shipping', periodo: 'últimos 30 dias', linhas: `${this.store.reportCosts().length} veículos` },
+    { id: 'consumo', titulo: 'Consumo e eficiência', desc: 'km/L por veículo, ordenado do mais eficiente ao mais gastador.', icon: 'speed', periodo: 'agora', linhas: `${this.store.vehicles().length} veículos` },
     { id: 'disponibilidade', titulo: 'Disponibilidade da frota', desc: 'Distribuição entre rodando, em manutenção e parado.', icon: 'donut_large', periodo: 'agora', linhas: `${this.store.vehicles().length} veículos` },
     { id: 'manutencao', titulo: 'Manutenções previstas', desc: 'Trocas e revisões agendadas por prazo e prioridade.', icon: 'build', periodo: 'próximos 30 dias', linhas: `${this.store.maintenanceItems().length} pendências` },
   ]);
@@ -80,6 +93,23 @@ export class ReportsComponent {
     return buildDisponibilidadeChart([d[0].n, d[1].n, d[2].n]);
   });
 
+  /** Projeção linear do mês atual (gasto até hoje ÷ dias corridos × dias do mês) contra o mês anterior. */
+  projecao = computed(() => {
+    const cats = this.store.reportCategories();
+    const totalAnt = cats.reduce((s, c) => s + c.ant, 0);
+    const mesAtual = nomeMes(this.idxAtual);
+    const mesAnterior = nomeMes(this.idxAnterior);
+    if (totalAnt <= 0) return `Sem gasto registrado em ${mesAnterior} para comparar a projeção de ${mesAtual}.`;
+    const diasNoMes = new Date(this.hoje.getFullYear(), this.idxAtual + 1, 0).getDate();
+    const fator = diasNoMes / this.hoje.getDate();
+    const projetadas = cats.map((c) => ({ n: c.n, diff: c.atu * fator - c.ant }));
+    const totalProj = cats.reduce((s, c) => s + c.atu * fator, 0);
+    const pct = (totalProj / totalAnt - 1) * 100;
+    const fatorPrincipal = [...projetadas].sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))[0];
+    const cap = mesAtual.charAt(0).toUpperCase() + mesAtual.slice(1);
+    return `${cap} projeta fechar ${dec(Math.abs(pct).toFixed(0))}% ${pct >= 0 ? 'acima' : 'abaixo'} de ${mesAnterior} se o ritmo se mantiver — ${fatorPrincipal.n.toLowerCase()} é o principal fator ${fatorPrincipal.diff >= 0 ? 'da alta' : 'da queda'}.`;
+  });
+
   relDef = computed(() => this.reportDefs().find((d) => d.id === (this.relatorioGerado() ?? this.tipoSelecionado()))!);
 
   escolherTipo(id: ReportId): void {
@@ -105,6 +135,7 @@ export class ReportsComponent {
     this.gerando.set(true);
     setTimeout(() => {
       this.gerando.set(false);
+      this.geradoEm.set(dataCurta(new Date().toISOString()));
       this.relatorioGerado.set(this.tipoSelecionado());
     }, 650);
   }

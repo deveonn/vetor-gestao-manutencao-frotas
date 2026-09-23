@@ -83,7 +83,7 @@ Node.js 24, npm como gerenciador de pacotes nas três aplicações.
 └── README.md
 ```
 
-Cada aplicação tem seu próprio ciclo de build e suas dependências; o repositório as mantém juntas para versionamento e contexto compartilhado. Os dois frontends ainda rodam sobre dados mockados — nenhum dos dois foi conectado à API real ainda.
+Cada aplicação tem seu próprio ciclo de build e suas dependências; o repositório as mantém juntas para versionamento e contexto compartilhado. O painel web já está conectado à API real; o app mobile ainda roda sobre dados locais simulados.
 
 ---
 
@@ -130,7 +130,7 @@ docker compose up -d               # Postgres+PostGIS local
 npm install
 cp .env.example .env               # segredos de JWT, connection string
 npx prisma migrate dev --name init # cria as tabelas
-npm run prisma:seed                # popula com os mesmos dados do mock do painel web
+npm run prisma:seed                # popula com os dados usados pelo painel web em desenvolvimento
 npm run start:dev
 ```
 Sobe em `http://localhost:3000/api`, com Swagger em `/api/docs`. Ver `vetor-backend/README-backend.md` pros logins de teste criados pelo seed.
@@ -142,7 +142,7 @@ cd vetor-app-web
 npm install
 npm start
 ```
-Roda inteiramente sobre dados mockados (`core/mock-data.ts`) — ainda não fala com o backend.
+Fala com a API em `http://localhost:3000/api` (ver `src/environments/`) — suba o backend antes. Login de demonstração: `rui@transportesalmeida.com.br` / `demo123`.
 
 ### App mobile
 

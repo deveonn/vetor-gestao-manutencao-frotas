@@ -34,7 +34,7 @@ docker compose up -d               # sobe o Postgres+PostGIS local (porta 5432)
 npm install
 cp .env.example .env               # ajuste os segredos de JWT se quiser
 npx prisma migrate dev --name init # cria as tabelas
-npm run prisma:seed                # popula com os mesmos dados do mock do painel web
+npm run prisma:seed                # popula com os dados usados pelo painel web em desenvolvimento
 npm run start:dev                  # dev com watch
 ```
 

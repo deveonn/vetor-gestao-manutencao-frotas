@@ -178,8 +178,31 @@ WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por 
    - Obs: foto da vistoria (midia) ainda não aparece no card — segue o placeholder "foto da vistoria". Depende do
      upload real de mídia pelo mobile (mobile #4).
 
-10. Dashboard e relatórios
+10. [CONCLUÍDO 23/09/2026] Dashboard e relatórios
     - Geralmente mais fáceis por serem só leitura, mas dependem dos módulos acima terem dados reais pra fazer sentido visualmente.
+    - Feito: alertas, km/L médio (resumo), custo semanal e categorias da semana vêm de /dashboard/* e
+      /relatorios/categorias-semana (loadDashboard: shell + a cada visita ao painel + depois de mutações que mudam
+      custo/alertas). Relatórios: custo por veículo (30 dias) e comparativo mês anterior × atual via /relatorios/*
+      (loadReports, a cada visita). mock-data.ts REMOVIDO — o web não tem mais nenhum dado mock.
+      Trocado todo texto fixo por cálculo: KPI de custo (período, %, barra, "semana anterior R$ X · ±R$ Y"), KPI de
+      km/L (variação semanal, barra, meta 9,0 como constante META_KML), "Resumo da semana" (% e categoria que puxou),
+      destaque "X puxou a alta"/"Custo em queda", "vs <semana anterior>", meses e período dos relatórios, "gerado
+      <hoje>", projeção de fechamento do mês (linear pelos dias corridos). "veículos rodando" no resumo virou
+      "disponíveis" (o número era disponíveis). Alertas sem veículo (CNH) não mostram mais "undefined ·".
+      Backend: (a) alertas ignoravam arquivamento e mostravam consumo anômalo de qualquer data -> só frota ativa e
+      últimos 30 dias, críticos primeiro, título com o km/L; (b) custo-semanal devolvia só semanas com dado ->
+      sempre N semanas alinhadas com km-l-semanal; (c) categorias-mensal não tinha fim no mês atual (somava até
+      hoje a partir do início do mês B) -> corrigido; (d) custo-por-veiculo ordenado por placa.
+    - Teste: e2e Chrome headless (14 cenários ok): KPIs, alertas, gráfico (datasets lidos do Chart.js) e textos =
+      API; depois de +R$ 1.000 em combustível e +R$ 500 de manutenção concluída, KPI/%/categorias/destaque/resumo
+      recalculam, alerta da manutenção sai e o do abastecimento anômalo entra, gráfico soma na semana atual;
+      relatórios com meses reais, projeção calculada e R$/km "—" sem km. Regressão das 8 suítes anteriores ok
+      (86 no total). Dados de teste revertidos.
+    - Obs: com o seed atual, custo-por-veiculo dá km 0 pra quase todos (km vem de max-min hodômetro dos
+      abastecimentos na janela e a maioria tem 1 só) -> R$/km "—". E a projeção mensal fica exagerada (ex.: "756%
+      acima de agosto") porque o seed quase não tem custo em agosto. Os dois melhoram com dados reais.
+    - Obs: Exportar CSV/PDF continua só mostrando toast (não gera arquivo). Tela de login mantém o texto decorativo
+      "7 veículos rodando · 1.284 km hoje · sincronizado 09:12" no painel da marca (é antes do login, sem dados).
 
 ===========================================
 MOBILE (vetor-app-mobile)

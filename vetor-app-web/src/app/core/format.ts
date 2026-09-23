@@ -46,3 +46,17 @@ export function diaMesHora(iso: string): string {
   const d = new Date(iso);
   return `${diaMes(iso)} · ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
+
+const MESES_LONGOS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+/** Nome do mês pt-BR a partir do índice (0 = janeiro). `curto` usa a abreviação, ex.: "set". */
+export function nomeMes(mes: number, curto = false): string {
+  return curto ? MESES[mes] : MESES_LONGOS[mes];
+}
+
+/** Intervalo curto pt-BR, ex.: "17–23 set" ou "28 ago–3 set" */
+export function intervalo(de: Date, ate: Date): string {
+  return de.getMonth() === ate.getMonth()
+    ? `${de.getDate()}–${ate.getDate()} ${MESES[ate.getMonth()]}`
+    : `${de.getDate()} ${MESES[de.getMonth()]}–${ate.getDate()} ${MESES[ate.getMonth()]}`;
+}
