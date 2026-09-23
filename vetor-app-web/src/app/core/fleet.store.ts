@@ -2,13 +2,13 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { dataCurta, dec, fmt, money } from './format';
+import { dataCurta, dec, fmt, mesAno, money } from './format';
 import {
   MOCK_ALERTS, MOCK_CUSTO_SEMANAL, MOCK_DRIVERS, MOCK_FLAGGED_TIRES, MOCK_FORNECEDORES,
   MOCK_FUEL, MOCK_INSPECTIONS, MOCK_KML_SEMANAL, MOCK_MAINTENANCE, MOCK_MAINTENANCE_HISTORY, MOCK_PLANS,
-  MOCK_REPORT_CATEGORIES, MOCK_REPORT_COSTS, MOCK_VEHICLES, MOCK_WEEK_CATEGORIES,
+  MOCK_REPORT_CATEGORIES, MOCK_REPORT_COSTS, MOCK_WEEK_CATEGORIES,
 } from './mock-data';
-import { AlertLevel, CompanyAccount, DataState, Driver, Fornecedor, FuelEntry, HapoloStatus, Severity, Vehicle } from './models';
+import { AlertLevel, CompanyAccount, DataState, Driver, Fornecedor, FuelEntry, HapoloStatus, Severity, Vehicle, VehicleType } from './models';
 import { ToastService } from './toast.service';
 
 const SEVERITY_COLOR: Record<AlertLevel, string> = {
@@ -66,6 +66,53 @@ interface IntegracaoApi {
   conectadoEm: string | null;
 }
 
+/** Veículo como vem de GET/POST /veiculos (nomes do schema Prisma). */
+interface VeiculoApi {
+  id: string;
+  placa: string;
+  modelo: string;
+  tipo: 'UTILITARIO' | 'VAN_CARGA' | 'CAMINHAO_LEVE';
+  status: 'RODANDO' | 'MANUTENCAO' | 'PARADO';
+  hodometro: number;
+  nivelCombustivel: number;
+  kmL: number | null;
+  kmParaTroca: number;
+  kmHoje: number;
+  motoristaAtual: { nome: string } | null;
+  pneus: { posicao: string; severidade: 'OK' | 'ATENCAO' | 'CRITICO' }[];
+}
+
+interface VinculoApi {
+  de: string;
+  ate: string | null;
+  motorista: { nome: string };
+}
+
+const TIPO_API: Record<VeiculoApi['tipo'], VehicleType> = {
+  UTILITARIO: 'Utilitário', VAN_CARGA: 'Van de carga', CAMINHAO_LEVE: 'Caminhão leve',
+};
+const TIPO_API_INV = Object.fromEntries(Object.entries(TIPO_API).map(([k, v]) => [v, k])) as Record<VehicleType, VeiculoApi['tipo']>;
+/** Ordem das posições no diagrama de pneus (mesma de TIRE_POS_NAME). */
+const POSICOES_PNEU = ['dianteiro esquerdo', 'dianteiro direito', 'traseiro esquerdo', 'traseiro direito'];
+
+function paraVeiculo(v: VeiculoApi): Vehicle {
+  return {
+    id: v.id,
+    placa: v.placa,
+    modelo: v.modelo,
+    tipo: TIPO_API[v.tipo],
+    mot: v.motoristaAtual?.nome ?? null,
+    hod: v.hodometro,
+    comb: v.nivelCombustivel,
+    kml: v.kmL ?? 0,
+    troca: v.kmParaTroca,
+    status: v.status.toLowerCase() as Vehicle['status'],
+    pneus: POSICOES_PNEU.map((pos) =>
+      (v.pneus.find((p) => p.posicao === pos)?.severidade.toLowerCase() ?? 'ok') as Severity),
+    kmHoje: v.kmHoje,
+  };
+}
+
 const CONTA_VAZIA: CompanyAccount = { empresa: '', cnpj: '', nome: '', email: '', fone: '' };
 
 function severityColor(s: Severity | AlertLevel): string {
@@ -75,7 +122,8 @@ function severityColor(s: Severity | AlertLevel): string {
 @Injectable({ providedIn: 'root' })
 export class FleetStore {
   // --- dados brutos ---
-  readonly vehicles = signal<Vehicle[]>(MOCK_VEHICLES);
+  /** Vem da API (GET /veiculos) — carregada pelo shell; dataState acompanha o carregamento. */
+  readonly vehicles = signal<Vehicle[]>([]);
   readonly alerts = signal(MOCK_ALERTS);
   readonly fuelEntries = signal<FuelEntry[]>(MOCK_FUEL);
   readonly kmlWeekly = signal(MOCK_KML_SEMANAL);
@@ -108,9 +156,7 @@ export class FleetStore {
 
   private http = inject(HttpClient);
 
-  constructor(private toast: ToastService) {
-    setTimeout(() => this.dataStateRaw.set('normal'), 900);
-  }
+  constructor(private toast: ToastService) {}
 
   // --- veículos enriquecidos ---
   readonly vehiclesEnriched = computed(() => this.vehicles().map((v) => {
@@ -308,13 +354,36 @@ export class FleetStore {
     this.toast.show(`Motorista cadastrado — ${payload.nome}`);
   }
 
-  addVehicle(payload: { placa: string; modelo: string; tipo: Vehicle['tipo'] }): void {
-    const placa = payload.placa.toUpperCase();
-    this.vehicles.update((list) => [
-      ...list,
-      { id: Date.now(), placa, modelo: payload.modelo || '—', tipo: payload.tipo, mot: null, hod: 0, comb: 100, kml: 0, troca: 10000, status: 'parado', pneus: ['ok', 'ok', 'ok', 'ok'], kmHoje: 0 },
-    ]);
-    this.toast.show(`Veículo adicionado à frota — ${placa}`);
+  async loadVehicles(): Promise<void> {
+    this.dataStateRaw.set('carregando');
+    try {
+      const lista = await firstValueFrom(this.http.get<VeiculoApi[]>(`${environment.apiUrl}/veiculos`));
+      this.vehicles.set(lista.map(paraVeiculo));
+      this.dataStateRaw.set('normal');
+    } catch {
+      this.dataStateRaw.set('erro');
+    }
+  }
+
+  /** Retorna a mensagem de erro, ou null se criou. */
+  async addVehicle(payload: { placa: string; modelo: string; tipo: Vehicle['tipo'] }): Promise<string | null> {
+    const placa = payload.placa.trim().toUpperCase();
+    try {
+      const criado = await firstValueFrom(this.http.post<VeiculoApi>(`${environment.apiUrl}/veiculos`, {
+        placa, tipo: TIPO_API_INV[payload.tipo], ...(payload.modelo.trim() ? { modelo: payload.modelo.trim() } : {}),
+      }));
+      this.vehicles.update((list) => [...list, paraVeiculo(criado)].sort((a, b) => a.placa.localeCompare(b.placa)));
+      this.toast.show(`Veículo adicionado à frota — ${placa}`);
+      return null;
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && err.status === 409) {
+        return `A placa ${placa} já está cadastrada (ativa ou arquivada nos últimos 90 dias).`;
+      }
+      if (err instanceof HttpErrorResponse && err.status === 400) {
+        return 'Dados inválidos — confira a placa e o tipo.';
+      }
+      return 'Não foi possível adicionar o veículo. Tente novamente.';
+    }
   }
 
   completeMaintenance(id: string): void {
@@ -324,9 +393,25 @@ export class FleetStore {
     this.toast.show(`Manutenção marcada como feita — ${item.item} · ${item.v}`);
   }
 
-  deleteVehicle(placa: string): void {
-    this.vehicles.update((list) => list.filter((v) => v.placa !== placa));
-    this.toast.show(`Veículo ${placa} excluído — histórico arquivado por 90 dias`, 'info');
+  /** Retorna true se excluiu (arquivou) na API. */
+  async deleteVehicle(placa: string): Promise<boolean> {
+    const veiculo = this.vehicles().find((v) => v.placa === placa);
+    if (!veiculo) return false;
+    try {
+      await firstValueFrom(this.http.delete(`${environment.apiUrl}/veiculos/${veiculo.id}`));
+      this.vehicles.update((list) => list.filter((v) => v.id !== veiculo.id));
+      this.toast.show(`Veículo ${placa} excluído — histórico arquivado por 90 dias`, 'info');
+      return true;
+    } catch {
+      this.toast.show(`Não foi possível excluir o veículo ${placa}. Tente novamente.`, 'info');
+      return false;
+    }
+  }
+
+  /** Histórico motorista↔veículo (GET /veiculos/:id/vinculos), mais recente primeiro. */
+  async loadVinculos(veiculoId: string): Promise<{ mot: string; de: string; ate: string }[]> {
+    const lista = await firstValueFrom(this.http.get<VinculoApi[]>(`${environment.apiUrl}/veiculos/${veiculoId}/vinculos`));
+    return lista.map((h) => ({ mot: h.motorista.nome, de: mesAno(h.de), ate: h.ate ? mesAno(h.ate) : 'atual' }));
   }
 
   async loadAccount(): Promise<void> {
@@ -406,11 +491,8 @@ export class FleetStore {
     this.hapoloConectadoEm.set(i.conectadoEm ? dataCurta(i.conectadoEm) : '');
   }
 
-  retryLoad(): void {
-    this.dataStateRaw.set('carregando');
-    setTimeout(() => {
-      this.dataStateRaw.set('normal');
-      this.toast.show('Dados da frota recarregados');
-    }, 1400);
+  async retryLoad(): Promise<void> {
+    await this.loadVehicles();
+    if (this.dataStateRaw() === 'normal') this.toast.show('Dados da frota recarregados');
   }
 }

@@ -93,9 +93,23 @@ WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por 
      restaurado. Regressão conta (7) + login (12) ok.
    - Obs: "testar" do backend ainda responde OK sem chamar o rastreador real (backend #4, fora de escopo).
 
-5. Veículos
+5. [CONCLUÍDO 23/09/2026] Veículos
    - Listar/criar/excluir.
-   - Teste: CRUD completo na tela de frota.
+   - Feito: FleetStore.vehicles começa vazio e vem de GET /veiculos (loadVehicles, chamado pelo shell); dataState
+     agora reflete o carregamento real (carregando/normal/vazio/erro) e "Tentar novamente" recarrega de verdade.
+     addVehicle -> POST /veiculos, deleteVehicle -> DELETE /veiculos/:id (soft-delete), com erro/"Salvando…" nos
+     modais. Vehicle.id virou string (cuid). Mapeamento tipo/status/pneus (por posição) em paraVeiculo(). Detalhe do
+     veículo mostra histórico real de vínculos (GET /veiculos/:id/vinculos) no lugar do array fixo. MOCK_VEHICLES e
+     MOCK_ACCOUNT removidos do mock-data.ts. Texto "erro 504" fixo do estado de erro do dashboard virou genérico.
+   - Teste: e2e Chrome headless (10 cenários ok): lista = API, detalhe com vínculos reais após reload, placa vazia,
+     placa duplicada -> 409 no modal, criar (tipo/modelo/4 pneus conferidos na API) e persistir após reload, excluir
+     pelo detalhe, dashboard normal, /api/veiculos bloqueado -> estado de erro, "Tentar novamente" recupera.
+     Regressão rastreamento (7) + conta (7) + login (12) ok. Veículo de teste removido do banco depois.
+   - PENDENTE DE DECISÃO: @@unique([empresaId, placa]) conta veículos arquivados, então recadastrar uma placa
+     excluída dá 409 (a mensagem do modal já explica). Opções: reativar o arquivado no POST, ou unique parcial só
+     para arquivadoEm IS NULL (exige migration SQL manual, Prisma não expressa índice parcial no schema).
+   - Obs: métricas por veículo (hodômetro, combustível, km/L, km hoje) vêm do cache no banco, populado pelo seed —
+     não há telemetria real atualizando (depende do backend #4).
 
 6. Motoristas
    - Listar/criar.

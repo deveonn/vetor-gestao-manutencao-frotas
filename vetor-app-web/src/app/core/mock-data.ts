@@ -1,18 +1,7 @@
 import {
-  Alert, CompanyAccount, Driver, FlaggedTire, Fornecedor, FuelEntry, Inspection, MaintenanceHistoryEntry,
-  MaintenanceItem, MaintenancePlan, ReportCategory, ReportVehicleCost, Vehicle, WeekPoint,
+  Alert, Driver, FlaggedTire, Fornecedor, FuelEntry, Inspection, MaintenanceHistoryEntry,
+  MaintenanceItem, MaintenancePlan, ReportCategory, ReportVehicleCost, WeekPoint,
 } from './models';
-
-export const MOCK_VEHICLES: Vehicle[] = [
-  { id: 1, placa: 'RTX-4B21', modelo: 'Fiat Fiorino', tipo: 'Utilitário', mot: 'João Prates', hod: 84312, comb: 62, kml: 9.4, troca: 1220, status: 'rodando', pneus: ['ok', 'ok', 'ok', 'ok'], kmHoje: 212 },
-  { id: 2, placa: 'SQP-7D45', modelo: 'Renault Master', tipo: 'Van de carga', mot: 'Carla Nunes', hod: 121480, comb: 34, kml: 7.1, troca: -340, status: 'rodando', pneus: ['ok', 'ok', 'critico', 'ok'], kmHoje: 187 },
-  { id: 3, placa: 'TAV-9C10', modelo: 'VW Saveiro', tipo: 'Utilitário', mot: 'Diego Ramos', hod: 45902, comb: 78, kml: 11.8, troca: 4100, status: 'rodando', pneus: ['ok', 'ok', 'ok', 'ok'], kmHoje: 154 },
-  { id: 4, placa: 'RKM-2E88', modelo: 'Hyundai HR', tipo: 'Caminhão leve', mot: 'Otávio Dias', hod: 97115, comb: 51, kml: 6.4, troca: 850, status: 'rodando', pneus: ['ok', 'atencao', 'ok', 'ok'], kmHoje: 231 },
-  { id: 5, placa: 'SBF-6A03', modelo: 'Iveco Daily', tipo: 'Caminhão leve', mot: null, hod: 132240, comb: 45, kml: 6.9, troca: 2900, status: 'manutencao', pneus: ['ok', 'ok', 'ok', 'ok'], kmHoje: 0 },
-  { id: 6, placa: 'TQJ-1F77', modelo: 'Fiat Fiorino', tipo: 'Utilitário', mot: 'Marcos Teixeira', hod: 58660, comb: 88, kml: 9.9, troca: 5300, status: 'rodando', pneus: ['ok', 'ok', 'ok', 'ok'], kmHoje: 198 },
-  { id: 7, placa: 'RYD-5H36', modelo: 'Mercedes Sprinter 415', tipo: 'Van de carga', mot: 'Ana Beltrão', hod: 143972, comb: 22, kml: 7.6, troca: 1480, status: 'rodando', pneus: ['ok', 'atencao', 'ok', 'ok'], kmHoje: 243 },
-  { id: 8, placa: 'SNC-8G54', modelo: 'VW Saveiro', tipo: 'Utilitário', mot: null, hod: 39480, comb: 95, kml: 12.1, troca: 6800, status: 'parado', pneus: ['ok', 'ok', 'ok', 'ok'], kmHoje: 0 },
-];
 
 export const MOCK_ALERTS: Alert[] = [
   { nv: 'critico', t: 'Troca de óleo vencida há 340 km', v: 'SQP-7D45', acao: 'manutencao' },
@@ -111,10 +100,3 @@ export const MOCK_WEEK_CATEGORIES = [
   { n: 'Pneus', atu: 1912, ant: 1790 },
 ];
 
-export const MOCK_ACCOUNT: CompanyAccount = {
-  empresa: 'Transportes Almeida Ltda',
-  cnpj: '12.456.789/0001-30',
-  nome: 'Rui Almeida',
-  email: 'rui@transportesalmeida.com.br',
-  fone: '(11) 98122-4437',
-};

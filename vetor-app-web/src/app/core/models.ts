@@ -4,7 +4,7 @@ export type Severity = 'ok' | 'atencao' | 'critico';
 export type AlertLevel = 'ok' | 'atencao' | 'critico' | 'info';
 
 export interface Vehicle {
-  id: number;
+  id: string;
   placa: string;
   modelo: string;
   tipo: VehicleType;

@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FleetStore } from '../../core/fleet.store';
 import { ModalService } from '../../core/modal.service';
@@ -12,7 +12,7 @@ import { ModalService } from '../../core/modal.service';
         <p style="color:var(--mut);font-size:13.5px;line-height:1.6;margin:0">O veículo sai da frota e para de receber telemetria. O histórico de abastecimentos, manutenções e vistorias fica arquivado por 90 dias antes da exclusão definitiva.</p>
         <div style="display:flex;justify-content:flex-end;gap:10px">
           <button class="btn btn-ghost" (click)="modal.close()">Cancelar</button>
-          <button class="btn" style="background:var(--crit);color:#fff;font-weight:600" (click)="confirmar()">Excluir veículo</button>
+          <button class="btn" style="background:var(--crit);color:#fff;font-weight:600" (click)="confirmar()" [disabled]="excluindo()">{{ excluindo() ? 'Excluindo…' : 'Excluir veículo' }}</button>
         </div>
       </div>
     </div>
@@ -24,12 +24,15 @@ export class DeleteVehicleModalComponent {
   private router = inject(Router);
 
   placa = computed(() => this.modal.context() ?? '');
+  excluindo = signal(false);
 
-  confirmar(): void {
+  async confirmar(): Promise<void> {
     const placa = this.placa();
     if (!placa) return;
-    this.store.deleteVehicle(placa);
+    this.excluindo.set(true);
+    const ok = await this.store.deleteVehicle(placa);
+    this.excluindo.set(false);
     this.modal.close();
-    this.router.navigate(['/veiculos']);
+    if (ok) this.router.navigate(['/veiculos']);
   }
 }

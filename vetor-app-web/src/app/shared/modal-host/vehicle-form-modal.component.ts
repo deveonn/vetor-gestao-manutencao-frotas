@@ -35,7 +35,7 @@ import { VehicleType } from '../../core/models';
         <p class="mono" style="font-size:11.5px;color:var(--dim);margin:0">a telemetria conecta automaticamente quando o rastreador reportar esta placa</p>
         <div style="display:flex;justify-content:flex-end;gap:10px">
           <button class="btn btn-ghost" (click)="modal.close()">Cancelar</button>
-          <button class="btn btn-primary" (click)="salvar()">Adicionar veículo</button>
+          <button class="btn btn-primary" (click)="salvar()" [disabled]="salvando()">{{ salvando() ? 'Salvando…' : 'Adicionar veículo' }}</button>
         </div>
       </div>
     </div>
@@ -50,13 +50,20 @@ export class VehicleFormModalComponent {
   tipo: VehicleType = 'Utilitário';
   private erroSig = signal('');
   erro = this.erroSig.asReadonly();
+  salvando = signal(false);
 
-  salvar(): void {
-    if (!this.placa) {
+  async salvar(): Promise<void> {
+    if (!this.placa.trim()) {
       this.erroSig.set('Informe a placa do veículo.');
       return;
     }
-    this.store.addVehicle({ placa: this.placa, modelo: this.modelo, tipo: this.tipo });
+    this.salvando.set(true);
+    const erro = await this.store.addVehicle({ placa: this.placa, modelo: this.modelo, tipo: this.tipo });
+    this.salvando.set(false);
+    if (erro) {
+      this.erroSig.set(erro);
+      return;
+    }
     this.modal.close();
   }
 }

@@ -22,3 +22,9 @@ export function dataCurta(iso: string): string {
   const d = new Date(iso);
   return `${String(d.getDate()).padStart(2, '0')} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
 }
+
+/** Mês/ano pt-BR, ex.: "2024-08-12T..." -> "ago 2024" */
+export function mesAno(iso: string): string {
+  const d = new Date(iso);
+  return `${MESES[d.getMonth()]} ${d.getFullYear()}`;
+}
