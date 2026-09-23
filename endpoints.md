@@ -27,7 +27,7 @@ Cada item referencia o arquivo/método de origem, pra rastreabilidade.
 |---|---|---|
 | `POST /auth/login` | público | ✅ `AuthService.login` (web, `core/auth.service.ts:18`) exige e-mail válido + senha `"demo"`; `SessionService.login` (mobile, `core/services/session.service.ts:24`) aceita usuário+senha não vazios. Um único endpoint cobre os três papéis — o corpo de resposta é que diferencia. |
 | `POST /auth/refresh` | autenticado (refresh token) | 🆕 renovação de access token — hoje as duas apps só guardam a sessão localmente (Preferences no mobile, signal em memória no web) e nunca expiram. |
-| `POST /auth/logout` | autenticado | 🆕 invalida o refresh token no servidor. `AuthService.logout` (web) e `SessionService.logout` (mobile) hoje só limpam estado local. |
+| `POST /auth/logout` | autenticado (refresh token) | 🆕 invalida o refresh token no servidor. `AuthService.logout` (web) e `SessionService.logout` (mobile) hoje só limpam estado local. |
 | `GET /auth/me` | autenticado | 🆕 restaura a sessão a partir do token, em vez de confiar só no que foi salvo localmente. |
 
 **`POST /auth/login`**

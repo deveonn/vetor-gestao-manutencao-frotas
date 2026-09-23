@@ -32,7 +32,13 @@
       @if (credErr()) {
         <div role="alert" class="form-error">
           <span class="material-symbols-outlined" style="color:var(--crit);font-size:18px;flex-shrink:0">error</span>
-          <span>Credenciais inválidas — confira o e-mail e a senha. Após 5 tentativas seguidas, o acesso fica bloqueado por 10 minutos.</span>
+          <span>Credenciais inválidas — confira o e-mail e a senha.</span>
+        </div>
+      }
+      @if (apiErr()) {
+        <div role="alert" class="form-error">
+          <span class="material-symbols-outlined" style="color:var(--crit);font-size:18px;flex-shrink:0">error</span>
+          <span>{{ apiErr() }}</span>
         </div>
       }
 
@@ -65,7 +71,7 @@
 
       <a href="javascript:void(0)" style="font-size:13px;text-align:center">Esqueci minha senha</a>
       <p class="mono" style="font-size:11.5px;color:var(--dim);line-height:1.6;border-top:1px solid var(--line);padding-top:14px;margin:0">
-        protótipo: qualquer e-mail + senha "demo" entra. Outra senha demonstra o estado de credencial inválida.
+        ambiente de demonstração: rui&#64;transportesalmeida.com.br / demo123
       </p>
     </div>
   </div>

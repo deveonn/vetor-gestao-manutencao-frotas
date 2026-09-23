@@ -18,16 +18,19 @@ export class LoginComponent {
   emailErr = signal('');
   passErr = signal('');
   credErr = signal(false);
+  apiErr = signal('');
   auth$ = this.auth.authenticating;
 
   onEmailChange(): void {
     this.emailErr.set('');
     this.credErr.set(false);
+    this.apiErr.set('');
   }
 
   onPassChange(): void {
     this.passErr.set('');
     this.credErr.set(false);
+    this.apiErr.set('');
   }
 
   async entrar(): Promise<void> {
@@ -35,6 +38,7 @@ export class LoginComponent {
     this.emailErr.set(res.emailErr);
     this.passErr.set(res.passErr);
     this.credErr.set(res.credErr);
+    this.apiErr.set(res.apiErr);
     if (this.auth.loggedIn()) {
       this.router.navigate(['/painel']);
     }

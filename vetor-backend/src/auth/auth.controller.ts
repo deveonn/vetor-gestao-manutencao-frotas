@@ -25,7 +25,9 @@ export class AuthController {
     return this.authService.refresh(dto.refreshToken);
   }
 
-  @ApiBearerAuth()
+  // público como /refresh: o próprio refresh token é a credencial, e assim o logout
+  // funciona mesmo com o access token já expirado
+  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('logout')
   async logout(@Body() dto: RefreshTokenDto): Promise<void> {

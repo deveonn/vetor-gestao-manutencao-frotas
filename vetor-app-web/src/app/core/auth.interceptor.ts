@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { Injector, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, finalize, map, shareReplay, switchMap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -7,7 +7,7 @@ import { AuthService } from './auth.service';
 import { TokenService, Tokens } from './token.service';
 
 /** Rotas de auth que não levam Bearer nem disparam refresh em 401. */
-const ROTAS_SEM_REFRESH = ['/auth/login', '/auth/refresh'];
+const ROTAS_SEM_REFRESH = ['/auth/login', '/auth/refresh', '/auth/logout'];
 
 /** Refresh em andamento, compartilhado entre requisições que tomarem 401 ao mesmo tempo. */
 let refreshEmAndamento: Observable<string> | null = null;
@@ -31,7 +31,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const tokens = inject(TokenService);
   const http = inject(HttpClient);
-  const auth = inject(AuthService);
+  // AuthService é resolvido só na hora do uso: ele mesmo faz requisições no construtor (GET /auth/me),
+  // e um inject() direto aqui causaria dependência circular
+  const injector = inject(Injector);
   const router = inject(Router);
 
   return next(comBearer(req, tokens.accessToken)).pipe(
@@ -48,8 +50,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             return novos.accessToken;
           }),
           catchError((refreshErr: unknown) => {
-            tokens.clear();
-            auth.logout();
+            injector.get(AuthService).encerrarSessaoLocal();
             router.navigateByUrl('/login');
             return throwError(() => refreshErr);
           }),

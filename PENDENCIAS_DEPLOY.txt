@@ -55,9 +55,18 @@ WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por 
      persistidos; C) refresh já revogado -> 401, tokens limpos, redirecionado pra /login.
    - Obs: AuthService.login ainda é o mock (item 2), então por enquanto nada no app popula os tokens.
 
-2. Login real
+2. [CONCLUÍDO 23/09/2026] Login real
    - AuthService.login chamando POST /auth/login no lugar da regra hardcoded (email válido + senha "demo").
-   - Teste: login com usuários do seed (rui@transportesalmeida.com.br / demo123), sessão persiste, logout funciona.
+   - Feito: AuthService chama POST /auth/login, guarda tokens (TokenService) e o usuário; só papel ADMIN entra no painel
+     (root/motorista recebem aviso e o refresh emitido é revogado). Sessão restaurada no reload a partir do localStorage
+     e validada com GET /auth/me. Logout revoga o refresh no servidor. Tela de login ganhou alerta pra erro de conexão.
+     Backend: POST /auth/logout virou @Public() (o refresh token no corpo já é a credencial) — antes, com o access
+     expirado, o logout não revogava nada. Corrigida também dependência circular AuthService <-> interceptor.
+   - Teste: e2e em Chrome headless via CDP (script fora do repo), 12 cenários ok: redirecionamentos dos guards, senha
+     errada, login do rui, sessão após reload, access expirado renovado no boot, logout pelo menu + refresh revogado
+     (POST /auth/refresh -> 401), sessão restaurada com refresh revogado cai pro /login, root barrado.
+     Não testado: mensagem de API fora do ar.
+   - Obs: nome no topo do painel ainda vem do FleetStore mock (store.account()) — vira real no item 3.
 
 3. Empresa/Conta
    - GET/PATCH /empresa.
