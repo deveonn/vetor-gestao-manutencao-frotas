@@ -117,6 +117,8 @@ export class SyncService {
         clienteId: item.id,
         veiculoId,
         iniciadoEm: item.startedAt ?? item.createdAt,
+        // createdAt = quando o motorista finalizou; vistoria offline pode chegar horas depois
+        concluidoEm: item.createdAt,
         itens,
       }),
     );

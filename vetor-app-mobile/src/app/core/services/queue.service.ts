@@ -31,8 +31,11 @@ export class QueueService {
     () => this.items().filter((i) => i.status === 'queued' || i.status === 'sending').length,
   );
 
+  /** resolve quando a fila já foi lida do Preferences */
+  readonly ready: Promise<void>;
+
   constructor() {
-    this.load();
+    this.ready = this.load();
   }
 
   private async load(): Promise<void> {
@@ -103,6 +106,17 @@ export class QueueService {
       ),
     );
     await this.persist();
+  }
+
+  /**
+   * Tira da fila as vistorias enviadas que já aparecem no histórico do servidor — sem isso a fila só cresce.
+   * Espera a fila ser lida do Preferences (senão gravaria por cima a fila ainda não carregada).
+   */
+  async removerEnviadas(serverIds: Set<string>): Promise<void> {
+    await this.ready;
+    const antes = this.todos().length;
+    this.todos.update((list) => list.filter((i) => !(i.status === 'sent' && i.serverId && serverIds.has(i.serverId))));
+    if (this.todos().length !== antes) await this.persist();
   }
 
   getById(id: string): QueuedInspection | undefined {

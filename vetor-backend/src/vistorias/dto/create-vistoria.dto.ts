@@ -47,6 +47,11 @@ export class CreateVistoriaDto {
   @IsDateString()
   iniciadoEm?: string;
 
+  @ApiPropertyOptional({ description: 'quando o motorista finalizou no app (vistoria offline chega depois); default: agora' })
+  @IsOptional()
+  @IsDateString()
+  concluidoEm?: string;
+
   @ApiProperty({ type: [VistoriaItemDto] })
   @IsArray()
   @ArrayMinSize(1)

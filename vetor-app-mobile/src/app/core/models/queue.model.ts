@@ -22,3 +22,12 @@ export interface QueuedInspection {
   /** id da vistoria no servidor, depois de enviada */
   serverId?: string | null;
 }
+
+/**
+ * Linha do histórico (home e aba histórico): vistoria da fila local ou já registrada no servidor
+ * (GET /vistorias/minhas) — só o que as telas mostram.
+ */
+export type HistoryEntry = Pick<
+  QueuedInspection,
+  'id' | 'vehiclePlate' | 'vehicleType' | 'createdAt' | 'hasCriticalAlert' | 'hasWarnAlert' | 'status'
+>;

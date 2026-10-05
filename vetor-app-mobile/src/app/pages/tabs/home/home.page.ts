@@ -1,11 +1,12 @@
 import { Component, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { VehicleService } from '../../../core/services/vehicle.service';
+import { HistoryService } from '../../../core/services/history.service';
 import { QueueService } from '../../../core/services/queue.service';
 import { NetworkService } from '../../../core/services/network.service';
 import { dayLabel, timeLabel } from '../../../core/utils/date-format';
 import { queueStatusIcon, queueStatusIsFilled, queueStatusLabel } from '../../../core/utils/queue-status';
-import { QueuedInspection } from '../../../core/models/queue.model';
+import { HistoryEntry } from '../../../core/models/queue.model';
 import { OfflineBannerComponent } from '../../../shared/components/offline-banner/offline-banner.component';
 
 @Component({
@@ -15,7 +16,7 @@ import { OfflineBannerComponent } from '../../../shared/components/offline-banne
   styleUrl: './home.page.scss',
 })
 export class HomePage {
-  readonly recentInspections = computed(() => this.queue.items().slice(0, 4));
+  readonly recentInspections = computed(() => this.history.items().slice(0, 4));
 
   readonly offlineMessage = computed(() => {
     const n = this.queue.queuedCount();
@@ -28,6 +29,7 @@ export class HomePage {
   constructor(
     readonly vehicle: VehicleService,
     readonly queue: QueueService,
+    private history: HistoryService,
     readonly network: NetworkService,
     private router: Router,
   ) {}
@@ -38,7 +40,7 @@ export class HomePage {
   queueStatusIsFilled = queueStatusIsFilled;
   queueStatusLabel = queueStatusLabel;
 
-  statusColor(status: QueuedInspection['status']): string {
+  statusColor(status: HistoryEntry['status']): string {
     switch (status) {
       case 'sent':
       case 'sending':

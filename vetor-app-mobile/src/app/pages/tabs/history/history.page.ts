@@ -1,15 +1,16 @@
 import { Component, computed } from '@angular/core';
+import { HistoryService } from '../../../core/services/history.service';
 import { QueueService } from '../../../core/services/queue.service';
 import { SyncService } from '../../../core/services/sync.service';
 import { NetworkService } from '../../../core/services/network.service';
 import { dayLabel, timeLabel } from '../../../core/utils/date-format';
 import { queueStatusIcon, queueStatusIsFilled, queueStatusLabel } from '../../../core/utils/queue-status';
-import { QueuedInspection } from '../../../core/models/queue.model';
+import { HistoryEntry } from '../../../core/models/queue.model';
 import { VEHICLE_TYPE_META } from '../../../core/models/vehicle-type.model';
 
 interface DayGroup {
   label: string;
-  items: QueuedInspection[];
+  items: HistoryEntry[];
 }
 
 @Component({
@@ -19,11 +20,9 @@ interface DayGroup {
 })
 export class HistoryPage {
   readonly groups = computed<DayGroup[]>(() => {
-    const items = [...this.queue.items()].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
-    const byLabel = new Map<string, QueuedInspection[]>();
-    for (const item of items) {
+    // já vem ordenado (mais novas primeiro): servidor + fila local
+    const byLabel = new Map<string, HistoryEntry[]>();
+    for (const item of this.history.items()) {
       const label = dayLabel(item.createdAt);
       if (!byLabel.has(label)) byLabel.set(label, []);
       byLabel.get(label)!.push(item);
@@ -39,11 +38,12 @@ export class HistoryPage {
 
   constructor(
     readonly queue: QueueService,
+    private history: HistoryService,
     readonly sync: SyncService,
     readonly network: NetworkService,
   ) {}
 
-  statusColor(status: QueuedInspection['status']): string {
+  statusColor(status: HistoryEntry['status']): string {
     switch (status) {
       case 'sent':
         return 'var(--ok)';
@@ -56,11 +56,11 @@ export class HistoryPage {
     }
   }
 
-  vehicleArticleDe(item: QueuedInspection): string {
+  vehicleArticleDe(item: HistoryEntry): string {
     return VEHICLE_TYPE_META[item.vehicleType].articleDe;
   }
 
-  retry(item: QueuedInspection): void {
+  retry(item: HistoryEntry): void {
     if (item.status !== 'error') return;
     void this.queue.updateStatus(item.id, 'queued');
   }

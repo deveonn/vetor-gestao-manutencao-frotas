@@ -19,7 +19,7 @@ interface VeiculoApi {
 }
 
 /** Mesma correspondência documentada no enum TipoVeiculo (vetor-backend/prisma/schema.prisma). */
-const TIPO_API: Record<VeiculoApi['tipo'], VehicleType> = {
+export const TIPO_API: Record<VeiculoApi['tipo'], VehicleType> = {
   UTILITARIO: 'carro',
   VAN_CARGA: 'van',
   CAMINHAO_LEVE: 'caminhao',

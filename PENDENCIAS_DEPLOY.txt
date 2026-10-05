@@ -327,5 +327,22 @@ MOBILE (vetor-app-mobile)
    - Pendente ainda do ATENÇÃO (b) do mobile #4: enquanto a vistoria não é enviada as fotos continuam em base64 no
      Preferences — reduzir a foto antes de guardar ou mover pro Filesystem fica pra antes do teste no Android.
 
-6. Histórico do motorista
+6. [CONCLUÍDO 05/10/2026] Histórico do motorista
    - GET /vistorias/minhas, pra sobreviver a reinstalação do app (hoje histórico é só a fila local).
+   - Feito: HistoryService (novo) junta GET /vistorias/minhas com a fila local — a fila tem prioridade (é a versão
+     mais nova do item) e o que o servidor já tem não aparece duas vezes (casando serverId e clienteId, então até
+     "resposta perdida" vira uma linha só). Home (4 mais recentes) e aba histórico leem dele. Offline-first: o que
+     veio do servidor fica em cache no Preferences ("vetor.historico", com o dono); acompanha a sessão como o
+     VehicleService (entrou -> cache + API; saiu -> apaga). Criado no boot (App), senão abrir o app direto no
+     perfil e sair deixava o cache do motorista anterior.
+   - Fila não cresce mais pra sempre: vistoria "sent" sai da fila local assim que aparece no histórico do servidor
+     (QueueService.removerEnviadas, que espera a fila ser lida do Preferences antes de gravar).
+   - Backend: POST /vistorias aceita `concluidoEm` (o app manda a hora em que o motorista finalizou). Antes era
+     sempre a hora do envio — vistoria offline das 7h sincronizada às 14h aparecia às 14h, e o horário "pulava" no
+     histórico quando o item local era trocado pelo do servidor. Data no futuro (relógio do celular adiantado) vira
+     "agora".
+   - Teste: e2e/mobile-historico.mjs (12 cenários ok): concluidoEm gravado e futuro limitado; app recém-instalado
+     mostra o histórico do servidor com horário de conclusão e grupo "ontem"; cache com dono; home com as mesmas;
+     reabrir sem internet usa o cache; vistoria offline aparece junto; ao voltar a rede é enviada, mostrada uma vez
+     e sai da fila; item com o mesmo clienteId da fila e do servidor = uma linha; sair apaga o cache e outro
+     motorista vê só o dele. Mobile 51/51; web 81/86 (as mesmas 5 do painel por dados velhos do seed, ver #5).

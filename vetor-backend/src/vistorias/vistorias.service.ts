@@ -59,7 +59,8 @@ export class VistoriasService {
         motoristaId,
         clienteId: dto.clienteId,
         iniciadoEm: dto.iniciadoEm ? new Date(dto.iniciadoEm) : new Date(),
-        concluidoEm: new Date(),
+        // relógio do celular pode estar adiantado: nunca no futuro
+        concluidoEm: dto.concluidoEm ? new Date(Math.min(Date.parse(dto.concluidoEm), Date.now())) : new Date(),
         temAlertaCritico,
         temAlertaAtencao,
         itens: {
