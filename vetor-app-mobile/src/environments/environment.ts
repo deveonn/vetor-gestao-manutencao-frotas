@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  // Browser (npm start / ionic serve). No emulador Android a API do host é http://10.0.2.2:3000/api e no
-  // aparelho físico é o IP da máquina na rede — ver PENDENCIAS_DEPLOY.txt (mobile #1) sobre HTTP no Android.
+  // Browser (npm start / ionic serve) e aparelho Android por USB com `adb reverse tcp:3000 tcp:3000` (o localhost
+  // do celular vira o da máquina) — ver "Teste no Android" no PENDENCIAS_DEPLOY.txt.
   apiUrl: 'http://localhost:3000/api',
 };

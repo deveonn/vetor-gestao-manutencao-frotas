@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  HTTP sem TLS liberado só pra localhost: em desenvolvimento o app fala com a API da máquina pelo cabo
+  (adb reverse tcp:3000 tcp:3000). Todo o resto continua exigindo HTTPS — a API de produção vai ser https.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+    </domain-config>
+</network-security-config>

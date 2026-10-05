@@ -228,7 +228,8 @@ MOBILE (vetor-app-mobile)
      tokens rotacionados; /auth/refresh bloqueado (sem rede) -> erro devolvido mas sessão/tokens mantidos e sem ir
      pro /login, e ao voltar a rede a mesma sessão renova; refresh revogado -> 401, sessão limpa, /login.
      Preflight CORS conferido pras 4 origens (evil.com segue sem header). Regressão web e2e 86/86.
-   - PENDENTE (Android real): não testado em emulador/aparelho (adb/emulator fora do PATH). Pra funcionar lá falta:
+   - [RESOLVIDO 05/10/2026, ver "Teste no Android" no fim da seção Mobile] PENDENTE (Android real): não testado em
+     emulador/aparelho (adb/emulator fora do PATH). Pra funcionar lá falta:
      URL da API por plataforma (emulador = http://10.0.2.2:3000/api, aparelho = IP da máquina) e liberar HTTP em
      dev — a WebView roda em https://localhost e bloqueia http:// como mixed content; caminhos: CapacitorHttp
      (requisição nativa) + network_security_config permitindo cleartext só pros hosts de dev. Fazer quando for
@@ -250,7 +251,7 @@ MOBILE (vetor-app-mobile)
      com nome/@usuário; reabrir SEM internet (API bloqueada no Chrome) segue logado; access vencido renova no boot;
      refresh revogado ao reabrir -> /login; sessão antiga do mock descartada; sair pelo perfil revoga no servidor.
      Regressão: web 86/86.
-   - PENDENTE (Android real): igual ao mobile #1 — sem emulador (nenhum AVD/system image) nem aparelho conectado
+   - [RESOLVIDO 05/10/2026, ver "Teste no Android"] PENDENTE (Android real): igual ao mobile #1 — sem emulador (nenhum AVD/system image) nem aparelho conectado
      (adb devices vazio). Ainda falta URL por plataforma + liberar HTTP em dev antes de testar no Android.
 
 3. [CONCLUÍDO 23/09/2026] Veículo do dia
@@ -339,7 +340,35 @@ MOBILE (vetor-app-mobile)
      PNG nele): foto vira arquivo e o rascunho fica sem base64; a tela mostra a foto do arquivo; refazer apaga a
      anterior; reabrir o app mostra a foto do rascunho; logout apaga rascunho e fotos; fila antiga com base64 vira
      arquivo; envio sobe do arquivo e apaga depois; arquivo sumido -> "error". Mobile 59/59.
-     PENDENTE (Android real): conferir no aparelho o tamanho real das fotos e o Filesystem nativo.
+     [CONFERIDO 05/10/2026 no aparelho — ver "Teste no Android"] tamanho real das fotos e o Filesystem nativo.
+
+Teste no Android [CONCLUÍDO 05/10/2026]
+   - Emulador descartado: o notebook (i5-8365U, 6,9 GB de RAM, ~8 GB livres em disco) aguenta o processamento e tem
+     KVM, mas não tem disco pra imagem do sistema + AVD (~8-10 GB) e a RAM fica no limite com os ng serve rodando.
+     Testado num aparelho real: Motorola Edge 40 Neo, Android 15, por USB.
+   - Como rodar no aparelho (dev):
+       cd vetor-app-mobile && npx ng build --configuration development && npx cap sync android
+       cd android && JAVA_HOME=~/.local/jdks/jdk-21.0.12.1+1 ANDROID_HOME=~/Android/Sdk ./gradlew assembleDebug
+       adb install -r app/build/outputs/apk/debug/app-debug.apk && adb reverse tcp:3000 tcp:3000
+     (adb em ~/Android/Sdk/platform-tools). O Gradle 8.14 do projeto não roda com o Java 25 padrão da máquina —
+     JDK 21 (Temurin) instalado só no usuário em ~/.local/jdks, sem mexer no Java do sistema.
+   - API no aparelho: o build de desenvolvimento usa http://localhost:3000/api e o `adb reverse` leva o localhost
+     do celular pra máquina pelo cabo — não precisa de IP por plataforma nem de CapacitorHttp. A WebView
+     (https://localhost) aceita http://localhost (o Chromium não trata localhost como mixed content); o que o
+     Android bloqueava era o HTTP sem TLS -> android/app/src/main/res/xml/network_security_config.xml libera
+     cleartext SÓ pra localhost/127.0.0.1 (produção vai ser https). CORS já aceitava https://localhost.
+   - Conferido no aparelho (app inspecionado pelo DevTools do WebView via adb forward, arquivos via run-as):
+     login real; vistoria com foto da câmera de verdade -> foto 1200x1600, 72 KB (a câmera tira 4096x3072; a fila
+     antiga tinha fotos de vários MB em base64); "refazer" apagou o arquivo anterior; envio com foto ligada e
+     observação; pasta files/fotos vazia depois do envio. Modo avião: vistoria "queued", foto como arquivo de
+     126 KB, fila sem base64 (5 KB), sobreviveu a fechar/reabrir o app; ao desligar o modo avião, enviada sozinha,
+     uma vez só, com concluidoEm = hora em que foi finalizada offline, e o arquivo apagado. A vistoria enviada antes
+     saiu da fila local quando o histórico do servidor a confirmou.
+   - Migração com dados reais: o aparelho tinha uma instalação de julho (mock) com fotos em base64 na fila — no
+     primeiro boot elas foram descartadas (vistorias já "enviadas") e a fila ficou leve.
+   - Fica pra produção: URL real da API (environment.ts, backend #7) — com HTTPS, o network_security_config não
+     precisa mudar. Os 2 itens antigos da fila do mock (sem dono) aparecem no histórico de quem estiver logado;
+     somem ao reinstalar — não vale código pra isso.
 
 6. [CONCLUÍDO 05/10/2026] Histórico do motorista
    - GET /vistorias/minhas, pra sobreviver a reinstalação do app (hoje histórico é só a fila local).
