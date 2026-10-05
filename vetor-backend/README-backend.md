@@ -58,7 +58,7 @@ npm run prisma:generate     # regenera o Prisma Client após mudar o schema
 npm run prisma:migrate      # cria/aplica uma migration em dev
 npm run prisma:deploy       # aplica migrations pendentes (produção/CI)
 npm run prisma:studio       # abre o Prisma Studio (GUI do banco)
-npm run prisma:seed         # roda prisma/seed.ts de novo (não é idempotente — banco limpo antes)
+npm run prisma:seed         # cenário demo num banco vazio (com dados, é ignorado — em dev: npx prisma migrate reset)
 ```
 
 Não há `test`/`test:e2e`/`lint` ainda — o projeto não tem suíte de testes nem linter configurado.
@@ -77,9 +77,28 @@ Todas em `.env.example`, sem credencial real versionada:
 |---|---|
 | `DATABASE_URL` | connection string do Postgres (o `docker-compose.yml` local usa `vetor`/`vetor`/`vetor`) |
 | `PORT` | porta da API (default 3000) |
-| `JWT_SECRET` / `JWT_EXPIRES_IN` | segredo e validade do access token |
-| `JWT_REFRESH_SECRET` / `JWT_REFRESH_EXPIRES_IN` | reservado pro refresh token (hoje o refresh token é opaco e guardado com hash no banco, não é um JWT — o segredo fica pra uma eventual migração pra refresh token assinado) |
-| `UPLOADS_DIR` | pasta local onde `POST /midia` salva fotos de vistoria em dev |
+| `NODE_ENV` | `production` liga as validações rígidas de ambiente |
+| `CORS_ORIGIN` | origens permitidas, separadas por vírgula (obrigatória em produção) |
+| `JWT_SECRET` / `JWT_EXPIRES_IN` | segredo e validade do access token (produção: 32+ caracteres) |
+| `JWT_REFRESH_EXPIRES_IN` | validade do refresh token (opaco, guardado com hash no banco — não é JWT, não tem segredo) |
+| `LOGIN_LIMITE_POR_MINUTO` | tentativas de `POST /auth/login` por IP por minuto (padrão 10; alto no `.env` de dev por causa dos e2e) |
+| `STORAGE_DRIVER` | `local` (disco em `UPLOADS_DIR`, servido em `/uploads`) ou `s3` (bucket S3-compatível) |
+| `UPLOADS_DIR` / `UPLOADS_PERSISTENTE` | disco local; em produção só com volume persistente e `UPLOADS_PERSISTENTE=true` |
+| `S3_ENDPOINT` / `S3_REGION` / `S3_BUCKET` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` / `S3_PUBLIC_URL` / `S3_FORCE_PATH_STYLE` | bucket das fotos com `STORAGE_DRIVER=s3` (Cloudflare R2, AWS S3, MinIO) |
+
+A API não sobe se faltar algo obrigatório (`src/config/env.validation.ts`): sem `DATABASE_URL`/`JWT_SECRET` sempre; em produção também sem `CORS_ORIGIN`, com segredo fraco ou de exemplo, ou com fotos em disco sem volume persistente.
+
+---
+
+## Produção
+
+- **Imagem:** `Dockerfile` (contexto `vetor-backend/`). Na subida roda `prisma migrate deploy` e depois `node dist/main` — por isso o CLI `prisma` está em `dependencies`. Escuta em `0.0.0.0:$PORT`.
+- **Banco:** Postgres **com a extensão PostGIS disponível** (a migration inicial roda `CREATE EXTENSION postgis`; Neon e Supabase têm). Nenhuma tabela usa geometria ainda — a extensão está lá pra rastreamento.
+- **Fotos:** `STORAGE_DRIVER=s3` com um bucket de acesso público de leitura (ex.: Cloudflare R2 com URL pública `r2.dev` ou domínio). Chave `midia/<empresaId>/<uuid>.<ext>`; o banco guarda a URL pública absoluta.
+- **Dados:** `npm run prisma:seed` com o `DATABASE_URL` de produção cria o cenário demo (senha `demo123` pra todos) — só num banco vazio.
+- **Health check:** `GET /api/health` faz `SELECT 1` no banco (503 se o banco cair).
+- **Segurança:** login limitado por IP (`LOGIN_LIMITE_POR_MINUTO`, 429 com mensagem em português), `trust proxy` ligado (IP real atrás do proxy da hospedagem), desligamento limpo no SIGTERM (`enableShutdownHooks`). O Swagger (`/api/docs`) continua público.
+- **Dependências:** `npm audit --omit=dev` em 05/10/2026 deixa 3 avisos não exploráveis pela internet — `prisma` (via `deepmerge-ts`, só na CLI de migration) e `@nestjs/swagger` (via `js-yaml`, só gera o documento). A correção do swagger é a major 12.
 
 ---
 
@@ -91,7 +110,9 @@ prisma/
 └── seed.ts           # popula um banco vazio com os dados do mock do painel web
 
 src/
-├── main.ts                     # bootstrap: prefixo /api, CORS, ValidationPipe, Swagger, static /uploads
+├── main.ts                     # bootstrap: prefixo /api, CORS, ValidationPipe, Swagger, static /uploads (storage local)
+├── config/                      # validação do ambiente na subida
+├── storage/                     # StorageService: fotos no disco (dev) ou num bucket S3-compatível
 ├── app.module.ts                # raiz — registra todos os módulos + guards globais
 ├── prisma/                      # PrismaService/PrismaModule (global)
 ├── common/
@@ -107,7 +128,7 @@ src/
 ├── abastecimentos/               # cálculo de km/L e sinalização de consumo anômalo
 ├── manutencoes/                  # pendentes/histórico/planos/concluir
 ├── vistorias/                    # POST atualiza o resumo de pneus do veículo
-├── midia/                        # upload de foto (multipart → disco local)
+├── midia/                        # upload de foto (multipart → StorageService)
 ├── dashboard/                    # resumo, alertas (computados, não persistidos) e custo semanal
 └── relatorios/                   # comparativos de categoria e custo por veículo
 ```
@@ -123,7 +144,7 @@ Cada controller/service tem só os endpoints que estão em `/endpoints.md` — n
 - **`TipoVeiculo`** unifica duas classificações que só existiam nos mocks dos frontends: a do painel web (Utilitário/Van de carga/Caminhão leve) e a do app mobile (carro/van/caminhão, usada pra escolher o diagrama de posições de pneu). Ver comentário em `schema.prisma`.
 - **"Pneus" não tem custo próprio.** Os relatórios de comparativo de categoria (`/relatorios/categorias-*`) só têm Combustível e Manutenção — o mock original tinha 3 categorias fixas, mas não existe uma entidade de custo de pneu separada; uma troca de pneu registrada vira um item de `Manutencao` normal.
 - **`km` em relatórios de custo por veículo é aproximado** por `MAX(hodômetro) − MIN(hodômetro)` entre os abastecimentos do período — é a única leitura de hodômetro que existe sem a integração de rastreamento real conectada.
-- **Upload de mídia é local em dev** (`UPLOADS_DIR`, servido em `/uploads`). Trocar por storage de objetos (S3-compatible) antes de qualquer uso além do próprio ambiente de desenvolvimento.
+- **Upload de mídia** passa pelo `StorageService`: disco local em dev (`UPLOADS_DIR`, servido em `/uploads`), bucket S3-compatível em produção (`STORAGE_DRIVER=s3`). As fotos são públicas pra quem tiver a URL (nome aleatório) — URL assinada fica pra depois.
 - **Vínculo motorista↔veículo.** `GET /veiculos/:id/vinculos` lê o histórico; `POST /veiculos/:id/vinculos` (body: `{ motoristaId }`) encerra o vínculo aberto atual (se houver, marcando `ate`) e cria um novo, atualizando `veiculo.motoristaAtualId` — mutação que não existia no mock original.
 
 ---

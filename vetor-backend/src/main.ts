@@ -6,11 +6,16 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { join } from 'path';
 import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
+import { StorageService } from './storage/storage.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.setGlobalPrefix('api');
+  // atrás do proxy da hospedagem: IP real do cliente (o limite de login é por IP)
+  app.set('trust proxy', 1);
+  // SIGTERM do deploy: termina as requisições e fecha o Prisma antes de sair
+  app.enableShutdownHooks();
 
   const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:4200')
     .split(',')
@@ -27,8 +32,11 @@ async function bootstrap() {
 
   app.useGlobalFilters(new PrismaExceptionFilter(app.get(HttpAdapterHost).httpAdapter));
 
-  const uploadsDir = process.env.UPLOADS_DIR ?? './uploads';
-  app.useStaticAssets(join(process.cwd(), uploadsDir), { prefix: '/uploads' });
+  // fotos no disco são servidas pela API; no bucket S3, pela URL pública do bucket
+  const storage = app.get(StorageService);
+  if (storage.servidoPelaApi) {
+    app.useStaticAssets(join(process.cwd(), storage.diretorioLocal), { prefix: '/uploads' });
+  }
 
   const config = new DocumentBuilder()
     .setTitle('Vetor API')
@@ -42,7 +50,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = process.env.PORT ?? 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   // eslint-disable-next-line no-console
   console.log(`Vetor API em http://localhost:${port}/api — docs em http://localhost:${port}/api/docs`);
 }

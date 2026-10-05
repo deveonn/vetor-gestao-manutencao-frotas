@@ -29,9 +29,17 @@ BACKEND (vetor-backend)
      no momento. Comentário deixado em integracao-rastreamento.service.ts apontando pra cá.
      Revisitar se/quando surgir acesso a uma credencial de teste.
 
-5. Storage de mídia em S3-compatible
+5. [CONCLUÍDO 05/10/2026] Storage de mídia em S3-compatible
    - Hoje é disco local (UPLOADS_DIR) — só relevante quando for pensar em deploy de verdade (ambiente efêmero perde os arquivos).
    - Pode ficar por último.
+   - Feito: StorageService (src/storage) com STORAGE_DRIVER=local (disco, servido em /uploads — dev) ou s3 (qualquer
+     bucket S3-compatível: Cloudflare R2, AWS S3, MinIO; @aws-sdk/client-s3). Multer em memória (8 MB) e o serviço
+     grava; chave midia/<empresaId>/<uuid>.<ext>, o banco guarda a URL pública absoluta (S3_PUBLIC_URL). Com s3 a
+     API não serve /uploads. Disco local em produção só com volume persistente (UPLOADS_PERSISTENTE=true).
+   - Teste: API numa 2ª porta com STORAGE_DRIVER=s3 contra o moto (simulador de S3 em Python — o MinIO open-source
+     foi arquivado e saiu do ar): POST /midia gravou no bucket com a chave por empresa, conteúdo e ContentType
+     idênticos ao enviado, nada no disco local, /uploads 404. Leitura anônima deu 403 no moto (bucket privado) —
+     no R2 é a opção de acesso público do bucket, não código.
 
 6. Testes automatizados básicos
    - Hoje zero cobertura. Pelo menos e2e do fluxo de auth + isolamento multi-tenant (empresaId).
@@ -39,9 +47,41 @@ BACKEND (vetor-backend)
      usadas pra validar Web #1-#10), `node e2e/run-all.mjs`. Falta: isolamento multi-tenant (precisa de uma 2ª
      empresa no seed), testes de unidade do backend (km/L, anomalia, alertas) e rodar isso em CI (item 7).
 
-7. Dockerfile de produção + pipeline CI
+7. [EM ANDAMENTO 05/10/2026] Dockerfile de produção + pipeline CI
    - Só depois de tudo acima validado manualmente via Swagger.
    - Hoje só existe docker-compose.yml de dev (sobe só o Postgres).
+   - Feito: vetor-backend/Dockerfile (multi-stage, node 24 slim, roda como usuário `node`) — na subida aplica
+     `prisma migrate deploy` e inicia a API em 0.0.0.0:$PORT (por isso o CLI `prisma` foi pra dependencies).
+     .dockerignore sem node_modules/dist/uploads/.env. Build da imagem NÃO testado aqui (o usuário não está no grupo
+     docker — rodar `docker build -t vetor-api vetor-backend` ou deixar a hospedagem buildar).
+   - Falta: CI (rodar build + e2e a cada push) e a hospedagem em si — ver "Preparação pra produção" abaixo.
+
+8. [CONCLUÍDO 05/10/2026] Preparação pra produção (avaliação de 05/10/2026)
+   - Decidido: API no Render (plano grátis — dorme sem uso, 1ª requisição ~30-50 s), Postgres no Neon (tem PostGIS),
+     fotos no Cloudflare R2 (10 GB grátis), produção com o cenário demo do seed, subdomínio grátis da hospedagem.
+   - Validação de ambiente na subida (src/config/env.validation.ts): sem DATABASE_URL/JWT_SECRET a API não sobe; em
+     produção (NODE_ENV=production) também exige CORS_ORIGIN, JWT_SECRET com 32+ caracteres e diferente do exemplo,
+     e storage s3 completo (ou volume persistente declarado). Antes, faltando JWT_SECRET a API subia e assinava
+     tokens com segredo indefinido. JWT_REFRESH_SECRET removido do .env.example (nunca foi usado: refresh é opaco).
+     Obs.: o Prisma Client carrega o .env do projeto sozinho — em dev isso mascara variáveis faltando; no container
+     não há .env.
+   - Seed: não roda num banco que já tem dados (antes duplicava tudo) — seguro rodar contra produção.
+   - PostGIS: mantido (a migration inicial cria a extensão; nenhuma tabela usa ainda). Exige banco com PostGIS —
+     Neon tem. Remover exigiria editar a migration já aplicada.
+   - Dependências: npm audit fix corrigiu multer (upload das fotos, exposto) e qs. Restam 3 avisos não exploráveis
+     pela internet: prisma CLI (deepmerge-ts, só nas migrations) e @nestjs/swagger (js-yaml, só gera o documento —
+     correção é a major 12).
+   - Login limitado por IP: LOGIN_LIMITE_POR_MINUTO (padrão 10; 1000 no .env de dev por causa dos e2e) -> 429 com
+     mensagem em português; painel e app mostram "muitas tentativas" em vez de "não foi possível conectar".
+     Teste: instância com limite 3 -> 401, 401, 401, 429, 429; /health e /auth/refresh não são limitados.
+   - /health faz SELECT 1 no banco (503 sem banco), trust proxy (IP real atrás do proxy), enableShutdownHooks,
+     listen em 0.0.0.0.
+   - Teste da validação: produção sem nada / com segredo do exemplo / s3 incompleto -> API não sobe e lista o que
+     falta; dev mínimo e produção completa passam.
+   - Regressão: mobile 59/59; web 81/86 (as mesmas 5 do painel, dados velhos do seed — ver mobile #5).
+   - e2e/lib.mjs: a suíte agora se recusa a começar se a porta do Chrome (9333) já estiver ocupada, e espera o
+     Chrome sair no fim. Uma rodada travou 30+ min porque um `adb forward tcp:9333` pro WebView do celular ocupava a
+     porta: o Chrome caiu pra [::1] e a suíte conectou no WebView. Ao inspecionar o app no celular, use outra porta.
 
 ===========================================
 WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por endpoint

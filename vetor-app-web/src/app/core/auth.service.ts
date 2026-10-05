@@ -73,6 +73,10 @@ export class AuthService {
       if (err instanceof HttpErrorResponse && err.status === 401) {
         return { emailErr: '', passErr: '', credErr: true, apiErr: '' };
       }
+      if (err instanceof HttpErrorResponse && err.status === 429) {
+        // limite de tentativas da API (LOGIN_LIMITE_POR_MINUTO)
+        return { emailErr: '', passErr: '', credErr: false, apiErr: 'Muitas tentativas de login. Espere um minuto e tente de novo.' };
+      }
       return { emailErr: '', passErr: '', credErr: false, apiErr: 'Não foi possível conectar ao servidor. Tente novamente.' };
     } finally {
       this.authenticating.set(false);

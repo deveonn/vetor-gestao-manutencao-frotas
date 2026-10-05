@@ -23,6 +23,12 @@ function slugUsuario(nome: string): string {
 }
 
 async function main() {
+  // o seed só cria (não limpa): num banco que já tem dados duplicaria tudo — inclusive em produção
+  if ((await prisma.empresa.count()) > 0) {
+    console.log('Banco já tem dados — seed ignorado. Pra recriar o cenário demo em dev: npx prisma migrate reset.');
+    return;
+  }
+
   const senhaHash = await bcrypt.hash(SENHA_PADRAO, 10);
 
   const empresa = await prisma.empresa.create({

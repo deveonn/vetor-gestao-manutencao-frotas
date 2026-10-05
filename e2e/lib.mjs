@@ -39,6 +39,17 @@ export function limparDadosDeTeste() {
  * sai com código 1 se algum falhar (ou se a suíte lançar erro).
  */
 export async function suite(nome, corpo) {
+  // porta já ocupada (ex.: `adb forward` pro WebView do celular, outro Chrome): o Chrome novo cairia pra [::1] e a
+  // suíte conectaria no processo errado — e travava
+  let ocupada = true;
+  for (let i = 0; i < 10 && ocupada; i++) {
+    ocupada = await fetch(`http://127.0.0.1:${PORTA_CDP}/json/version`).then(() => true, () => false);
+    if (ocupada) await sleep(500); // Chrome da suíte anterior ainda fechando
+  }
+  if (ocupada) {
+    console.error(`== ${nome}\nERRO porta ${PORTA_CDP} já em uso (adb forward? outro Chrome?) — libere ou use CDP_PORT=<outra>`);
+    process.exit(1);
+  }
   const perfil = mkdtempSync(join(tmpdir(), 'vetor-e2e-'));
   const chrome = spawn(CHROME, [
     '--headless=new', '--disable-gpu', '--no-sandbox', `--remote-debugging-port=${PORTA_CDP}`, `--user-data-dir=${perfil}`, 'about:blank',
@@ -120,6 +131,8 @@ export async function suite(nome, corpo) {
   } finally {
     ws?.close();
     chrome.kill();
+    // espera o Chrome sair de fato, pra a próxima suíte achar a porta livre
+    await new Promise((r) => (chrome.exitCode !== null ? r() : (chrome.once('exit', r), setTimeout(r, 5000))));
     try { limparDadosDeTeste(); } catch (e) { resultados.push('ERRO limpeza: ' + e.message); }
     try { rmSync(perfil, { recursive: true, force: true }); } catch { /* perfil temporário */ }
   }

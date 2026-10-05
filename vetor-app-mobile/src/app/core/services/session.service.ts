@@ -90,6 +90,9 @@ export class SessionService {
       if (err instanceof HttpErrorResponse && err.status === 401) {
         return { ok: false, error: 'usuário ou senha inválidos.' };
       }
+      if (err instanceof HttpErrorResponse && err.status === 429) {
+        return { ok: false, error: 'muitas tentativas. espere um minuto e tente de novo.' };
+      }
       if (err instanceof HttpErrorResponse && err.status === 0) {
         return { ok: false, error: 'sem internet. o primeiro acesso neste celular precisa de conexão.' };
       }
