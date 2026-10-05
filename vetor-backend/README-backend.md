@@ -92,6 +92,7 @@ A API não sobe se faltar algo obrigatório (`src/config/env.validation.ts`): se
 
 ## Produção
 
+- **Render:** `render.yaml` na raiz do repositório é a blueprint do serviço (`New > Blueprint`): Docker, plano free, região virginia (perto do Neon us-east-1), health check em `/api/health`, só redeploya quando `vetor-backend/` muda. `JWT_SECRET` é gerado pelo Render; banco e credenciais do R2 (`sync: false`) são pedidos na criação.
 - **Imagem:** `Dockerfile` (contexto `vetor-backend/`). Na subida roda `prisma migrate deploy` e depois `node dist/main` — por isso o CLI `prisma` está em `dependencies`. Escuta em `0.0.0.0:$PORT`.
 - **Banco:** Postgres **com a extensão PostGIS disponível** (a migration inicial roda `CREATE EXTENSION postgis`; Neon e Supabase têm). Nenhuma tabela usa geometria ainda — a extensão está lá pra rastreamento.
 - **Fotos:** `STORAGE_DRIVER=s3` com um bucket de acesso público de leitura (ex.: Cloudflare R2 com URL pública `r2.dev` ou domínio). Chave `midia/<empresaId>/<uuid>.<ext>`; o banco guarda a URL pública absoluta.

@@ -54,6 +54,9 @@ BACKEND (vetor-backend)
      `prisma migrate deploy` e inicia a API em 0.0.0.0:$PORT (por isso o CLI `prisma` foi pra dependencies).
      .dockerignore sem node_modules/dist/uploads/.env. Build da imagem NÃO testado aqui (o usuário não está no grupo
      docker — rodar `docker build -t vetor-api vetor-backend` ou deixar a hospedagem buildar).
+   - render.yaml (raiz): blueprint do Render — Docker, free, virginia, health check /api/health, buildFilter só em
+     vetor-backend/**, JWT_SECRET gerado pelo Render, segredos (banco, R2) com sync: false. Conferido: o ambiente
+     que ele define passa na validação de produção da API.
    - Falta: CI (rodar build + e2e a cada push) e a hospedagem em si — ver "Preparação pra produção" abaixo.
 
 8. [CONCLUÍDO 05/10/2026] Preparação pra produção (avaliação de 05/10/2026)

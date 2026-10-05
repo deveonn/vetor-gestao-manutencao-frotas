@@ -1,0 +1,47 @@
+# Blueprint do Render (render.com) — API do Vetor em produção. Ver vetor-backend/README-backend.md, seção "Produção".
+# No Render: New > Blueprint > este repositório. Os valores com `sync: false` são pedidos na criação (segredos —
+# não ficam no git); depois ficam em Environment no painel do serviço.
+services:
+  - type: web
+    name: vetor-api
+    runtime: docker
+    plan: free # dorme sem uso: a 1ª requisição depois de ~15 min parada leva ~30-50 s
+    # mesma região do banco (Neon us-east-1) — cada requisição faz várias consultas
+    region: virginia
+    dockerfilePath: ./vetor-backend/Dockerfile
+    dockerContext: ./vetor-backend
+    # só redeploya quando o backend muda (commits só do web/mobile não sobem a API de novo)
+    buildFilter:
+      paths:
+        - vetor-backend/**
+        - render.yaml
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      # NODE_ENV=production já vem do Dockerfile; PORT é definida pelo próprio Render
+      - key: DATABASE_URL
+        sync: false # connection string do Neon (com ?sslmode=require)
+      - key: JWT_SECRET
+        generateValue: true # o Render gera um segredo aleatório forte
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 30d
+      # app Android (https://localhost), iOS (capacitor://localhost) e, durante os testes, painel/app rodando local.
+      # Quando o painel web tiver domínio, acrescentar aqui (e tirar os localhost:4200/8100).
+      - key: CORS_ORIGIN
+        value: https://localhost,capacitor://localhost,http://localhost:4200,http://localhost:8100
+      - key: STORAGE_DRIVER
+        value: s3
+      - key: S3_ENDPOINT
+        sync: false # https://<account-id>.r2.cloudflarestorage.com
+      - key: S3_REGION
+        value: auto
+      - key: S3_BUCKET
+        value: vetor-midia
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_PUBLIC_URL
+        sync: false # URL pública do bucket, ex.: https://pub-xxxx.r2.dev (sem / no fim)
