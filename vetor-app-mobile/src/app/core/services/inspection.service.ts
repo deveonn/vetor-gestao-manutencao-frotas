@@ -13,6 +13,8 @@ const DRAFT_KEY = 'vetor.inspection-draft';
 interface Draft {
   steps: ChecklistStepState[];
   startedAt: string | null;
+  /** id do veículo na API — rascunhos de antes do mobile #3 não têm */
+  vehicleId?: string | null;
   vehiclePlate: string | null;
   vehicleType: VehicleType;
 }
@@ -21,6 +23,7 @@ interface Draft {
 export class InspectionService {
   readonly steps = signal<ChecklistStepState[]>(createEmptyChecklist('van'));
   readonly startedAt = signal<string | null>(null);
+  readonly vehicleId = signal<string | null>(null);
   readonly vehiclePlate = signal<string | null>(null);
   readonly vehicleType = signal<VehicleType>('van');
 
@@ -89,6 +92,7 @@ export class InspectionService {
 
     this.steps.set(merged);
     this.startedAt.set(draft.startedAt);
+    this.vehicleId.set(draft.vehicleId ?? null);
     this.vehiclePlate.set(draft.vehiclePlate);
     this.vehicleType.set(vehicleType);
   }
@@ -97,15 +101,17 @@ export class InspectionService {
     const draft: Draft = {
       steps: this.steps(),
       startedAt: this.startedAt(),
+      vehicleId: this.vehicleId(),
       vehiclePlate: this.vehiclePlate(),
       vehicleType: this.vehicleType(),
     };
     await Preferences.set({ key: DRAFT_KEY, value: JSON.stringify(draft) });
   }
 
-  start(vehiclePlate: string, vehicleType: VehicleType): void {
+  start(vehicleId: string, vehiclePlate: string, vehicleType: VehicleType): void {
     this.steps.set(createEmptyChecklist(vehicleType));
     this.startedAt.set(new Date().toISOString());
+    this.vehicleId.set(vehicleId);
     this.vehiclePlate.set(vehiclePlate);
     this.vehicleType.set(vehicleType);
     void this.persist();
@@ -184,6 +190,7 @@ export class InspectionService {
   reset(): void {
     this.steps.set(createEmptyChecklist(this.vehicleType()));
     this.startedAt.set(null);
+    this.vehicleId.set(null);
     this.vehiclePlate.set(null);
     void Preferences.remove({ key: DRAFT_KEY });
   }

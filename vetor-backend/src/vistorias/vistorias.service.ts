@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { AvaliacaoVistoria, Severidade } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateVistoriaDto } from './dto/create-vistoria.dto';
@@ -30,8 +30,24 @@ export class VistoriasService {
   }
 
   async criar(empresaId: string, motoristaId: string, dto: CreateVistoriaDto) {
+    // idempotência da fila offline: o app reenvia se a resposta se perdeu — devolve a que já existe
+    if (dto.clienteId) {
+      const existente = await this.prisma.vistoria.findFirst({
+        where: { clienteId: dto.clienteId, empresaId, motoristaId },
+        include: { itens: { include: { midia: true } } },
+      });
+      if (existente) return existente;
+    }
+
     const veiculo = await this.prisma.veiculo.findFirst({ where: { id: dto.veiculoId, empresaId } });
     if (!veiculo) throw new NotFoundException('Veículo não encontrado.');
+
+    // foto referenciada tem que ser da mesma empresa (midiaId vem do cliente)
+    const midiaIds = [...new Set(dto.itens.map((i) => i.midiaId).filter((id): id is string => !!id))];
+    if (midiaIds.length) {
+      const encontradas = await this.prisma.midia.count({ where: { id: { in: midiaIds }, empresaId } });
+      if (encontradas !== midiaIds.length) throw new BadRequestException('Foto não encontrada.');
+    }
 
     const temAlertaCritico = dto.itens.some((i) => i.avaliacao === AvaliacaoVistoria.TROCAR);
     const temAlertaAtencao = dto.itens.some((i) => i.avaliacao === AvaliacaoVistoria.ATENCAO);
@@ -41,6 +57,7 @@ export class VistoriasService {
         empresaId,
         veiculoId: dto.veiculoId,
         motoristaId,
+        clienteId: dto.clienteId,
         iniciadoEm: dto.iniciadoEm ? new Date(dto.iniciadoEm) : new Date(),
         concluidoEm: new Date(),
         temAlertaCritico,

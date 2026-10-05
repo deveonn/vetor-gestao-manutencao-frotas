@@ -1,9 +1,10 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, Injector, inject, signal } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Session } from '../models/session.model';
+import { InspectionService } from './inspection.service';
 import { TokenService, Tokens } from './token.service';
 
 const SESSION_KEY = 'vetor.session';
@@ -34,6 +35,7 @@ function paraSessao(u: UsuarioApi, loginAt: string): Session {
 export class SessionService {
   private http = inject(HttpClient);
   private tokens = inject(TokenService);
+  private injector = inject(Injector);
 
   readonly session = signal<Session | null>(null);
   readonly restoring = signal(true);
@@ -99,13 +101,18 @@ export class SessionService {
     return this.session() !== null;
   }
 
-  /** Revoga o refresh no servidor se houver rede (sem esperar) e sempre limpa a sessão local. */
+  /**
+   * Revoga o refresh no servidor se houver rede (sem esperar) e sempre limpa a sessão local, inclusive o rascunho
+   * de vistoria em andamento (é do motorista que saiu). A fila de envio NÃO é apagada: os itens têm dono e voltam
+   * a sincronizar quando ele entrar de novo — a tela de perfil impede sair com vistoria pendente.
+   */
   async logout(): Promise<void> {
     const refreshToken = this.tokens.refreshToken;
     if (refreshToken) {
       this.http.post(`${environment.apiUrl}/auth/logout`, { refreshToken }).subscribe({ error: () => {} });
     }
     await this.tokens.clear();
+    this.injector.get(InspectionService).reset();
     this.session.set(null);
     await Preferences.remove({ key: SESSION_KEY });
   }

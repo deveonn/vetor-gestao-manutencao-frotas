@@ -9,14 +9,17 @@ const UPLOADS = fileURLToPath(new URL('../vetor-backend/uploads', import.meta.ur
 const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 const arquivos = () => { try { return readdirSync(UPLOADS); } catch { return []; } };
 
-/** Vistoria na fila com um sub-item por foto (null = sem foto); `midiaIds` simula fotos já enviadas antes. */
-function vistoria(id, fotos, midiaIds = []) {
+/**
+ * Vistoria na fila com um sub-item de lataria por foto (null = sem foto); `midiaIds` simula fotos já enviadas antes.
+ * Usa lataria de propósito: vistoria com "pneus" mexe no estado dos pneus do veículo no servidor.
+ */
+function vistoria(id, vehicleId, fotos, midiaIds = []) {
   return {
-    id, vehiclePlate: 'RTX-4B21', vehicleType: 'carro', createdAt: new Date().toISOString(),
-    hasCriticalAlert: true, hasWarnAlert: false, status: 'queued',
+    id, vehicleId, vehiclePlate: 'RTX-4B21', vehicleType: 'carro', owner: MOTORISTA.login, startedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(), hasCriticalAlert: false, hasWarnAlert: true, status: 'queued',
     steps: [{
-      id: 'pneus', label: 'pneus', icon: 'tire_repair', photoRequirement: 'on-issue', noteOnIssue: true, notePlaceholder: '',
-      subItems: fotos.map((foto, i) => ({ label: `posição ${i + 1}`, rating: foto ? 'trocar' : 'ok', photoDataUrl: foto, note: null, midiaId: midiaIds[i] ?? null })),
+      id: 'lataria', label: 'avarias na lataria', icon: 'car_crash', photoRequirement: 'on-issue', noteOnIssue: true, notePlaceholder: '',
+      subItems: fotos.map((foto, i) => ({ label: `avaria ${i + 1}`, rating: foto ? 'atencao' : 'ok', photoDataUrl: foto, note: foto ? 'risco E2E' : null, midiaId: midiaIds[i] ?? null })),
     }],
   };
 }
@@ -46,8 +49,10 @@ await suite('Mobile: fotos da vistoria (Mobile #4)', async ({ API, APP_MOBILE, s
       await new Promise(r => setTimeout(r, 2500));
     })()`);
 
+    const veiculoId = JSON.parse(await evalJs(`localStorage.getItem('CapacitorStorage.vetor.veiculo-do-dia')`)).id;
+
     // 1) com rede: vistoria com 2 fotos + vistoria sem foto
-    await gravarFila([vistoria('e2e-a', [PNG, PNG]), vistoria('e2e-b', [null, null])]);
+    await gravarFila([vistoria('e2e-a', veiculoId, [PNG, PNG]), vistoria('e2e-b', veiculoId, [null, null])]);
     await reabrir(6000);
     const a = await item('e2e-a');
     const b = await item('e2e-b');
@@ -61,7 +66,7 @@ await suite('Mobile: fotos da vistoria (Mobile #4)', async ({ API, APP_MOBILE, s
 
     // 2) API fora do ar: volta pra fila sem virar erro e sem subir nada
     const qtdAntes = arquivos().length;
-    await gravarFila([vistoria('e2e-c', [PNG])]);
+    await gravarFila([vistoria('e2e-c', veiculoId, [PNG])]);
     await bloquearApi(true);
     await reabrir(4000);
     let c = await item('e2e-c');
@@ -75,14 +80,14 @@ await suite('Mobile: fotos da vistoria (Mobile #4)', async ({ API, APP_MOBILE, s
     // 3) retomada: foto que já tinha midiaId (envio anterior interrompido) não sobe de novo
     const jaEnviada = idsA[0];
     const qtd3 = arquivos().length;
-    await gravarFila([vistoria('e2e-d', [PNG, PNG], [jaEnviada])]);
+    await gravarFila([vistoria('e2e-d', veiculoId, [PNG, PNG], [jaEnviada])]);
     await reabrir(4000);
     const d = await item('e2e-d');
     anotar(d);
     check('retomada: só a foto sem midiaId sobe; a outra mantém o id que já tinha', d.status === 'sent' && d.steps[0].subItems[0].midiaId === jaEnviada && !!d.steps[0].subItems[1].midiaId && arquivos().length === qtd3 + 1);
 
     // 4) servidor recusa (arquivo que não é imagem): vira "error", pra o motorista tentar de novo
-    await gravarFila([vistoria('e2e-e', ['data:text/plain;base64,aGVsbG8='])]);
+    await gravarFila([vistoria('e2e-e', veiculoId, ['data:text/plain;base64,aGVsbG8='])]);
     await reabrir(3000);
     const e = await item('e2e-e');
     check('servidor recusa o arquivo (400) -> vistoria vira "error"', e.status === 'error' && !e.steps[0].subItems[0].midiaId, `status=${e.status}`);

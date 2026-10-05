@@ -51,8 +51,11 @@ export class VehicleService {
   readonly loading = signal(false);
 
   constructor() {
-    // acompanha a sessão: entrou (ou reabriu logado) -> cache + API; saiu -> esquece o veículo do motorista anterior
+    // acompanha a sessão: entrou (ou reabriu logado) -> cache + API; saiu -> esquece o veículo do motorista anterior.
+    // Enquanto a sessão ainda está sendo restaurada do Preferences ela é null, e isso NÃO é logout — sem essa
+    // espera, abrir o app apagava o cache e reabrir sem internet ficava sem veículo.
     effect(() => {
+      if (this.session.restoring()) return;
       if (this.session.session()) {
         void this.carregar();
       } else {

@@ -104,10 +104,23 @@ async function main() {
     });
     veiculos.set(v.placa, veiculo.id);
 
+    // mock tem 4 valores (DE, DD, TE, TD); caminhão leve tem traseiro duplo — o traseiro do mock vira o "interno"
+    // e o "externo" nasce OK (mesma regra da migration 20260923160000)
+    const posicoes =
+      v.tipo === TipoVeiculo.CAMINHAO_LEVE
+        ? [
+            { posicao: TIRE_LABELS[0], sev: v.pneus[0] },
+            { posicao: TIRE_LABELS[1], sev: v.pneus[1] },
+            { posicao: `${TIRE_LABELS[2]} interno`, sev: v.pneus[2] },
+            { posicao: `${TIRE_LABELS[2]} externo`, sev: 'ok' },
+            { posicao: `${TIRE_LABELS[3]} interno`, sev: v.pneus[3] },
+            { posicao: `${TIRE_LABELS[3]} externo`, sev: 'ok' },
+          ]
+        : v.pneus.map((sev, i) => ({ posicao: TIRE_LABELS[i], sev }));
     await prisma.pneuPosicao.createMany({
-      data: v.pneus.map((sev, i) => ({
+      data: posicoes.map(({ posicao, sev }) => ({
         veiculoId: veiculo.id,
-        posicao: TIRE_LABELS[i],
+        posicao,
         severidade: sev === 'critico' ? Severidade.CRITICO : sev === 'atencao' ? Severidade.ATENCAO : Severidade.OK,
       })),
     });

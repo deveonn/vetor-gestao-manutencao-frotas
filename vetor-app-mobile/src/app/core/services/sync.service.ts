@@ -1,13 +1,17 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable, effect, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable, effect, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Rating } from '../models/inspection.model';
 import { QueuedInspection } from '../models/queue.model';
 import { MidiaService } from './midia.service';
 import { NetworkService } from './network.service';
 import { QueueService } from './queue.service';
-
-const SEND_DELAY_MS = 1200;
+import { VehicleService } from './vehicle.service';
 /** Depois de uma falha de rede, espera isso antes de tentar a fila de novo (evita martelar sem conexão). */
 const RETRY_APOS_FALHA_MS = 30_000;
+
+const AVALIACAO: Record<Rating, 'OK' | 'ATENCAO' | 'TROCAR'> = { ok: 'OK', atencao: 'ATENCAO', trocar: 'TROCAR' };
 
 /** Falha de rede (sem resposta do servidor) — o item volta pra fila; erro de servidor vira 'error'. */
 function ehFalhaDeRede(err: unknown): boolean {
@@ -21,6 +25,8 @@ export class SyncService {
   readonly totalToSend = signal(0);
   /** true durante a pausa depois de uma falha de rede */
   private readonly aguardando = signal(false);
+  private http = inject(HttpClient);
+  private vehicles = inject(VehicleService);
 
   constructor(
     private network: NetworkService,
@@ -48,9 +54,8 @@ export class SyncService {
       await this.queue.updateStatus(item.id, 'sending');
       try {
         await this.enviarFotos(item);
-        // envio da vistoria em si ainda simulado — POST /vistorias entra no mobile #5
-        await new Promise((resolve) => setTimeout(resolve, SEND_DELAY_MS));
-        await this.queue.updateStatus(item.id, 'sent');
+        const serverId = await this.enviarVistoria(item.id);
+        await this.queue.markSent(item.id, serverId);
         this.sendingCount.update((n) => n + 1);
       } catch (err) {
         if (ehFalhaDeRede(err)) {
@@ -83,6 +88,39 @@ export class SyncService {
         await this.queue.updateSteps(item.id, steps);
       }
     }
+  }
+
+  /**
+   * POST /vistorias com as fotos já referenciadas por midiaId. O id do item da fila vai como `clienteId`: se a
+   * resposta se perder no caminho e a fila reenviar, o servidor devolve a mesma vistoria em vez de duplicar.
+   */
+  private async enviarVistoria(id: string): Promise<string> {
+    const item = this.queue.getById(id)!;
+    // itens de antes do mobile #3 não guardavam o id do veículo: só dá pra resolver se for o veículo de hoje
+    const hoje = this.vehicles.todaysVehicle();
+    const veiculoId = item.vehicleId ?? (hoje?.plate === item.vehiclePlate ? hoje.id : null);
+    if (!veiculoId) throw new Error('vistoria sem veículo identificado');
+
+    const itens = item.steps.flatMap((step) =>
+      step.subItems
+        .filter((sub) => sub.rating !== null)
+        .map((sub) => ({
+          stepId: step.id,
+          label: sub.label,
+          avaliacao: AVALIACAO[sub.rating!],
+          ...(sub.note?.trim() ? { observacao: sub.note.trim() } : {}),
+          ...(sub.midiaId ? { midiaId: sub.midiaId } : {}),
+        })),
+    );
+    const vistoria = await firstValueFrom(
+      this.http.post<{ id: string }>(`${environment.apiUrl}/vistorias`, {
+        clienteId: item.id,
+        veiculoId,
+        iniciadoEm: item.startedAt ?? item.createdAt,
+        itens,
+      }),
+    );
+    return vistoria.id;
   }
 
   private pausar(): void {

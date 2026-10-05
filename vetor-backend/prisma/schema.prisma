@@ -305,6 +305,9 @@ model Vistoria {
   concluidoEm      DateTime?
   temAlertaCritico Boolean   @default(false)
   temAlertaAtencao Boolean   @default(false)
+  /// id gerado no app (item da fila offline). Torna o POST /vistorias idempotente: se a resposta se perder e o
+  /// app reenviar, devolve a vistoria já criada em vez de duplicar.
+  clienteId        String?   @unique
 
   itens VistoriaItem[]
 

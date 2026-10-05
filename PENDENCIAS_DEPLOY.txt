@@ -293,9 +293,39 @@ MOBILE (vetor-app-mobile)
      guardar ou mover pro Filesystem. (c) /uploads é público no backend (sem auth, nome aleatório) — rever junto do
      storage S3 (backend #5).
 
-5. Envio de vistoria
+5. [CONCLUÍDO 05/10/2026] Envio de vistoria
    - SyncService.drain() chamando POST /vistorias de verdade no lugar do delay simulado (1200ms).
    - Mapear erro de rede pra status: 'error' na fila (já documentado em endpoints.md).
+   - Feito: SyncService.enviarVistoria manda POST /vistorias (veiculoId, iniciadoEm, itens com stepId/label/
+     avaliacao/observacao/midiaId) depois de subir as fotos. Falha de rede -> volta pra "queued" + pausa de 30 s;
+     recusa do servidor -> "error" (igual ao mobile #4). Vistoria aceita: QueueService.markSent grava "sent" + o id
+     do servidor e apaga as fotos em base64 do item (já estão no servidor). A fila guarda vehicleId e startedAt
+     (o rascunho da InspectionService também guarda o vehicleId); itens antigos sem vehicleId usam o veículo de
+     hoje se a placa bater.
+   - Idempotência: Vistoria ganhou `clienteId` (único, migration 20260923160000) = id do item da fila. Reenviar o
+     mesmo clienteId (resposta perdida no caminho) devolve a vistoria já criada em vez de duplicar. O backend também
+     passou a validar que todo midiaId é da mesma empresa (400 se não for).
+   - Resolvido o ATENÇÃO (a) do mobile #4: cada item da fila tem dono (`owner` = login do motorista); a fila só
+     mostra/envia os itens de quem está logado, e o perfil bloqueia o logout enquanto houver vistoria pendente
+     ("ainda não dá para sair"). Logout limpa o rascunho de vistoria em andamento.
+   - Resolvido o ATENÇÃO do mobile #3 (caminhão 6 vs 4 pneus): POST /veiculos cria 6 posições pra CAMINHAO_LEVE
+     (traseiro esquerdo/direito interno/externo, mesmas labels do app); a migration converte os caminhões que já
+     existiam (traseiro antigo vira "interno", "externo" nasce OK) e o seed faz o mesmo. O painel web continua com
+     diagrama de 4 pontos e mostra a pior severidade de cada lado traseiro.
+   - Corrigido de quebra: o VehicleService apagava o cache do veículo do dia enquanto a sessão ainda estava sendo
+     restaurada (sessão null != logout) — reabrir sem internet ficava sem veículo. Agora espera `restoring`.
+   - Teste: e2e/mobile-vistoria.mjs (11 cenários ok): vistoria inteira pelas telas chega na API com o clienteId e
+     conteúdo certos (motorista, veículo, 4 pneus, óleo ATENCAO + descrição), fila sem base64 depois de enviada;
+     offline fica "queued" e o logout é bloqueado; API volta -> enviada uma vez só; reenvio do mesmo clienteId ->
+     mesma vistoria; midiaId inexistente -> 400; item de outro motorista não é enviado nem bloqueia a saída;
+     caminhão novo com 6 posições, vistoria marca "traseiro esquerdo externo" CRITICO e o diagrama do painel web
+     fica vermelho. mobile-fotos/mobile-veiculo ajustados (vehicleId/owner na fila; cache sobrevive à reabertura).
+     Mobile 39/39. Web 81/86: as 5 falhas são todas da suíte "painel" (KPI/resumo semanal) e vêm de dados velhos —
+     o seed grava abastecimentos com datas relativas ao dia em que rodou (23/09), então em 05/10 a semana atual e a
+     anterior estão vazias. Não tem relação com este item; resolve rodando o seed de novo (ou deixando o seed
+     espalhar dados até hoje).
+   - Pendente ainda do ATENÇÃO (b) do mobile #4: enquanto a vistoria não é enviada as fotos continuam em base64 no
+     Preferences — reduzir a foto antes de guardar ou mover pro Filesystem fica pra antes do teste no Android.
 
 6. Histórico do motorista
    - GET /vistorias/minhas, pra sobreviver a reinstalação do app (hoje histórico é só a fila local).

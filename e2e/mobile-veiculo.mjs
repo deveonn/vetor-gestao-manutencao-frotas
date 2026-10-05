@@ -42,7 +42,8 @@ await suite('Mobile: veículo do dia (Mobile #3)', async ({ API, APP_MOBILE, sen
   await bloquearApi(true);
   await abrirApp('/tabs');
   t = await texto();
-  const offlineHeader = t.includes(doJoao.placa);
+  // o cache tem que sobreviver à reabertura (antes o app apagava enquanto restaurava a sessão)
+  const offlineHeader = t.includes(doJoao.placa) && (await prefs('vetor.veiculo-do-dia'))?.id === doJoao.id;
   await goto(`${APP_MOBILE}/confirmar-veiculo`);
   await sleep(500);
   await clicar('sim, é');

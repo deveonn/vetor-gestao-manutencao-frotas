@@ -1,9 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { TipoVeiculo } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateVeiculoDto } from './dto/create-veiculo.dto';
 import { CreateVinculoDto } from './dto/create-vinculo.dto';
 
-const POSICOES_PADRAO = ['dianteiro esquerdo', 'dianteiro direito', 'traseiro esquerdo', 'traseiro direito'];
+/**
+ * Posições de pneu por tipo — mesmas labels do app mobile (VEHICLE_TIRE_POSITIONS), que é quem manda as vistorias.
+ * Caminhão leve tem traseiro duplo (ver enum TipoVeiculo no schema).
+ */
+const POSICOES_PNEU: Record<TipoVeiculo, string[]> = {
+  UTILITARIO: ['dianteiro esquerdo', 'dianteiro direito', 'traseiro esquerdo', 'traseiro direito'],
+  VAN_CARGA: ['dianteiro esquerdo', 'dianteiro direito', 'traseiro esquerdo', 'traseiro direito'],
+  CAMINHAO_LEVE: [
+    'dianteiro esquerdo', 'dianteiro direito',
+    'traseiro esquerdo interno', 'traseiro esquerdo externo',
+    'traseiro direito interno', 'traseiro direito externo',
+  ],
+};
 
 @Injectable()
 export class VeiculosService {
@@ -22,7 +35,7 @@ export class VeiculosService {
       data: { empresaId, placa: dto.placa.toUpperCase(), modelo: dto.modelo ?? '—', tipo: dto.tipo },
     });
     await this.prisma.pneuPosicao.createMany({
-      data: POSICOES_PADRAO.map((posicao) => ({ veiculoId: veiculo.id, posicao })),
+      data: POSICOES_PNEU[dto.tipo].map((posicao) => ({ veiculoId: veiculo.id, posicao })),
     });
     return this.buscar(empresaId, veiculo.id);
   }

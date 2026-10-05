@@ -80,7 +80,13 @@ export class ReviewPage {
   async finish(): Promise<void> {
     const plate = this.inspection.vehiclePlate();
     if (!plate || !this.allStepsDone) return;
-    const created = await this.queue.enqueue(plate, this.inspection.vehicleType(), this.inspection.steps());
+    const created = await this.queue.enqueue(
+      this.inspection.vehicleId(),
+      plate,
+      this.inspection.vehicleType(),
+      this.inspection.steps(),
+      this.inspection.startedAt(),
+    );
     this.inspection.reset();
     this.router.navigate(['/vistoria/confirmacao'], {
       replaceUrl: true,

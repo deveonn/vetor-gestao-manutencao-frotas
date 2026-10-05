@@ -25,6 +25,7 @@ export function sql(q) {
 /** Tudo que as suítes criam usa estes prefixos; roda depois de cada suíte, passando ou não. */
 export function limparDadosDeTeste() {
   sql(`
+    DELETE FROM vistorias WHERE "clienteId" LIKE 'e2e-%';
     DELETE FROM abastecimentos WHERE "veiculoId" IN (SELECT id FROM veiculos WHERE placa LIKE 'TST-%');
     DELETE FROM vinculos_motorista_veiculo WHERE "motoristaId" IN (SELECT id FROM motoristas WHERE nome LIKE 'Teste E2E %');
     DELETE FROM veiculos WHERE placa LIKE 'TST-%';

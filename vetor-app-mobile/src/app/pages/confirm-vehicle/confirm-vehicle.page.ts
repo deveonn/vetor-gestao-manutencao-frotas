@@ -31,7 +31,7 @@ export class ConfirmVehiclePage {
   confirm(): void {
     const v = this.vehicle.todaysVehicle();
     if (!v) return;
-    this.inspection.start(v.plate, v.type);
+    this.inspection.start(v.id, v.plate, v.type);
     this.router.navigateByUrl('/vistoria');
   }
 

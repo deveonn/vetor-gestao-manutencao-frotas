@@ -31,6 +31,12 @@ class VistoriaItemDto {
 }
 
 export class CreateVistoriaDto {
+  @ApiPropertyOptional({ description: 'id do item na fila offline do app — reenviar o mesmo clienteId devolve a vistoria já criada' })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  clienteId?: string;
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

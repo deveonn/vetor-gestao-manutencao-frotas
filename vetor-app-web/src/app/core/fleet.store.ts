@@ -264,8 +264,12 @@ function paraVeiculo(v: VeiculoApi): Vehicle {
     kml: v.kmL ?? 0,
     troca: v.kmParaTroca,
     status: v.status.toLowerCase() as Vehicle['status'],
-    pneus: POSICOES_PNEU.map((pos) =>
-      (v.pneus.find((p) => p.posicao === pos)?.severidade.toLowerCase() ?? 'ok') as Severity),
+    // caminhão leve tem traseiro duplo ("traseiro esquerdo interno/externo"): o diagrama de 4 posições mostra a
+    // pior severidade entre as rodas daquele lado
+    pneus: POSICOES_PNEU.map((pos) => {
+      const sevs = v.pneus.filter((p) => p.posicao === pos || p.posicao.startsWith(`${pos} `)).map((p) => p.severidade);
+      return (sevs.includes('CRITICO') ? 'critico' : sevs.includes('ATENCAO') ? 'atencao' : 'ok') as Severity;
+    }),
     kmHoje: v.kmHoje,
   };
 }
