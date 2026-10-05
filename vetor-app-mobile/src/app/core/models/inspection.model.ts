@@ -14,7 +14,10 @@ export type PhotoRequirement = 'none' | 'on-issue';
 export interface SubItemState {
   label: string;
   rating: Rating | null;
-  photoDataUrl: string | null;
+  /** foto salva como arquivo (PhotoStorageService) — caminho relativo a Directory.Data */
+  photoPath: string | null;
+  /** formato antigo: foto em base64 dentro do Preferences. Só aparece em dados de antes; vira photoPath ao carregar */
+  photoDataUrl?: string | null;
   /** id da foto já enviada (POST /midia) — preenchido na sincronização, evita reenviar a mesma foto */
   midiaId?: string | null;
   /** diagrama do veículo destacando a posição (ex.: pneu) — só quando aplicável */
@@ -108,7 +111,7 @@ export function createEmptyChecklist(vehicleType: VehicleType): ChecklistStepSta
         subItems: positions.map((p) => ({
           label: p.label,
           rating: null,
-          photoDataUrl: null,
+          photoPath: null,
           image: p.image,
           note: null,
         })),
@@ -121,7 +124,7 @@ export function createEmptyChecklist(vehicleType: VehicleType): ChecklistStepSta
       photoRequirement: cfg.photoRequirement,
       noteOnIssue: cfg.noteOnIssue,
       notePlaceholder: cfg.notePlaceholder,
-      subItems: cfg.subLabels.map((label) => ({ label, rating: null, photoDataUrl: null, note: null })),
+      subItems: cfg.subLabels.map((label) => ({ label, rating: null, photoPath: null, note: null })),
     };
   });
 }

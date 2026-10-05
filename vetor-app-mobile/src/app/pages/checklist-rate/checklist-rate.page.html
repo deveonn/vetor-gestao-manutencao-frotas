@@ -56,8 +56,8 @@
 
     @if (showOnIssuePhoto) {
       <div class="rate__photo" [class.rate__photo--required]="photoMissing">
-        @if (sub.photoDataUrl) {
-          <img [src]="sub.photoDataUrl" alt="foto" />
+        @if (sub.photoPath) {
+          <img [src]="sub.photoPath | fotoSrc | async" alt="foto" />
           <div class="rate__retake" (click)="capturePhoto()"><span class="ms">refresh</span>refazer</div>
         } @else {
           <button class="rate__photo-cta" (click)="capturePhoto()">

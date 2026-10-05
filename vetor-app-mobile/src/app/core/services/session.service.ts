@@ -112,7 +112,7 @@ export class SessionService {
       this.http.post(`${environment.apiUrl}/auth/logout`, { refreshToken }).subscribe({ error: () => {} });
     }
     await this.tokens.clear();
-    this.injector.get(InspectionService).reset();
+    await this.injector.get(InspectionService).descartar();
     this.session.set(null);
     await Preferences.remove({ key: SESSION_KEY });
   }

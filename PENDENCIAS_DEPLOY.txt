@@ -324,8 +324,22 @@ MOBILE (vetor-app-mobile)
      o seed grava abastecimentos com datas relativas ao dia em que rodou (23/09), então em 05/10 a semana atual e a
      anterior estão vazias. Não tem relação com este item; resolve rodando o seed de novo (ou deixando o seed
      espalhar dados até hoje).
-   - Pendente ainda do ATENÇÃO (b) do mobile #4: enquanto a vistoria não é enviada as fotos continuam em base64 no
-     Preferences — reduzir a foto antes de guardar ou mover pro Filesystem fica pra antes do teste no Android.
+   - [RESOLVIDO 05/10/2026] ATENÇÃO (b) do mobile #4 — fotos em base64 no Preferences. Feito como o docs/HANDOFF.md
+     pede ("salvar arquivo via Filesystem e guardar caminho"): @capacitor/filesystem (cap sync android feito) +
+     PhotoStorageService; a foto vira arquivo em Directory.Data/fotos/ e o rascunho/fila guardam só `photoPath`.
+     A câmera já devolve a foto reduzida (lado maior até 1600 px, qualidade 70 — só vale no nativo; no navegador
+     a foto passa inteira). Telas mostram a foto pelo pipe `fotoSrc`. Arquivos apagados ao refazer a foto, ao
+     enviar a vistoria (markSent) e ao descartar o rascunho (sair da vistoria, logout, começar outra). Rascunho e
+     fila antigos com base64 são convertidos em arquivo ao abrir o app. Arquivo de foto sumido -> "error" (não
+     fica tentando como se fosse falta de rede).
+     Corrigido de quebra: logout com o app aberto direto no perfil não descartava o rascunho — o InspectionService
+     nascia na hora e o descarte rodava antes da leitura do Preferences, que depois trazia o rascunho de volta.
+     Agora `descartar()` espera `ready`.
+     Teste: e2e/mobile-fotos-arquivo.mjs (8 cenários ok; a câmera web cai num <input type=file>, o teste entrega um
+     PNG nele): foto vira arquivo e o rascunho fica sem base64; a tela mostra a foto do arquivo; refazer apaga a
+     anterior; reabrir o app mostra a foto do rascunho; logout apaga rascunho e fotos; fila antiga com base64 vira
+     arquivo; envio sobe do arquivo e apaga depois; arquivo sumido -> "error". Mobile 59/59.
+     PENDENTE (Android real): conferir no aparelho o tamanho real das fotos e o Filesystem nativo.
 
 6. [CONCLUÍDO 05/10/2026] Histórico do motorista
    - GET /vistorias/minhas, pra sobreviver a reinstalação do app (hoje histórico é só a fila local).

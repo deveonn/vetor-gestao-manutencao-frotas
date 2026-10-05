@@ -1,4 +1,4 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import {
   ChecklistStepState,
@@ -7,6 +7,7 @@ import {
   createEmptyChecklist,
 } from '../models/inspection.model';
 import { VehicleType } from '../models/vehicle-type.model';
+import { PhotoStorageService } from './photo-storage.service';
 
 const DRAFT_KEY = 'vetor.inspection-draft';
 
@@ -21,6 +22,10 @@ interface Draft {
 
 @Injectable({ providedIn: 'root' })
 export class InspectionService {
+  private fotos = inject(PhotoStorageService);
+  /** resolve quando o rascunho salvo já foi lido do Preferences */
+  readonly ready: Promise<void>;
+
   readonly steps = signal<ChecklistStepState[]>(createEmptyChecklist('van'));
   readonly startedAt = signal<string | null>(null);
   readonly vehicleId = signal<string | null>(null);
@@ -57,7 +62,7 @@ export class InspectionService {
   );
 
   constructor() {
-    this.restore();
+    this.ready = this.restore();
   }
 
   private async restore(): Promise<void> {
@@ -82,19 +87,29 @@ export class InspectionService {
             ? {
                 ...freshSub,
                 rating: savedSub.rating,
-                photoDataUrl: savedSub.photoDataUrl,
+                photoPath: savedSub.photoPath ?? null,
+                photoDataUrl: savedSub.photoDataUrl ?? null,
                 note: savedSub.note ?? null,
               }
             : freshSub;
         }),
       };
     });
+    // rascunho de antes das fotos em arquivo: tira o base64 do Preferences
+    const tinhaBase64 = merged.some((s) => s.subItems.some((i) => i.photoDataUrl));
+    for (const step of merged) {
+      for (let i = 0; i < step.subItems.length; i++) {
+        const { photoDataUrl, ...sub } = step.subItems[i];
+        step.subItems[i] = photoDataUrl && !sub.photoPath ? { ...sub, photoPath: await this.fotos.salvar(photoDataUrl) } : sub;
+      }
+    }
 
     this.steps.set(merged);
     this.startedAt.set(draft.startedAt);
     this.vehicleId.set(draft.vehicleId ?? null);
     this.vehiclePlate.set(draft.vehiclePlate);
     this.vehicleType.set(vehicleType);
+    if (tinhaBase64) await this.persist();
   }
 
   private async persist(): Promise<void> {
@@ -109,6 +124,7 @@ export class InspectionService {
   }
 
   start(vehicleId: string, vehiclePlate: string, vehicleType: VehicleType): void {
+    void this.apagarFotos(this.steps()); // rascunho anterior abandonado
     this.steps.set(createEmptyChecklist(vehicleType));
     this.startedAt.set(new Date().toISOString());
     this.vehicleId.set(vehicleId);
@@ -141,7 +157,10 @@ export class InspectionService {
     return this.steps().find((s) => s.id === stepId);
   }
 
-  setPhoto(stepId: string, subIndex: number, dataUrl: string): void {
+  /** Foto nova do sub-item (já salva em arquivo); a anterior, se for refeita, é apagada. */
+  setPhoto(stepId: string, subIndex: number, photoPath: string): void {
+    const anterior = this.getStep(stepId)?.subItems[subIndex]?.photoPath;
+    if (anterior && anterior !== photoPath) void this.fotos.apagar(anterior);
     this.steps.update((steps) =>
       steps.map((s) =>
         s.id !== stepId
@@ -149,7 +168,7 @@ export class InspectionService {
           : {
               ...s,
               subItems: s.subItems.map((i, idx) =>
-                idx !== subIndex ? i : { ...i, photoDataUrl: dataUrl },
+                idx !== subIndex ? i : { ...i, photoPath },
               ),
             },
       ),
@@ -187,11 +206,30 @@ export class InspectionService {
     void this.persist();
   }
 
+  /**
+   * Limpa o rascunho. As fotos continuam nos arquivos — ao finalizar, elas passam a ser da fila. Pra jogar a vistoria
+   * fora (sair sem finalizar, logout) use `descartar()`.
+   */
   reset(): void {
     this.steps.set(createEmptyChecklist(this.vehicleType()));
     this.startedAt.set(null);
     this.vehicleId.set(null);
     this.vehiclePlate.set(null);
     void Preferences.remove({ key: DRAFT_KEY });
+  }
+
+  /**
+   * Vistoria abandonada: apaga as fotos dela e limpa o rascunho. Espera o rascunho ser lido — no logout o serviço
+   * pode ter acabado de ser criado, e a leitura terminando depois traria a vistoria descartada de volta.
+   */
+  async descartar(): Promise<void> {
+    await this.ready;
+    const steps = this.steps();
+    this.reset();
+    await this.apagarFotos(steps);
+  }
+
+  private async apagarFotos(steps: ChecklistStepState[]): Promise<void> {
+    for (const s of steps) for (const i of s.subItems) await this.fotos.apagar(i.photoPath);
   }
 }

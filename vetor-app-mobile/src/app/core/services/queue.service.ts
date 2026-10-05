@@ -3,6 +3,7 @@ import { Preferences } from '@capacitor/preferences';
 import { QueuedInspection } from '../models/queue.model';
 import { ChecklistStepState } from '../models/inspection.model';
 import { VehicleType } from '../models/vehicle-type.model';
+import { PhotoStorageService } from './photo-storage.service';
 import { SessionService } from './session.service';
 
 const QUEUE_KEY = 'vetor.queue';
@@ -10,6 +11,7 @@ const QUEUE_KEY = 'vetor.queue';
 @Injectable({ providedIn: 'root' })
 export class QueueService {
   private session = inject(SessionService);
+  private fotos = inject(PhotoStorageService);
 
   /** fila inteira do aparelho, de todos os motoristas que já usaram este celular */
   private readonly todos = signal<QueuedInspection[]>([]);
@@ -41,7 +43,10 @@ export class QueueService {
   private async load(): Promise<void> {
     const { value } = await Preferences.get({ key: QUEUE_KEY });
     if (value) {
-      this.todos.set(JSON.parse(value) as QueuedInspection[]);
+      const itens = JSON.parse(value) as QueuedInspection[];
+      const tinhaBase64 = itens.some((it) => it.steps.some((s) => s.subItems.some((x) => x.photoDataUrl)));
+      this.todos.set(tinhaBase64 ? await this.fotosParaArquivo(itens) : itens);
+      if (tinhaBase64) await this.persist();
     }
     this.loaded.set(true);
   }
@@ -89,10 +94,11 @@ export class QueueService {
   }
 
   /**
-   * Vistoria aceita pelo servidor: marca como enviada, guarda o id do servidor e tira as fotos em base64 da fila
+   * Vistoria aceita pelo servidor: marca como enviada, guarda o id do servidor e apaga os arquivos das fotos
    * (já estão no servidor; manter só ocupa o armazenamento do aparelho).
    */
   async markSent(id: string, serverId: string): Promise<void> {
+    const fotos = (this.getById(id)?.steps ?? []).flatMap((s) => s.subItems.map((x) => x.photoPath));
     this.todos.update((list) =>
       list.map((i) =>
         i.id !== id
@@ -101,11 +107,33 @@ export class QueueService {
               ...i,
               status: 'sent' as const,
               serverId,
-              steps: i.steps.map((s) => ({ ...s, subItems: s.subItems.map((x) => ({ ...x, photoDataUrl: null })) })),
+              steps: i.steps.map((s) => ({ ...s, subItems: s.subItems.map((x) => ({ ...x, photoPath: null })) })),
             },
       ),
     );
     await this.persist();
+    for (const path of fotos) await this.fotos.apagar(path);
+  }
+
+  /**
+   * Fila de antes das fotos em arquivo: cada foto em base64 vira arquivo (as de vistoria já enviada só são
+   * descartadas — já estão no servidor).
+   */
+  private async fotosParaArquivo(itens: QueuedInspection[]): Promise<QueuedInspection[]> {
+    const convertidos: QueuedInspection[] = [];
+    for (const item of itens) {
+      const steps = [];
+      for (const step of item.steps) {
+        const subItems = [];
+        for (const { photoDataUrl, ...sub } of step.subItems) {
+          const guardar = photoDataUrl && !sub.photoPath && item.status !== 'sent';
+          subItems.push({ ...sub, photoPath: guardar ? await this.fotos.salvar(photoDataUrl) : (sub.photoPath ?? null) });
+        }
+        steps.push({ ...step, subItems });
+      }
+      convertidos.push({ ...item, steps });
+    }
+    return convertidos;
   }
 
   /**

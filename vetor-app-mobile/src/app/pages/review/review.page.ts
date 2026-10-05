@@ -1,3 +1,4 @@
+import { AsyncPipe } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { InspectionService } from '../../core/services/inspection.service';
@@ -5,10 +6,11 @@ import { QueueService } from '../../core/services/queue.service';
 import { ChecklistStepState, StepStatus } from '../../core/models/inspection.model';
 import { VEHICLE_TYPE_META } from '../../core/models/vehicle-type.model';
 import { OfflineBannerComponent } from '../../shared/components/offline-banner/offline-banner.component';
+import { FotoSrcPipe } from '../../shared/pipes/foto-src.pipe';
 
 @Component({
   selector: 'app-review',
-  imports: [OfflineBannerComponent],
+  imports: [OfflineBannerComponent, AsyncPipe, FotoSrcPipe],
   templateUrl: './review.page.html',
   styleUrl: './review.page.scss',
 })
@@ -61,8 +63,9 @@ export class ReviewPage {
     return this.inspection.nextStep() === null;
   }
 
+  /** caminho da primeira foto do passo (mostrada com o pipe fotoSrc) */
   firstPhoto(step: ChecklistStepState): string | null {
-    return step.subItems.find((i) => i.photoDataUrl)?.photoDataUrl ?? null;
+    return step.subItems.find((i) => i.photoPath)?.photoPath ?? null;
   }
 
   firstNote(step: ChecklistStepState): string | null {

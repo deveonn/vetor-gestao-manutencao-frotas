@@ -28,7 +28,7 @@ export const unsavedInspectionGuard: CanDeactivateFn<unknown> = async (
             text: 'sair e descartar',
             role: 'destructive',
             handler: () => {
-              inspection.reset();
+              void inspection.descartar();
               resolve(true);
             },
           },

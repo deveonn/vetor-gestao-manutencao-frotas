@@ -1,5 +1,6 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AsyncPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Keyboard } from '@capacitor/keyboard';
@@ -7,13 +8,15 @@ import type { PluginListenerHandle } from '@capacitor/core';
 import { ToastController } from '@ionic/angular/standalone';
 import { InspectionService } from '../../core/services/inspection.service';
 import { PhotoCaptureService } from '../../core/services/photo-capture.service';
+import { PhotoStorageService } from '../../core/services/photo-storage.service';
+import { FotoSrcPipe } from '../../shared/pipes/foto-src.pipe';
 import { TargetAnnounceService } from '../../core/services/target-announce.service';
 import { ChecklistStepState, Rating, SubItemState } from '../../core/models/inspection.model';
 import { photoTargetLabel } from '../../core/utils/photo-target-label';
 
 @Component({
   selector: 'app-checklist-rate',
-  imports: [FormsModule],
+  imports: [FormsModule, AsyncPipe, FotoSrcPipe],
   templateUrl: './checklist-rate.page.html',
   styleUrl: './checklist-rate.page.scss',
 })
@@ -26,6 +29,7 @@ export class ChecklistRatePage implements OnInit, OnDestroy {
   readonly noteText = signal('');
   readonly capturing = signal(false);
   readonly busy = signal(false);
+  private fotos = inject(PhotoStorageService);
   private keyboardShowListener?: PluginListenerHandle;
 
   constructor(
@@ -97,7 +101,7 @@ export class ChecklistRatePage implements OnInit, OnDestroy {
 
   /** foto é obrigatória pra este item, mas ainda não foi tirada — trava o botão de confirmar */
   get photoMissing(): boolean {
-    return this.showOnIssuePhoto && !this.sub?.photoDataUrl;
+    return this.showOnIssuePhoto && !this.sub?.photoPath;
   }
 
   /** descrição é obrigatória pra este item, mas ainda não foi escrita — trava o botão de confirmar */
@@ -125,10 +129,23 @@ export class ChecklistRatePage implements OnInit, OnDestroy {
     if (this.capturing()) return;
     this.capturing.set(true);
     const dataUrl = await this.photoCapture.capture();
+    let path: string | null = null;
+    if (dataUrl) {
+      try {
+        path = await this.fotos.salvar(dataUrl);
+      } catch {
+        const toast = await this.toastCtrl.create({
+          message: 'não foi possível guardar a foto — o celular pode estar sem espaço.',
+          duration: 2600,
+          color: 'danger',
+        });
+        await toast.present();
+      }
+    }
     this.capturing.set(false);
-    if (!dataUrl) return;
+    if (!path) return;
 
-    this.inspection.setPhoto(this.stepId, this.subIndex, dataUrl);
+    this.inspection.setPhoto(this.stepId, this.subIndex, path);
     this.step = this.inspection.getStep(this.stepId) ?? null;
     this.sub = this.step?.subItems[this.subIndex] ?? null;
   }

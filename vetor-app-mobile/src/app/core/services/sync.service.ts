@@ -6,6 +6,7 @@ import { Rating } from '../models/inspection.model';
 import { QueuedInspection } from '../models/queue.model';
 import { MidiaService } from './midia.service';
 import { NetworkService } from './network.service';
+import { PhotoStorageService } from './photo-storage.service';
 import { QueueService } from './queue.service';
 import { VehicleService } from './vehicle.service';
 /** Depois de uma falha de rede, espera isso antes de tentar a fila de novo (evita martelar sem conexão). */
@@ -27,6 +28,7 @@ export class SyncService {
   private readonly aguardando = signal(false);
   private http = inject(HttpClient);
   private vehicles = inject(VehicleService);
+  private fotos = inject(PhotoStorageService);
 
   constructor(
     private network: NetworkService,
@@ -80,8 +82,12 @@ export class SyncService {
     for (let s = 0; s < steps.length; s++) {
       for (let i = 0; i < steps[s].subItems.length; i++) {
         const sub = steps[s].subItems[i];
-        if (!sub.photoDataUrl || sub.midiaId) continue;
-        const midiaId = await this.midia.upload(sub.photoDataUrl, `${steps[s].id}-${i + 1}`);
+        if (!sub.photoPath || sub.midiaId) continue;
+        // arquivo sumiu (ex.: dados do app limpos pela metade) não é falha de rede: vira "error", não fica em loop
+        const dataUrl = await this.fotos.lerDataUrl(sub.photoPath).catch(() => {
+          throw new Error(`foto não encontrada: ${sub.photoPath}`);
+        });
+        const midiaId = await this.midia.upload(dataUrl, `${steps[s].id}-${i + 1}`);
         steps = steps.map((step, si) =>
           si !== s ? step : { ...step, subItems: step.subItems.map((x, xi) => (xi !== i ? x : { ...x, midiaId })) },
         );

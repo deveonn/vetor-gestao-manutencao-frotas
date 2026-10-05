@@ -15,7 +15,7 @@
       @let s = summaryIcon(step);
       <div class="rv-card" [style.border-color]="s.color">
         @if (firstPhoto(step); as photo) {
-          <div class="rv-card__thumb"><img [src]="photo" alt="" /></div>
+          <div class="rv-card__thumb"><img [src]="photo | fotoSrc | async" alt="" /></div>
         } @else {
           <div class="rv-card__thumb rv-card__thumb--icon">
             <span class="ms" [style.color]="s.color">{{ step.icon }}</span>

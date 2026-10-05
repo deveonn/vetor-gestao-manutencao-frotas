@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 // ordem = ordem do checklist (PENDENCIAS_DEPLOY.txt); "web" precisa do painel em :4200, "mobile" do app em :8100
 const GRUPOS = {
   web: ['login', 'conta', 'rastreamento', 'veiculos', 'motoristas', 'combustivel', 'manutencao', 'pneus', 'painel'],
-  mobile: ['mobile-login', 'mobile-veiculo', 'mobile-fotos', 'mobile-vistoria', 'mobile-historico'],
+  mobile: ['mobile-login', 'mobile-veiculo', 'mobile-fotos', 'mobile-fotos-arquivo', 'mobile-vistoria', 'mobile-historico'],
 };
 const args = process.argv.slice(2);
 const escolhidas = (args.length ? args : ['web', 'mobile']).flatMap((a) => GRUPOS[a] ?? [a]);
