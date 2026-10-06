@@ -58,7 +58,10 @@
       </div>
 
       <div class="card">
-        <h2 class="panel-title" style="margin:0 0 8px">Plano de manutenção</h2>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin:0 0 8px">
+          <h2 class="panel-title" style="margin:0">Plano de manutenção</h2>
+          <button (click)="agendarManutencao()" class="link-agendar">+ agendar</button>
+        </div>
         @if (dMan().length > 0) {
           @for (m of dMan(); track m.id) {
             <div style="display:flex;gap:11px;align-items:center;padding:10px 0;border-top:1px solid var(--line)">

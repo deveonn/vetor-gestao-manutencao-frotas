@@ -1,3 +1,9 @@
+<div style="display:flex;justify-content:flex-end">
+  <button (click)="agendar()" class="btn btn-primary">
+    <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;margin-right:6px">event</span>Agendar manutenção
+  </button>
+</div>
+
 <div class="card">
   <h2 class="panel-title" style="margin:0 0 8px">Próximas do vencimento</h2>
   @if (store.maintenanceEnriched().length > 0) {

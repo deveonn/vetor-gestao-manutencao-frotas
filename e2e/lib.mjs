@@ -26,6 +26,7 @@ export function sql(q) {
 export function limparDadosDeTeste() {
   sql(`
     DELETE FROM vistorias WHERE "clienteId" LIKE 'e2e-%';
+    DELETE FROM manutencoes WHERE item LIKE 'E2E %';
     DELETE FROM abastecimentos WHERE "veiculoId" IN (SELECT id FROM veiculos WHERE placa LIKE 'TST-%');
     DELETE FROM vinculos_motorista_veiculo WHERE "motoristaId" IN (SELECT id FROM motoristas WHERE nome LIKE 'Teste E2E %');
     DELETE FROM veiculos WHERE placa LIKE 'TST-%';

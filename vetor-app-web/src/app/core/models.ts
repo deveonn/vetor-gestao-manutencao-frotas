@@ -59,7 +59,10 @@ export interface MaintenanceItem {
   id: string;
   v: string;
   item: string;
-  resta: number;
+  /** km até a meta (negativo = vencida); null = manutenção só por data */
+  resta: number | null;
+  /** dias até a data limite (negativo = vencida); null = manutenção só por km */
+  dias: number | null;
   nv: AlertLevel;
   prazo: string;
 }

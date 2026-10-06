@@ -155,7 +155,9 @@ function paraFornecedor(f: FornecedorApi): Fornecedor {
 interface ManutencaoApi {
   id: string;
   item: string;
+  /** calculados pela API na leitura (meta x hodômetro atual / data de hoje) */
   kmRestante: number | null;
+  diasRestantes?: number | null;
   nivel: 'OK' | 'ATENCAO' | 'CRITICO' | null;
   prazo: string | null;
   custo: number | null;
@@ -171,7 +173,7 @@ interface PlanoApi {
 
 function paraPendente(m: ManutencaoApi): MaintenanceItem {
   return {
-    id: m.id, v: m.veiculo.placa, item: m.item, resta: m.kmRestante ?? 0,
+    id: m.id, v: m.veiculo.placa, item: m.item, resta: m.kmRestante, dias: m.diasRestantes ?? null,
     nv: (m.nivel?.toLowerCase() ?? 'ok') as MaintenanceItem['nv'], prazo: m.prazo ?? '—',
   };
 }
@@ -456,7 +458,8 @@ export class FleetStore {
     ...m,
     cor: SEVERITY_COLOR[m.nv],
     glifo: SEVERITY_GLYPH[m.nv],
-    pct: clamp(4, 100, Math.round(100 - (m.resta / 10000) * 100)),
+    // barra = quanto já "andou" até a meta: escala de 10.000 km, ou de 90 dias quando é só por data
+    pct: clamp(4, 100, Math.round(100 - (m.resta != null ? m.resta / 10000 : (m.dias ?? 0) / 90) * 100)),
   })));
 
   readonly maintenanceHistoryEnriched = computed(() => this.maintenanceHistory().map((h) => ({
@@ -757,6 +760,33 @@ export class FleetStore {
         return;
       }
       this.toast.show(`Não foi possível concluir a manutenção — ${item.item} · ${item.v}`, 'info');
+    }
+  }
+
+  /**
+   * Agenda uma manutenção: `km` = daqui a quantos km (soma no hodômetro atual) e/ou `data` (yyyy-mm-dd).
+   * Retorna a mensagem de erro, ou null se agendou.
+   */
+  async addMaintenance(payload: { placa: string; item: string; km: number | null; data: string }): Promise<string | null> {
+    const veiculo = this.vehicles().find((v) => v.placa === payload.placa);
+    if (!veiculo) return 'Escolha o veículo.';
+    try {
+      const criada = await firstValueFrom(this.http.post<ManutencaoApi>(`${environment.apiUrl}/manutencoes`, {
+        veiculoId: veiculo.id,
+        item: payload.item.trim(),
+        ...(payload.km != null ? { kmAlvo: veiculo.hod + payload.km } : {}),
+        ...(payload.data ? { dataLimite: payload.data } : {}),
+      }));
+      // a API devolve a ordem certa só na listagem — recarrega pra cair no lugar (urgência, km, dias)
+      await this.loadMaintenance();
+      this.toast.show(`Manutenção agendada — ${criada.item} · ${veiculo.placa} (${criada.prazo})`);
+      this.refreshDashboard();
+      return null;
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && (err.status === 400 || err.status === 404)) {
+        return 'Confira os dados — informe o serviço e o km e/ou a data limite.';
+      }
+      return 'Não foi possível agendar a manutenção. Tente novamente.';
     }
   }
 

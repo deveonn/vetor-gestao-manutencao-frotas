@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Severidade, StatusManutencao, StatusVeiculo } from '@prisma/client';
+import { situacaoManutencao } from '../manutencoes/situacao';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -52,8 +53,9 @@ export class DashboardService {
     const frotaAtiva = { empresaId, arquivadoEm: null };
 
     const [manutencoesPendentes, pneusSinalizados, motoristas, abastecimentosAnomalos] = await Promise.all([
+      // urgência calculada agora (hodômetro x meta), não a gravada — filtra depois
       this.prisma.manutencao.findMany({
-        where: { empresaId, status: StatusManutencao.PENDENTE, nivel: { in: [Severidade.ATENCAO, Severidade.CRITICO] }, veiculo: frotaAtiva },
+        where: { empresaId, status: StatusManutencao.PENDENTE, veiculo: frotaAtiva },
         include: { veiculo: true },
       }),
       this.prisma.pneuPosicao.findMany({
@@ -71,12 +73,15 @@ export class DashboardService {
 
     const dataCurta = (d: Date) => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
     const alertas = [
-      ...manutencoesPendentes.map((m) => ({
-        nivel: m.nivel!.toLowerCase(),
-        titulo: `${m.item}${m.prazo ? ' — ' + m.prazo : ''}`,
-        veiculo: m.veiculo.placa,
-        acao: 'manutencao',
-      })),
+      ...manutencoesPendentes
+        .map((m) => ({ m, s: situacaoManutencao(m, m.veiculo.hodometro, agora) }))
+        .filter(({ s }) => s.nivel !== Severidade.OK)
+        .map(({ m, s }) => ({
+          nivel: s.nivel.toLowerCase(),
+          titulo: `${m.item} — ${s.prazo}`,
+          veiculo: m.veiculo.placa,
+          acao: 'manutencao',
+        })),
       ...pneusSinalizados.map((p) => ({
         nivel: p.severidade.toLowerCase(),
         titulo: `Pneu ${p.posicao} sinalizado${p.observacao ? ' — ' + p.observacao : ''}`,

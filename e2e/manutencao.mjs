@@ -51,6 +51,52 @@ await suite('Manutenção (Web #8)', async ({ APP, API, send, evalJs, goto, url,
     await concluirNaTela(alvo3.veiculo.placa, alvo3.item);
     check('concluir item já concluído (tela desatualizada) -> 409 tratado, item some', (await texto()).includes('já tinha sido concluída') && !(await lerPendentes()).some((r) => r[1] === alvo3.veiculo.placa && r[2] === alvo3.item));
 
+    // agendar manutenção (item 2) — num veículo de teste, pra não mexer no hodômetro dos veículos do seed
+    const placaAg = 'TST-A' + String(rnd).slice(1);
+    const vAg = await api('/veiculos', 'POST', { placa: placaAg, tipo: 'UTILITARIO' });
+    const agendar = (campos) => evalJs(`(async () => {
+      const d = document.querySelector('.modal-dialog');
+      const set = (el, v) => { el.value = v; el.dispatchEvent(new Event(el.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true })); };
+      const c = ${JSON.stringify(campos)};
+      if (c.placa) set(d.querySelector('select'), c.placa);
+      await new Promise(r => setTimeout(r, 100));
+      const [inItem, inKm, inData] = d.querySelectorAll('input');
+      if (c.item) set(inItem, c.item); if (c.km != null) set(inKm, String(c.km)); if (c.data) set(inData, c.data);
+      await new Promise(r => setTimeout(r, 150));
+      const hint = d.innerText;
+      [...d.querySelectorAll('button')].find(b => b.textContent.trim() === 'Agendar manutenção').click();
+      await new Promise(r => setTimeout(r, 1800));
+      const erro = [...document.querySelectorAll('.modal-dialog [role=alert]')].map(a => a.textContent.trim()).join(' / ');
+      if (document.querySelector('.modal-dialog')) [...document.querySelectorAll('.modal-dialog button')].find(b => b.textContent.trim() === 'Cancelar').click();
+      return { erro, hint };
+    })()`);
+    const abrirAgendar = (seletor) => evalJs(`(async () => { [...document.querySelectorAll('button')].find(b => b.textContent.trim().endsWith(${JSON.stringify(seletor)})).click(); await new Promise(r => setTimeout(r, 400)); })()`);
+    await goto(`${APP}/manutencao`);
+    await abrirAgendar('Agendar manutenção');
+    let ag = await agendar({ placa: placaAg, item: 'E2E sem meta' });
+    check('agendar sem km nem data -> bloqueado no form', ag.erro.includes('km e/ou a data'), ag.erro);
+    await abrirAgendar('Agendar manutenção');
+    ag = await agendar({ placa: placaAg, item: 'E2E por km', km: 2000 });
+    let linhaAg = (await lerPendentes()).find((r) => r[1] === placaAg && r[2] === 'E2E por km');
+    const pAg = (await api('/manutencoes/pendentes')).find((m) => m.item === 'E2E por km');
+    check('agendar por km pela tela -> aparece "em 2.000 km" (meta = hodômetro + 2.000)', !ag.erro && linhaAg?.[4] === 'em 2.000 km' && pAg?.kmAlvo === vAg.hodometro + 2000 && pAg?.nivel === 'OK', JSON.stringify(linhaAg) + ag.erro);
+
+    const em10 = new Date(Date.now() + 10 * 86400000 - 3 * 3600000).toISOString().slice(0, 10);
+    await goto(`${APP}/veiculos/${placaAg}`);
+    await abrirAgendar('+ agendar');
+    const placaPre = await evalJs(`document.querySelector('.modal-dialog select').value`);
+    ag = await agendar({ item: 'E2E por data', data: em10 });
+    const dash = await api('/dashboard/alertas');
+    check('agendar pelo detalhe do veículo já vem com a placa; por data -> "em 10 dias", atenção e alerta no dashboard', placaPre === placaAg && !ag.erro && (await texto()).includes('E2E por data') && dash.some((a) => a.titulo === 'E2E por data — em 10 dias' && a.nivel === 'atencao' && a.veiculo === placaAg), `placa=${placaPre} ${ag.erro}`);
+
+    // a urgência acompanha o hodômetro: abastecimento +1.200 km -> "em 800 km", atenção
+    const forn = (await api('/fornecedores'))[0];
+    await api('/abastecimentos', 'POST', { veiculoId: vAg.id, fornecedorId: forn.id, litros: 40, valor: 250, hodometro: vAg.hodometro + 1200 });
+    await goto(`${APP}/manutencao`);
+    linhaAg = (await lerPendentes()).find((r) => r[1] === placaAg && r[2] === 'E2E por km');
+    const pAg2 = (await api('/manutencoes/pendentes')).find((m) => m.item === 'E2E por km');
+    check('abastecimento sobe o hodômetro -> a mesma manutenção passa a "em 800 km" e atenção sozinha', linhaAg?.[4] === 'em 800 km' && pAg2?.nivel === 'ATENCAO', JSON.stringify(linhaAg));
+
     // pendência de veículo arquivado não aparece
     const veic = await api('/veiculos', 'POST', { placa: 'TST-' + rnd, tipo: 'UTILITARIO' });
     sql(`INSERT INTO manutencoes (id, "empresaId", "veiculoId", item, status, "kmRestante", nivel, prazo) VALUES ('e2e-man-${rnd}', '${veic.empresaId}', '${veic.id}', 'Item E2E ${rnd}', 'PENDENTE', 100, 'CRITICO', 'em 100 km');`);
@@ -62,6 +108,6 @@ await suite('Manutenção (Web #8)', async ({ APP, API, send, evalJs, goto, url,
     check('pendência de veículo arquivado some da lista', antes && !depois, `antes=${antes} depois=${depois}`);
   } finally {
     if (concluidos.length) sql(`UPDATE manutencoes SET status = 'PENDENTE', "concluidoEm" = NULL WHERE id IN (${concluidos.map((id) => `'${id}'`).join(',')});`);
-    sql(`DELETE FROM veiculos WHERE placa LIKE 'TST-%';`);
+    sql(`DELETE FROM abastecimentos WHERE "veiculoId" IN (SELECT id FROM veiculos WHERE placa LIKE 'TST-%'); DELETE FROM veiculos WHERE placa LIKE 'TST-%';`);
   }
 });

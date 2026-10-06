@@ -1,11 +1,11 @@
 import { Injectable, signal } from '@angular/core';
 
-export type ModalId = 'excluir' | 'abast' | 'mot' | 'acesso' | 'veic' | 'buscaVeic' | 'fornecedor' | null;
+export type ModalId = 'excluir' | 'abast' | 'mot' | 'acesso' | 'manut' | 'veic' | 'buscaVeic' | 'fornecedor' | null;
 
 @Injectable({ providedIn: 'root' })
 export class ModalService {
   readonly active = signal<ModalId>(null);
-  /** placa do veículo em foco (excluir veículo) ou id do motorista (acesso ao app) */
+  /** placa do veículo em foco (excluir veículo, agendar manutenção) ou id do motorista (acesso ao app) */
   readonly context = signal<string | null>(null);
   /** callback opcional para quando o modal de busca de veículo seleciona um item */
   onVeiculoEscolhido: ((placa: string) => void) | null = null;

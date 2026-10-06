@@ -254,7 +254,12 @@ model Manutencao {
   veiculo     Veiculo          @relation(fields: [veiculoId], references: [id], onDelete: Cascade)
   item        String
   status      StatusManutencao @default(PENDENTE)
-  /// só fazem sentido enquanto PENDENTE
+  /// Meta da manutenção pendente: fazer até o hodômetro chegar em `kmAlvo` e/ou até `dataLimite` (pelo menos um).
+  /// km restante, urgência e prazo saem daqui na hora da leitura (ver manutencoes/situacao.ts) — acompanham o
+  /// hodômetro, que os abastecimentos atualizam.
+  kmAlvo      Int?
+  dataLimite  DateTime?       @db.Date
+  /// Legado (seed/mock): valores congelados. Só usados se a pendência não tiver meta (kmAlvo/dataLimite).
   kmRestante  Int?
   nivel       Severidade?
   prazo       String?

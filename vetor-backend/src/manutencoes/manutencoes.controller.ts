@@ -5,6 +5,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { JwtPayload } from '../common/types/jwt-payload';
 import { ConcluirManutencaoDto } from './dto/concluir-manutencao.dto';
+import { CreateManutencaoDto } from './dto/create-manutencao.dto';
 import { ManutencoesService } from './manutencoes.service';
 
 @ApiTags('manutencoes')
@@ -13,6 +14,11 @@ import { ManutencoesService } from './manutencoes.service';
 @Controller('manutencoes')
 export class ManutencoesController {
   constructor(private service: ManutencoesService) {}
+
+  @Post()
+  criar(@CurrentUser() user: JwtPayload, @Body() dto: CreateManutencaoDto) {
+    return this.service.criar(user.empresaId!, dto);
+  }
 
   @Get('pendentes')
   pendentes(@CurrentUser() user: JwtPayload) {

@@ -472,7 +472,23 @@ Bloqueiam o uso real:
      404, sem senhaHash nas respostas) e e2e/motoristas.mjs (15 cenários) — inclusive o motorista cadastrado pelo
      painel entrando pela tela de login do app mobile. Regressão: web 88/93 (as 5 do painel = dados velhos do seed
      local), mobile 59/59.
-2. Não dá pra agendar manutenção — só concluir as do seed. Endpoint: não existe POST /manutencoes. Rota + form.
+2. [CONCLUÍDO 06/10/2026] Não dá pra agendar manutenção — só concluir as do seed. Endpoint: não existe
+   POST /manutencoes. Rota + form.
+   - Problema de modelo achado junto: km restante, urgência e prazo eram valores GRAVADOS (seed) — não mudavam
+     com o veículo rodando, e os alertas do dashboard filtravam pela urgência gravada.
+   - Feito: Manutencao ganhou a meta kmAlvo (hodômetro) e/ou dataLimite (migration 20261006222937, que converte as
+     pendentes existentes: kmAlvo = hodômetro atual + km restante; "ou N dias" -> dataLimite). km restante,
+     dias, urgência e prazo são calculados na leitura (src/manutencoes/situacao.ts): vencida = crítico, até
+     1.500 km ou 15 dias = atenção (as faixas do seed). GET /pendentes ordena por urgência; os alertas do dashboard
+     usam o mesmo cálculo. POST /manutencoes { veiculoId, item, kmAlvo?, dataLimite? }. Seed já cria com meta.
+     Campos kmRestante/nivel/prazo ficam só como fallback de pendência sem meta.
+   - Painel: botão "Agendar manutenção" (tela de manutenção) e "+ agendar" no detalhe do veículo (já com a placa);
+     form com veículo, serviço (sugestões do plano do tipo do veículo), "daqui a quantos km" (mostra hodômetro
+     atual e a meta) e data limite. Barra de progresso usa escala de dias quando a manutenção é só por data.
+   - Teste: curl (convertidas calculadas; 400 sem meta; 404; por km/data/ambos/vencida; alerta no dashboard;
+     abastecimento +1.200 km muda "ok, em 2.000 km" pra "atenção, em 800 km"); seed rodado num banco temporário
+     (migrations do zero + mesmos prazos de antes); e2e/manutencao.mjs 12 cenários. Regressão: web 92/97 (as 5 do
+     painel = dados velhos do seed local), mobile 59/59.
 3. Concluir manutenção não registra custo nem oficina (painel manda {}), então custo de manutenção fica zerado nos
    relatórios/dashboard. Endpoint: JÁ aceita custo/oficina — falta só o modal no painel.
 

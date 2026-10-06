@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FleetStore } from '../../core/fleet.store';
+import { ModalService } from '../../core/modal.service';
 import { InstrumentBarComponent } from '../../shared/instrument-bar/instrument-bar.component';
 
 @Component({
@@ -10,6 +11,11 @@ import { InstrumentBarComponent } from '../../shared/instrument-bar/instrument-b
 })
 export class MaintenanceComponent {
   store = inject(FleetStore);
+  private modal = inject(ModalService);
+
+  agendar(): void {
+    this.modal.open('manut');
+  }
 
   concluir(id: string): void {
     this.store.completeMaintenance(id);

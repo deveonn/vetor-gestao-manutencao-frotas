@@ -178,16 +178,27 @@ async function main() {
     });
   }
 
+  // pendentes do mock ("em 850 km ou 12 dias") viram meta: kmAlvo = hodômetro + km restante, dataLimite = hoje + dias.
+  // Km restante, urgência e prazo são calculados na leitura (src/manutencoes/situacao.ts).
   const manutencoesPendentesSeed = [
-    { placa: 'SQP-7D45', item: 'Troca de óleo e filtro', kmRestante: -340, nivel: Severidade.CRITICO, prazo: 'vencida há 340 km' },
-    { placa: 'RKM-2E88', item: 'Troca de óleo e filtro', kmRestante: 850, nivel: Severidade.ATENCAO, prazo: 'em 850 km ou 12 dias' },
-    { placa: 'RYD-5H36', item: 'Correia dentada', kmRestante: 1480, nivel: Severidade.ATENCAO, prazo: 'em 1.480 km' },
-    { placa: 'RTX-4B21', item: 'Troca de óleo e filtro', kmRestante: 1220, nivel: Severidade.ATENCAO, prazo: 'em 1.220 km' },
-    { placa: 'SBF-6A03', item: 'Pastilhas de freio', kmRestante: 2900, nivel: Severidade.OK, prazo: 'em 2.900 km' },
+    { placa: 'SQP-7D45', item: 'Troca de óleo e filtro', kmRestante: -340 },
+    { placa: 'RKM-2E88', item: 'Troca de óleo e filtro', kmRestante: 850, dias: 12 },
+    { placa: 'RYD-5H36', item: 'Correia dentada', kmRestante: 1480 },
+    { placa: 'RTX-4B21', item: 'Troca de óleo e filtro', kmRestante: 1220 },
+    { placa: 'SBF-6A03', item: 'Pastilhas de freio', kmRestante: 2900 },
   ];
   for (const m of manutencoesPendentesSeed) {
+    const hod = veiculosSeed.find((v) => v.placa === m.placa)!.hod;
+    const dataLimite = m.dias != null ? new Date(Date.now() + m.dias * 24 * 60 * 60 * 1000) : null;
     await prisma.manutencao.create({
-      data: { empresaId: empresa.id, veiculoId: veiculos.get(m.placa)!, item: m.item, status: StatusManutencao.PENDENTE, kmRestante: m.kmRestante, nivel: m.nivel, prazo: m.prazo },
+      data: {
+        empresaId: empresa.id,
+        veiculoId: veiculos.get(m.placa)!,
+        item: m.item,
+        status: StatusManutencao.PENDENTE,
+        kmAlvo: hod + m.kmRestante,
+        dataLimite: dataLimite ? new Date(dataLimite.toISOString().slice(0, 10)) : null,
+      },
     });
   }
 

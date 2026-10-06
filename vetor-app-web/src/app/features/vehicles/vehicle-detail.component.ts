@@ -48,6 +48,10 @@ export class VehicleDetailComponent {
     this.modal.open('abast');
   }
 
+  agendarManutencao(): void {
+    this.modal.open('manut', this.placa());
+  }
+
   concluir(id: string): void {
     this.store.completeMaintenance(id);
   }
