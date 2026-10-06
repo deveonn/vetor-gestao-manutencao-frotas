@@ -83,8 +83,9 @@ Tela: `features/drivers` (web). Fonte: `drivers`/`addDriver` (`core/fleet.store.
 
 | Endpoint | Papel |
 |---|---|
-| `GET /motoristas` ✅ — nome, categoria/validade da CNH, veículo vinculado (`veiculoAtual`, sem arquivados), vínculo desde (`vinculos` abertos) | `[admin]` |
-| `POST /motoristas` ✅ — body: `{ nome, categoriaCnh, validadeCnh }` | `[admin]` |
+| `GET /motoristas` ✅ — nome, categoria/validade da CNH, veículo vinculado (`veiculoAtual`, sem arquivados), vínculo desde (`vinculos` abertos), login do app (`usuario.usuario`, null = sem acesso — nunca a senha) | `[admin]` |
+| `POST /motoristas` ✅ — body: `{ nome, categoriaCnh, validadeCnh?, usuario?, senha? }`. `usuario` + `senha` (juntos) criam o acesso ao app na mesma transação; usuário já usado -> 409 | `[admin]` |
+| `PUT /motoristas/:id/acesso` ✅ — body: `{ usuario?, senha }`. Sem acesso ainda: cria (usuario obrigatório). Com acesso: redefine a senha (e o usuario, se vier) e revoga os refresh tokens dele — o celular pede login de novo | `[admin]` |
 
 Sem exclusão/edição no mock — a UI atual (`drivers.component.html`) só cadastra e lista.
 

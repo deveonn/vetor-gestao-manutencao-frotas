@@ -85,6 +85,8 @@ interface MotoristaApi {
   validadeCnh: string | null;
   veiculoAtual?: { id: string; placa: string }[];
   vinculos?: { veiculoId: string; de: string }[];
+  /** acesso ao app (só o login — a API nunca devolve a senha) */
+  usuario?: { usuario: string | null } | null;
 }
 
 const DIA_MS = 24 * 60 * 60 * 1000;
@@ -102,7 +104,19 @@ function paraMotorista(m: MotoristaApi): Driver {
     dias: validade ? Math.ceil((validade.getTime() - Date.now()) / DIA_MS) : null,
     v: veiculo?.placa ?? null,
     desde: vinculo ? mesAno(vinculo.de) : null,
+    login: m.usuario?.usuario ?? null,
   };
+}
+
+/** Erro do cadastro/acesso do motorista: as regras de usuário e senha a API já explica em português. */
+function erroAcesso(err: unknown, padrao: string): string {
+  if (err instanceof HttpErrorResponse && err.status === 409) return 'Esse usuário já está em uso — escolha outro.';
+  if (err instanceof HttpErrorResponse && err.status === 400) {
+    const msgs = ([] as string[]).concat(err.error?.message ?? []);
+    const doAcesso = msgs.filter((m) => /usu[aá]rio|senha/i.test(m));
+    return doAcesso.length ? doAcesso.join(' ') : 'Dados inválidos — confira o nome e a validade da CNH.';
+  }
+  return padrao;
 }
 
 /** Abastecimento como vem de GET/POST /abastecimentos. kmL/anomalo são calculados no backend. */
@@ -601,22 +615,41 @@ export class FleetStore {
     this.drivers.set(lista.map(paraMotorista));
   }
 
-  /** `val` é a data do input (yyyy-mm-dd) ou vazio. Retorna a mensagem de erro, ou null se cadastrou. */
-  async addDriver(payload: { nome: string; cat: string; val: string }): Promise<string | null> {
+  /**
+   * `val` é a data do input (yyyy-mm-dd) ou vazio; `usuario`/`senha` criam o acesso ao app junto.
+   * Retorna a mensagem de erro, ou null se cadastrou.
+   */
+  async addDriver(payload: { nome: string; cat: string; val: string; usuario: string; senha: string }): Promise<string | null> {
     const nome = payload.nome.trim();
     try {
       const criado = await firstValueFrom(this.http.post<MotoristaApi>(`${environment.apiUrl}/motoristas`, {
         nome, categoriaCnh: payload.cat || 'B', ...(payload.val ? { validadeCnh: payload.val } : {}),
+        usuario: payload.usuario.trim(), senha: payload.senha,
       }));
       this.drivers.update((list) => [...list, paraMotorista(criado)].sort((a, b) => a.nome.localeCompare(b.nome)));
       this.toast.show(`Motorista cadastrado — ${nome}`);
       this.refreshDashboard();
       return null;
     } catch (err) {
-      if (err instanceof HttpErrorResponse && err.status === 400) {
-        return 'Dados inválidos — confira o nome e a validade da CNH.';
-      }
-      return 'Não foi possível cadastrar o motorista. Tente novamente.';
+      return erroAcesso(err, 'Não foi possível cadastrar o motorista. Tente novamente.');
+    }
+  }
+
+  /**
+   * Cria o acesso ao app (motorista sem login — `usuario` obrigatório) ou redefine a senha. Redefinir encerra a
+   * sessão do celular dele. Retorna a mensagem de erro, ou null se salvou.
+   */
+  async setDriverAccess(id: string, usuario: string | null, senha: string): Promise<string | null> {
+    const tinhaAcesso = !!this.drivers().find((m) => m.id === id)?.login;
+    try {
+      const atualizado = await firstValueFrom(this.http.put<MotoristaApi>(`${environment.apiUrl}/motoristas/${id}/acesso`, {
+        ...(usuario ? { usuario: usuario.trim() } : {}), senha,
+      }));
+      this.drivers.update((list) => list.map((m) => (m.id === id ? { ...m, login: atualizado.usuario?.usuario ?? null } : m)));
+      this.toast.show(tinhaAcesso ? `Senha redefinida — ${atualizado.nome}` : `Acesso ao app criado — ${atualizado.nome}`);
+      return null;
+    } catch (err) {
+      return erroAcesso(err, 'Não foi possível salvar o acesso. Tente novamente.');
     }
   }
 

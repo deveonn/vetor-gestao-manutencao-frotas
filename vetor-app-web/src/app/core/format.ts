@@ -60,3 +60,16 @@ export function intervalo(de: Date, ate: Date): string {
     ? `${de.getDate()}–${ate.getDate()} ${MESES[ate.getMonth()]}`
     : `${de.getDate()} ${MESES[de.getMonth()]}–${ate.getDate()} ${MESES[ate.getMonth()]}`;
 }
+
+/** Sugestão de login do app a partir do nome — mesma regra do seed: "João Prates Silva" -> "joao.prates". */
+export function sugerirUsuario(nome: string): string {
+  return nome
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .join('.');
+}

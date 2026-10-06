@@ -449,3 +449,46 @@ Teste no Android [CONCLUÍDO 05/10/2026]
      reabrir sem internet usa o cache; vistoria offline aparece junto; ao voltar a rede é enviada, mostrada uma vez
      e sai da fila; item com o mesmo clienteId da fila e do servidor = uma linha; sair apaga o cache e outro
      motorista vê só o dele. Mobile 51/51; web 81/86 (as mesmas 5 do painel por dados velhos do seed, ver #5).
+
+===========================================
+MOCK E DADOS SÓ DO SEED (varredura de 06/10/2026, com a API já em produção)
+===========================================
+O app mobile está limpo (tudo da API). No painel sobrou pouco mock explícito; o problema maior são dados que
+parecem reais mas só o seed cria — nem a API nem o painel têm como cadastrar/atualizar. Ordem: 1-3, depois 4-6,
+depois 7-12.
+
+Bloqueiam o uso real:
+1. [CONCLUÍDO 06/10/2026] Motorista cadastrado no painel não entra no app — POST /motoristas só cria o cadastro
+   (nome, CNH, validade), sem usuário/senha; só os 7 do seed têm login. Endpoint: não existe. Criar o acesso junto
+   (usuário + senha) e poder criar/redefinir depois.
+   - Feito: POST /motoristas aceita usuario + senha (juntos) e cria o Usuario MOTORISTA na mesma transação; novo
+     PUT /motoristas/:id/acesso cria o acesso de quem não tem ou redefine a senha (revoga os refresh tokens -> o
+     celular pede login de novo). Usuário: 3-40 caracteres [a-z0-9._-], único no sistema (409 "já está em uso");
+     senha 6-72. GET /motoristas devolve só o login (usuario.usuario), nunca o hash. Painel: form de cadastro com
+     "usuário" (sugerido pelo nome, como no seed: "Márcia de Souza" -> marcia.de) e "senha inicial"; coluna "app" na
+     lista com @usuário ou "sem acesso" + botão "redefinir senha"/"criar acesso" (modal novo).
+   - Teste: curl (8 casos: cadastro com acesso + login no app, só usuário -> 400, duplicado -> 409, formato/senha ->
+     400 em português, acesso criado depois, redefinir revoga a sessão e invalida a senha antiga, outra empresa ->
+     404, sem senhaHash nas respostas) e e2e/motoristas.mjs (15 cenários) — inclusive o motorista cadastrado pelo
+     painel entrando pela tela de login do app mobile. Regressão: web 88/93 (as 5 do painel = dados velhos do seed
+     local), mobile 59/59.
+2. Não dá pra agendar manutenção — só concluir as do seed. Endpoint: não existe POST /manutencoes. Rota + form.
+3. Concluir manutenção não registra custo nem oficina (painel manda {}), então custo de manutenção fica zerado nos
+   relatórios/dashboard. Endpoint: JÁ aceita custo/oficina — falta só o modal no painel.
+
+Campos do veículo que nunca mudam (eram pra vir do rastreamento — fora do escopo, backend #4):
+4. status (rodando/manutenção/parado) — veículo novo fica "parado" pra sempre. Calcular (manutenção crítica aberta
+   -> manutenção; abastecimento/vistoria recente -> rodando) ou PATCH manual.
+5. km até a troca de óleo — sempre 10.000. Calcular pelo hodômetro (atualizado pelos abastecimentos) x última troca.
+6. km hoje e nível de combustível — sempre 0; sem rastreamento não há fonte. Esconder até existir a integração.
+
+Mock na tela:
+7. Pneus: "foto da vistoria" é um quadro cinza — a foto está no R2/banco mas /pneus/sinalizados não devolve a URL.
+8. Relatórios: exportar CSV/PDF só mostra toast. Gerar no navegador (CSV direto, PDF pela impressão).
+9. Relatórios: "gerar" tem atraso artificial de 650 ms (os dados já são reais).
+10. Login do painel: "7 veículos rodando · 1.284 km hoje · sincronizado 09:12" é texto fixo.
+11. Dashboard: "meta 9,0 km/L" fixa no código — campo de meta na empresa (PATCH /empresa já existe).
+12. Conta -> Rastreamento: título "Hapolo" (nome interno) e "testar" que não chama nada (backend #4).
+
+Faltam no cadastro (não é mock): editar/excluir motorista, editar veículo; recadastrar placa de veículo arquivado
+(409, decisão pendente); foto do veículo no app (não existe campo).

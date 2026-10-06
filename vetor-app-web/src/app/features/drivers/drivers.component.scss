@@ -5,7 +5,7 @@
   animation: fadeup .3s ease both;
 }
 
-$cols: 1fr 60px 130px 130px 110px 110px;
+$cols: 1fr 60px 110px 130px 110px 110px 150px;
 
 .col-head {
   display: grid;
@@ -25,4 +25,20 @@ $cols: 1fr 60px 130px 130px 110px 110px;
   padding: 11px 0;
   border-top: 1px solid var(--line);
   font-size: 13px;
+}
+
+.acesso {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--brand);
+  font-size: 12px;
+  cursor: pointer;
 }

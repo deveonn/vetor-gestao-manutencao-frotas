@@ -117,6 +117,8 @@ export interface Driver {
   dias: number | null;
   v: string | null;
   desde: string | null;
+  /** usuário do app do motorista; null = ainda sem acesso ao app */
+  login: string | null;
 }
 
 export interface ReportVehicleCost {
