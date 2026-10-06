@@ -65,6 +65,9 @@ BACKEND (vetor-backend)
      vetor-midia (corrigido no render.yaml; com Blueprint, mudar só no painel seria desfeito na próxima sincronização).
      Achado no mesmo teste: midiaId vazio na vistoria dava 500 (FK) -> DTO rejeita vazio (400) e o filtro do Prisma
      traduz P2003 em 400.
+     2º problema: upload ok mas a URL pública dava 404 — o S3_ENDPOINT tinha o bucket no fim (o painel do R2 mostra
+     a "S3 API URL" assim) e o SDK gravava em <bucket>/<bucket>/midia/... O StorageService agora usa só protocolo +
+     host do S3_ENDPOINT e avisa no log; reproduzido e conferido no moto.
    - Falta: CI (rodar build + e2e a cada push).
 
 8. [CONCLUÍDO 05/10/2026] Preparação pra produção (avaliação de 05/10/2026)

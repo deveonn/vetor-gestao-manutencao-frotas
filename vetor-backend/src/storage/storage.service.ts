@@ -1,5 +1,5 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { mkdir, writeFile } from 'fs/promises';
@@ -15,6 +15,7 @@ const EXTENSAO: Record<string, string> = { 'image/jpeg': '.jpg', 'image/png': '.
  */
 @Injectable()
 export class StorageService {
+  private readonly logger = new Logger(StorageService.name);
   private readonly driver: 'local' | 's3';
   private readonly s3?: S3Client;
 
@@ -23,7 +24,7 @@ export class StorageService {
     if (this.driver === 's3') {
       this.s3 = new S3Client({
         region: this.config.get<string>('S3_REGION', 'auto'),
-        endpoint: this.config.get<string>('S3_ENDPOINT') || undefined,
+        endpoint: this.endpointBase(),
         // MinIO e afins só funcionam com path-style (http://host/bucket/chave)
         forcePathStyle: this.config.get<string>('S3_FORCE_PATH_STYLE') === 'true',
         credentials: {
@@ -32,6 +33,21 @@ export class StorageService {
         },
       });
     }
+  }
+
+  /**
+   * Só protocolo + host. O painel do R2 mostra a "S3 API URL" já com o bucket no fim
+   * (https://<id>.r2.cloudflarestorage.com/<bucket>); com esse caminho o SDK grava tudo em <bucket>/<bucket>/midia/...
+   * e a URL pública (que lê <bucket>/midia/...) dá 404.
+   */
+  private endpointBase(): string | undefined {
+    const bruto = this.config.get<string>('S3_ENDPOINT');
+    if (!bruto) return undefined;
+    const base = new URL(bruto).origin;
+    if (base !== bruto.replace(/\/+$/, '')) {
+      this.logger.warn(`S3_ENDPOINT tinha um caminho (${bruto}) — usando só ${base}. Corrija a variável.`);
+    }
+    return base;
   }
 
   get servidoPelaApi(): boolean {
