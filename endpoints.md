@@ -114,7 +114,7 @@ Tela: `features/maintenance` (web). Fonte: `maintenanceItems`/`completeMaintenan
 |---|---|
 | `POST /manutencoes` ✅ — agenda: `{ veiculoId, item, kmAlvo?, dataLimite? }` (pelo menos um dos dois; vence no que chegar antes). 400 sem meta, 404 veículo de outra empresa/arquivado | `[admin]` |
 | `GET /manutencoes/pendentes` ✅ — item, veículo, meta (`kmAlvo`/`dataLimite`) e, **calculados na leitura**, `kmRestante` (meta − hodômetro atual), `diasRestantes`, `nivel` (vencida = CRITICO; ≤ 1.500 km ou ≤ 15 dias = ATENCAO) e `prazo` ("em 850 km ou 12 dias", "vencida há 340 km"). Ordem: crítico, atenção, ok | `[admin]` |
-| `POST /manutencoes/:id/concluir` ✅ — marca como feita (`completeMaintenance`); body opcional `{ custo, oficina }`; 409 se já concluída | `[admin]` |
+| `POST /manutencoes/:id/concluir` ✅ — marca como feita (`completeMaintenance`); body `{ custo, oficina? }` (o painel exige o custo; 0 = garantia; até 2 casas decimais) — o custo entra no dashboard e nos relatórios; 409 se já concluída | `[admin]` |
 | `GET /manutencoes/historico` ✅ — data, veículo, item, custo, oficina | `[admin]` |
 | `GET /manutencoes/planos` ✅ — plano preventivo por tipo de veículo (item × km × tempo). Provavelmente configuração semi-estática por empresa, não por veículo individual | `[admin]` |
 

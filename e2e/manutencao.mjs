@@ -5,10 +5,21 @@ await suite('Manutenção (Web #8)', async ({ APP, API, send, evalJs, goto, url,
 
   const lerPendentes = () => evalJs(`[...document.querySelectorAll('.upcoming-row')].map(r => [...r.children].map(c => c.textContent.trim()))`);
   const hist = () => evalJs(`[...document.querySelectorAll('.hist-row')].map(r => [...r.children].map(c => c.textContent.trim()))`);
-  const concluirNaTela = (placa, item) => evalJs(`(async () => {
+  /** "Marcar como feita" abre o modal de custo/oficina (item 3); devolve o erro mostrado no modal, se houver */
+  const concluirNaTela = (placa, item, custo = '420,00', oficina = 'Oficina E2E') => evalJs(`(async () => {
     const row = [...document.querySelectorAll('.upcoming-row, .card div')].find(r => r.querySelector('.btn-conclude') && (location.pathname.startsWith('/veiculos/') || r.textContent.includes(${JSON.stringify(placa)})) && r.textContent.includes(${JSON.stringify(item)}));
     row.querySelector('.btn-conclude').click();
-    await new Promise(r => setTimeout(r, 1300));
+    await new Promise(r => setTimeout(r, 400));
+    const d = document.querySelector('.modal-dialog');
+    const set = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+    const [inCusto, inOficina] = d.querySelectorAll('input');
+    set(inCusto, ${JSON.stringify(custo)}); set(inOficina, ${JSON.stringify(oficina)});
+    await new Promise(r => setTimeout(r, 100));
+    [...d.querySelectorAll('button')].find(b => b.textContent.trim() === 'Concluir manutenção').click();
+    await new Promise(r => setTimeout(r, 1500));
+    const erro = [...document.querySelectorAll('.modal-dialog [role=alert]')].map(a => a.textContent.trim()).join(' / ');
+    if (document.querySelector('.modal-dialog')) [...document.querySelectorAll('.modal-dialog button')].find(b => b.textContent.trim() === 'Cancelar').click();
+    return erro;
   })()`);
   const concluidos = [];
   const rnd = Math.floor(1000 + Math.random() * 9000);
@@ -27,20 +38,28 @@ await suite('Manutenção (Web #8)', async ({ APP, API, send, evalJs, goto, url,
     const t = await texto();
     check('planos por tipo com modelos da frota e itens da API', t.includes('Utilitário — Fiorino, Saveiro') && t.includes('Van de carga — Sprinter 415, Master') && pl0.every((p) => p.itens.every((it) => t.includes(it.item) && t.includes(`${it.km} · ${it.tempo}`))));
 
-    // concluir pela tela de manutenção
+    // concluir pela tela de manutenção — com custo e oficina (item 3)
     const alvo = p0[p0.length - 1];
-    await concluirNaTela(alvo.veiculo.placa, alvo.item);
+    let erroC = await concluirNaTela(alvo.veiculo.placa, alvo.item, '', '');
+    check('concluir sem custo -> bloqueado no modal, nada concluído', erroC.includes('Informe o custo') && (await api('/manutencoes/pendentes')).some((m) => m.id === alvo.id), erroC);
+    const resumo0 = await api('/dashboard/resumo');
+    const manSem0 = (await api('/relatorios/categorias-semana')).find((c) => c.categoria === 'Manutenção').atual;
+    erroC = await concluirNaTela(alvo.veiculo.placa, alvo.item, '1.180,50', 'Oficina Mecvel E2E');
     concluidos.push(alvo.id);
     ps = await lerPendentes(); hs = await hist();
     const p1 = await api('/manutencoes/pendentes'); const h1 = await api('/manutencoes/historico');
-    check('concluir -> sai das pendentes, entra no topo do histórico com custo/oficina "—"', !ps.some((r) => r[1] === alvo.veiculo.placa && r[2] === alvo.item) && hs[0][1] === alvo.veiculo.placa && hs[0][2] === alvo.item && hs[0][3] === '—' && hs[0][4] === '—' && !p1.some((m) => m.id === alvo.id) && h1[0].id === alvo.id);
+    check('concluir com custo "1.180,50" e oficina -> topo do histórico com R$ 1.181 e a oficina; API com 1180.5', !erroC && !ps.some((r) => r[1] === alvo.veiculo.placa && r[2] === alvo.item) && hs[0][1] === alvo.veiculo.placa && hs[0][2] === alvo.item && hs[0][3] === 'Oficina Mecvel E2E' && hs[0][4] === 'R$ 1.181' && !p1.some((m) => m.id === alvo.id) && h1[0].id === alvo.id && h1[0].custo === 1180.5, JSON.stringify(hs[0]) + erroC);
+    const resumo1 = await api('/dashboard/resumo');
+    const manSem1 = (await api('/relatorios/categorias-semana')).find((c) => c.categoria === 'Manutenção').atual;
+    check('o custo entra no custo da semana do dashboard e na categoria Manutenção do relatório', Math.round((resumo1.custoSemana - resumo0.custoSemana) * 100) === 118050 && Math.round((manSem1 - manSem0) * 100) === 118050, `dashboard +${(resumo1.custoSemana - resumo0.custoSemana).toFixed(2)} relatório +${(manSem1 - manSem0).toFixed(2)}`);
 
     // concluir pelo detalhe do veículo
     const alvo2 = p1[0];
     await goto(`${APP}/veiculos/${alvo2.veiculo.placa}`);
-    await concluirNaTela(alvo2.veiculo.placa, alvo2.item);
+    erroC = await concluirNaTela(alvo2.veiculo.placa, alvo2.item, '0', '');
     concluidos.push(alvo2.id);
-    check('concluir pelo detalhe do veículo reflete na API', !(await api('/manutencoes/pendentes')).some((m) => m.id === alvo2.id));
+    const h2 = (await api('/manutencoes/historico')).find((m) => m.id === alvo2.id);
+    check('concluir pelo detalhe do veículo (custo 0, garantia) reflete na API', !erroC && !(await api('/manutencoes/pendentes')).some((m) => m.id === alvo2.id) && h2?.custo === 0, erroC);
     await goto(`${APP}/manutencao`);
     check('...e some da tela de manutenção após reload', !(await lerPendentes()).some((r) => r[1] === alvo2.veiculo.placa && r[2] === alvo2.item));
 
@@ -107,7 +126,7 @@ await suite('Manutenção (Web #8)', async ({ APP, API, send, evalJs, goto, url,
     const depois = (await lerPendentes()).some((r) => r[2] === `Item E2E ${rnd}`);
     check('pendência de veículo arquivado some da lista', antes && !depois, `antes=${antes} depois=${depois}`);
   } finally {
-    if (concluidos.length) sql(`UPDATE manutencoes SET status = 'PENDENTE', "concluidoEm" = NULL WHERE id IN (${concluidos.map((id) => `'${id}'`).join(',')});`);
+    if (concluidos.length) sql(`UPDATE manutencoes SET status = 'PENDENTE', "concluidoEm" = NULL, custo = NULL, oficina = NULL WHERE id IN (${concluidos.map((id) => `'${id}'`).join(',')});`);
     sql(`DELETE FROM abastecimentos WHERE "veiculoId" IN (SELECT id FROM veiculos WHERE placa LIKE 'TST-%'); DELETE FROM veiculos WHERE placa LIKE 'TST-%';`);
   }
 });

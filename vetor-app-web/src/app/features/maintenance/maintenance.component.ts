@@ -18,6 +18,6 @@ export class MaintenanceComponent {
   }
 
   concluir(id: string): void {
-    this.store.completeMaintenance(id);
+    this.modal.open('concluir', id);
   }
 }

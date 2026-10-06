@@ -53,6 +53,6 @@ export class VehicleDetailComponent {
   }
 
   concluir(id: string): void {
-    this.store.completeMaintenance(id);
+    this.modal.open('concluir', id);
   }
 }

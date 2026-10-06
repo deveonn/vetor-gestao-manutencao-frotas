@@ -743,23 +743,31 @@ export class FleetStore {
     this.plans.set(planos.map((p) => ({ tipo: TIPO_API[p.tipoVeiculo], itens: p.itens })));
   }
 
-  async completeMaintenance(id: string): Promise<void> {
+  /**
+   * Conclui com o custo (entra no custo de manutenção do dashboard e dos relatórios) e a oficina.
+   * Retorna a mensagem de erro pro modal, ou null se concluiu (ou se já estava concluída em outra sessão).
+   */
+  async completeMaintenance(id: string, dados: { custo: number; oficina: string }): Promise<string | null> {
     const item = this.maintenanceItems().find((m) => m.id === id);
-    if (!item) return;
+    if (!item) return null;
     try {
-      const concluida = await firstValueFrom(this.http.post<ManutencaoApi>(`${environment.apiUrl}/manutencoes/${id}/concluir`, {}));
+      const concluida = await firstValueFrom(this.http.post<ManutencaoApi>(`${environment.apiUrl}/manutencoes/${id}/concluir`, {
+        custo: dados.custo, ...(dados.oficina.trim() ? { oficina: dados.oficina.trim() } : {}),
+      }));
       this.maintenanceItems.update((list) => list.filter((m) => m.id !== id));
       this.maintenanceHistory.update((list) => [paraHistorico(concluida), ...list]);
-      this.toast.show(`Manutenção marcada como feita — ${item.item} · ${item.v}`);
+      this.toast.show(`Manutenção concluída — ${item.item} · ${item.v} · ${money(dados.custo)}`);
       this.refreshDashboard();
+      return null;
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.status === 409) {
         // já concluída em outra aba/sessão — sincroniza com o servidor
         this.maintenanceItems.update((list) => list.filter((m) => m.id !== id));
         this.toast.show(`Esta manutenção já tinha sido concluída — ${item.item} · ${item.v}`, 'info');
-        return;
+        return null;
       }
-      this.toast.show(`Não foi possível concluir a manutenção — ${item.item} · ${item.v}`, 'info');
+      if (err instanceof HttpErrorResponse && err.status === 400) return 'Confira o custo — use um valor em reais, com até 2 casas decimais.';
+      return 'Não foi possível concluir a manutenção. Tente novamente.';
     }
   }
 

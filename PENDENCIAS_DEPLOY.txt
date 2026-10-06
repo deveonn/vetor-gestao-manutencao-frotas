@@ -489,8 +489,15 @@ Bloqueiam o uso real:
      abastecimento +1.200 km muda "ok, em 2.000 km" pra "atenção, em 800 km"); seed rodado num banco temporário
      (migrations do zero + mesmos prazos de antes); e2e/manutencao.mjs 12 cenários. Regressão: web 92/97 (as 5 do
      painel = dados velhos do seed local), mobile 59/59.
-3. Concluir manutenção não registra custo nem oficina (painel manda {}), então custo de manutenção fica zerado nos
-   relatórios/dashboard. Endpoint: JÁ aceita custo/oficina — falta só o modal no painel.
+3. [CONCLUÍDO 06/10/2026] Concluir manutenção não registra custo nem oficina (painel manda {}), então custo de
+   manutenção fica zerado nos relatórios/dashboard. Endpoint: JÁ aceita custo/oficina — falta só o modal no painel.
+   - Feito: "Marcar como feita" (tela de manutenção e detalhe do veículo) abre o modal "Concluir manutenção": custo
+     obrigatório (aceita "1.180,50", "1180.5", "420"; 0 = garantia) e oficina opcional, com sugestões das oficinas
+     já usadas no histórico. API: custo aceita 0 (antes @IsPositive recusava) e até 2 casas; oficina até 120.
+   - Teste: e2e/manutencao.mjs 14 cenários — sem custo bloqueado; "1.180,50" -> API 1180.5, histórico R$ 1.181 com
+     a oficina; o custo soma exatamente +1.180,50 no custo da semana do dashboard e na categoria Manutenção do
+     relatório; custo 0 pelo detalhe do veículo; 409 de tela desatualizada continua tratado. Regressão web 94/99
+     (as 5 do painel = dados velhos do seed local).
 
 Campos do veículo que nunca mudam (eram pra vir do rastreamento — fora do escopo, backend #4):
 4. status (rodando/manutenção/parado) — veículo novo fica "parado" pra sempre. Calcular (manutenção crítica aberta
