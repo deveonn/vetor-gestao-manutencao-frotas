@@ -45,3 +45,21 @@ services:
         sync: false
       - key: S3_PUBLIC_URL
         sync: false # URL pública do bucket, ex.: https://pub-xxxx.r2.dev (sem / no fim)
+
+  # Painel do gestor (Angular) como site estático — grátis e não dorme. O build de produção usa
+  # vetor-app-web/src/environments/environment.prod.ts (URL da API acima). O domínio dele precisa estar no
+  # CORS_ORIGIN da API.
+  - type: web
+    name: vetor-painel
+    runtime: static
+    rootDir: vetor-app-web # só rebuilda quando o painel muda
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist/app/browser
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+    # SPA: qualquer rota (/painel, /veiculos, ...) devolve o index.html e o Angular resolve no navegador
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

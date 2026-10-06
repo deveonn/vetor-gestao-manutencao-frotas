@@ -68,6 +68,12 @@ BACKEND (vetor-backend)
      2º problema: upload ok mas a URL pública dava 404 — o S3_ENDPOINT tinha o bucket no fim (o painel do R2 mostra
      a "S3 API URL" assim) e o SDK gravava em <bucket>/<bucket>/midia/... O StorageService agora usa só protocolo +
      host do S3_ENDPOINT e avisa no log; reproduzido e conferido no moto.
+   - Apps apontando pra produção (06/10/2026): environment.prod.ts do web e do mobile = API no Render. APK de
+     produção instalado no celular (dados do app zerados, sem adb reverse) — alcança a API por HTTPS. Painel em
+     produção conferido no Chrome headless: login do gestor, 21 chamadas ao Render, nenhuma pra localhost.
+   - Painel publicado como site estático no Render (render.yaml, serviço vetor-painel: rootDir vetor-app-web,
+     npm ci && npm run build, dist/app/browser, rewrite /* -> /index.html pro roteamento do Angular). Build
+     conferido antes numa cópia limpa do repositório. O domínio dele entra no CORS_ORIGIN da API.
    - Falta: CI (rodar build + e2e a cada push).
 
 8. [CONCLUÍDO 05/10/2026] Preparação pra produção (avaliação de 05/10/2026)
