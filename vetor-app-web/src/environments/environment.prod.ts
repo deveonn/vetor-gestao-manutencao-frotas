@@ -1,5 +1,5 @@
-// TODO: trocar pela URL real da API quando houver ambiente de produção (ver PENDENCIAS_DEPLOY.txt, backend #7).
+// API de produção (Render) — ver "Produção" em vetor-backend/README-backend.md. Em dev vale environment.ts (localhost).
 export const environment = {
   production: true,
-  apiUrl: '/api',
+  apiUrl: 'https://vetor-api-wviu.onrender.com/api',
 };
