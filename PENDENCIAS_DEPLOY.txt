@@ -57,7 +57,15 @@ BACKEND (vetor-backend)
    - render.yaml (raiz): blueprint do Render — Docker, free, virginia, health check /api/health, buildFilter só em
      vetor-backend/**, JWT_SECRET gerado pelo Render, segredos (banco, R2) com sync: false. Conferido: o ambiente
      que ele define passa na validação de produção da API.
-   - Falta: CI (rodar build + e2e a cada push) e a hospedagem em si — ver "Preparação pra produção" abaixo.
+   - NO AR 06/10/2026: https://vetor-api-wviu.onrender.com (Render, Blueprint) + Neon (us-east-1) + R2 (bucket
+     vetor-files-2). Banco de produção populado com o seed demo (rodado daqui com o DATABASE_URL do Neon).
+     Smoke test em produção: /health com banco ok, Swagger, CORS (https://localhost e :4200 liberados, origem
+     qualquer bloqueada), login admin/motorista, dashboard com dados da semana, veículo do dia.
+     1º upload pro R2 deu 500 — NoSuchBucket: o bucket foi recriado como vetor-files-2 e o render.yaml dizia
+     vetor-midia (corrigido no render.yaml; com Blueprint, mudar só no painel seria desfeito na próxima sincronização).
+     Achado no mesmo teste: midiaId vazio na vistoria dava 500 (FK) -> DTO rejeita vazio (400) e o filtro do Prisma
+     traduz P2003 em 400.
+   - Falta: CI (rodar build + e2e a cada push).
 
 8. [CONCLUÍDO 05/10/2026] Preparação pra produção (avaliação de 05/10/2026)
    - Decidido: API no Render (plano grátis — dorme sem uso, 1ª requisição ~30-50 s), Postgres no Neon (tem PostGIS),

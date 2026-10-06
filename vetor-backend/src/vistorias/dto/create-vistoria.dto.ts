@@ -27,6 +27,7 @@ class VistoriaItemDto {
   @ApiPropertyOptional({ description: 'id retornado por POST /midia' })
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   midiaId?: string;
 }
 

@@ -5,7 +5,8 @@ import { Response } from 'express';
 
 /**
  * Traduz os erros conhecidos do Prisma em respostas HTTP em vez de 500:
- * P2002 (violação de unique, ex.: CNPJ/placa duplicados) -> 409, P2025 (registro não encontrado) -> 404.
+ * P2002 (violação de unique, ex.: CNPJ/placa duplicados) -> 409, P2003 (referência a registro que não existe, ex.:
+ * midiaId inválido) -> 400, P2025 (registro não encontrado) -> 404.
  */
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaExceptionFilter extends BaseExceptionFilter {
@@ -18,6 +19,14 @@ export class PrismaExceptionFilter extends BaseExceptionFilter {
         statusCode: HttpStatus.CONFLICT,
         message: campos ? `Já existe um registro com este valor de ${campos}.` : 'Registro duplicado.',
         error: 'Conflict',
+      });
+      return;
+    }
+    if (exception.code === 'P2003') {
+      res.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'Referência a um registro que não existe.',
+        error: 'Bad Request',
       });
       return;
     }
