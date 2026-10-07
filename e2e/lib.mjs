@@ -113,7 +113,8 @@ export async function suite(nome, corpo) {
   let erro = null;
   try {
     let alvos;
-    for (let i = 0; i < 30 && !alvos; i++) {
+    // até ~30 s: na 1ª abertura numa máquina de CI o Chrome demora bem mais que localmente
+    for (let i = 0; i < 100 && !alvos; i++) {
       try { alvos = await (await fetch(`http://127.0.0.1:${PORTA_CDP}/json`)).json(); } catch { await sleep(300); }
     }
     if (!alvos) throw new Error(`Chrome não respondeu na porta ${PORTA_CDP} (CHROME_BIN=${CHROME})`);

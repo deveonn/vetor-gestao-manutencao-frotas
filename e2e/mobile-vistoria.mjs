@@ -91,14 +91,18 @@ await suite('Mobile: envio da vistoria (Mobile #5)', async ({ APP, API, APP_MOBI
     check('sem internet: vistoria fica "queued" e sair da conta é bloqueado com aviso', naFila && bloqueado);
     await bloquearApi(false);
     await reabrir('/tabs', 4000);
+    // espera o envio (no CI a máquina é mais lenta); depois de enviada ela pode já ter saído da fila — o histórico do
+    // servidor confirmou e a fila limpa (Mobile #6) — então vale "sent" na fila OU fora dela e no servidor
+    for (let i = 0; i < 20 && !(await vistoriasApi()).some((v) => v.clienteId === offline.id); i++) await sleep(1000);
     lista = await vistoriasApi();
-    check('API volta: a vistoria offline é enviada (uma vez só)', (await fila()).find((i) => i.id === offline.id)?.status === 'sent' && lista.filter((v) => v.clienteId === offline.id).length === 1);
+    const naFilaDepois = (await fila()).find((i) => i.id === offline.id);
+    check('API volta: a vistoria offline é enviada (uma vez só)', (!naFilaDepois || naFilaDepois.status === 'sent') && lista.filter((v) => v.clienteId === offline.id).length === 1, `fila=${naFilaDepois?.status ?? 'fora (confirmada)'} servidor=${lista.filter((v) => v.clienteId === offline.id).length}`);
 
     // 3) idempotência: reenviar o mesmo clienteId devolve a mesma vistoria
     const motTok = await tokenDe(MOTORISTA.login);
     const corpo = { clienteId: offline.id, veiculoId: offline.vehicleId, itens: [{ stepId: 'freios', label: 'freios', avaliacao: 'OK' }] };
     const re = await post('/vistorias', corpo, motTok);
-    const serverIdOffline = (await fila()).find((i) => i.id === offline.id).serverId;
+    const serverIdOffline = lista.find((v) => v.clienteId === offline.id)?.id;
     check('reenvio com o mesmo clienteId -> mesma vistoria, nada duplicado', re.status === 201 && re.json.id === serverIdOffline && (await vistoriasApi()).length === lista.length, `status=${re.status} ${re.json?.id} vs ${serverIdOffline}`);
 
     // 4) midiaId que não existe -> 400 na API e "error" na fila
