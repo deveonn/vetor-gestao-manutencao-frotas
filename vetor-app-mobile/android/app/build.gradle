@@ -1,5 +1,12 @@
 apply plugin: 'com.android.application'
 
+// Chave de release FORA do repositório: ~/.android/vetor-release.properties (storeFile, storePassword, keyAlias,
+// keyPassword) — ou outro arquivo via -PvetorSigning=/caminho. Sem ele, o release sai sem assinatura (debug segue igual).
+// Atualizações do app precisam da MESMA chave: guarde a .jks e o .properties com backup.
+def assinatura = new Properties()
+def arquivoAssinatura = file(project.findProperty('vetorSigning') ?: "${System.getProperty('user.home')}/.android/vetor-release.properties")
+if (arquivoAssinatura.exists()) arquivoAssinatura.withInputStream { assinatura.load(it) }
+
 android {
     namespace = "com.vetor.vistoria"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -8,7 +15,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +23,19 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (assinatura['storeFile']) {
+                storeFile file(assinatura['storeFile'])
+                storePassword assinatura['storePassword']
+                keyAlias assinatura['keyAlias']
+                keyPassword assinatura['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
+            if (assinatura['storeFile']) signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

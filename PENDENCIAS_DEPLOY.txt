@@ -454,6 +454,13 @@ Teste no Android [CONCLUÍDO 05/10/2026]
      saiu da fila local quando o histórico do servidor a confirmou.
    - Migração com dados reais: o aparelho tinha uma instalação de julho (mock) com fotos em base64 na fila — no
      primeiro boot elas foram descartadas (vistorias já "enviadas") e a fila ficou leve.
+   - APK de release pro cliente (07/10/2026): vetor-motorista-1.0.0.apk (versionName 1.0.0, não-debug, assinado v2,
+     aponta só pra API do Render). Chave de release FORA do repo: ~/.android/vetor-release.jks + vetor-release.properties
+     (senha gerada; android/app/build.gradle lê esse arquivo — ou -PvetorSigning=/caminho). FAZER BACKUP dos dois:
+     atualizações do app precisam da mesma chave (inclusive pra publicar na Google Play depois). SHA-256 do certificado:
+     B8:69:8D:F8:F4:C0:54:F3:10:36:5E:6E:CB:95:2A:A3:80:B5:F1:2D:5E:23:69:F7:17:7A:0E:7B:18:C6:DA:24.
+     Gerar de novo: ng build -> npx cap sync android -> (android/) JAVA_HOME=~/.local/jdks/jdk-21... ./gradlew assembleRelease.
+     O APK de debug do celular do usuário tem outra assinatura: pra instalar o release nele é preciso desinstalar antes.
    - Fica pra produção: URL real da API (environment.ts, backend #7) — com HTTPS, o network_security_config não
      precisa mudar. Os 2 itens antigos da fila do mock (sem dono) aparecem no histórico de quem estiver logado;
      somem ao reinstalar — não vale código pra isso.
