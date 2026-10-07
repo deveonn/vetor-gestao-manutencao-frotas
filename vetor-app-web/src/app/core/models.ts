@@ -12,8 +12,8 @@ export interface Vehicle {
   hod: number;
   comb: number;
   kml: number;
-  /** km até a próxima troca de óleo; negativo = vencida há |troca| km */
-  troca: number;
+  /** km até a próxima troca de óleo (calculado pela troca de óleo pendente); negativo = vencida; null = nenhuma agendada */
+  troca: number | null;
   status: VehicleStatus;
   pneus: Severity[];
   kmHoje: number;

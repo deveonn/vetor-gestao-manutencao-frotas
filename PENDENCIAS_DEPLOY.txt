@@ -500,10 +500,29 @@ Bloqueiam o uso real:
      (as 5 do painel = dados velhos do seed local).
 
 Campos do veículo que nunca mudam (eram pra vir do rastreamento — fora do escopo, backend #4):
-4. status (rodando/manutenção/parado) — veículo novo fica "parado" pra sempre. Calcular (manutenção crítica aberta
-   -> manutenção; abastecimento/vistoria recente -> rodando) ou PATCH manual.
-5. km até a troca de óleo — sempre 10.000. Calcular pelo hodômetro (atualizado pelos abastecimentos) x última troca.
-6. km hoje e nível de combustível — sempre 0; sem rastreamento não há fonte. Esconder até existir a integração.
+4. [CONCLUÍDO 07/10/2026] status (rodando/manutenção/parado) — veículo novo fica "parado" pra sempre. Calcular
+   (manutenção crítica aberta -> manutenção; abastecimento/vistoria recente -> rodando) ou PATCH manual.
+   - Feito (híbrido, ajustado na implementação): "em manutenção" = marcado na oficina pelo gestor (manutenção
+     vencida não tira o veículo de circulação — SQP-7D45 roda com a troca atrasada); "rodando" = tem motorista
+     vinculado; "parado" = sem. src/veiculos/estado.ts, usado por GET /veiculos, /veiculos/:id e pelo dashboard.
+     PATCH /veiculos/:id/oficina { naOficina } + botão "Enviar pra oficina"/"Saiu da oficina" no detalhe.
+     Reproduz exatamente o seed (6 rodando, 1 manutenção, 1 parado).
+5. [CONCLUÍDO 07/10/2026] km até a troca de óleo — sempre 10.000. Calcular pelo hodômetro (atualizado pelos
+   abastecimentos) x última troca.
+   - Feito: kmParaTroca = a troca de óleo pendente (item com "óleo") que vence antes, pelo cálculo do item 2; null =
+     nenhuma agendada -> painel mostra "sem troca agendada". O seed cria a troca de óleo de cada veículo com a meta
+     no "km até a troca" que o mock tinha (antes só 3 dos 8 tinham uma manutenção por trás).
+6. [CONCLUÍDO 07/10/2026] km hoje e nível de combustível — sempre 0; sem rastreamento não há fonte. Esconder até
+   existir a integração.
+   - Feito: lista de veículos troca a coluna "combustível" por "hodômetro"; detalhe sem o card de combustível e sem
+     "km rodados hoje" (hodômetro "atualizado a cada abastecimento"); dashboard sem "km hoje". Colunas continuam no
+     banco pra quando houver rastreamento.
+   - Teste (4-6): curl (status calculado = seed, oficina tira/devolve dos disponíveis, 400 com corpo inválido, app
+     segue achando o veículo do dia); seed em banco temporário (8 veículos com troca = valores do mock);
+     e2e/veiculos.mjs 17 cenários (8 novos: coluna hodômetro, status = API, veículo novo parado/sem troca, vincular
+     -> rodando, troca agendada aparece, sem combustível/km hoje, oficina entra/sai e mexe nos disponíveis).
+     Regressão: web 101/106 (as 5 do painel = dados velhos do seed local), mobile 59/59. Banco local e de produção
+     ganharam as 5 trocas de óleo que faltavam (SQL idempotente, mesma regra do seed).
 
 Mock na tela:
 7. Pneus: "foto da vistoria" é um quadro cinza — a foto está no R2/banco mas /pneus/sinalizados não devolve a URL.

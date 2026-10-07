@@ -10,19 +10,19 @@
         </span>
       </div>
     </div>
-    <button (click)="abrirExcluir()" class="btn btn-ghost" style="color:var(--crit)">Excluir veículo</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button (click)="alternarOficina(v.status !== 'manutencao')" class="btn btn-ghost">
+        <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;margin-right:6px">{{ v.status === 'manutencao' ? 'check_circle' : 'build' }}</span>{{ v.status === 'manutencao' ? 'Saiu da oficina' : 'Enviar pra oficina' }}
+      </button>
+      <button (click)="abrirExcluir()" class="btn btn-ghost" style="color:var(--crit)">Excluir veículo</button>
+    </div>
   </div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px">
     <div class="card" style="padding:16px 18px;display:flex;flex-direction:column;gap:10px">
-      <span class="mono" style="font-size:11px;color:var(--dim);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:15px">route</span>hodômetro · rastreamento</span>
+      <span class="mono" style="font-size:11px;color:var(--dim);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:15px">route</span>hodômetro</span>
       <span style="font-family:'Saira',sans-serif;font-weight:600;font-size:26px" class="tabular">{{ v.hodF }} <span style="font-size:14px;color:var(--mut)">km</span></span>
-      <span class="mono" style="font-size:11px;color:var(--dim)">{{ v.kmHojeF }} km rodados hoje</span>
-    </div>
-    <div class="card" style="padding:16px 18px;display:flex;flex-direction:column;gap:10px">
-      <span class="mono" style="font-size:11px;color:var(--dim);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:15px">local_gas_station</span>combustível</span>
-      <span style="font-family:'Saira',sans-serif;font-weight:600;font-size:26px" class="tabular">{{ v.comb }}%</span>
-      <vetor-instrument-bar [pct]="v.comb" [color]="v.combCor" [height]="9" />
+      <span class="mono" style="font-size:11px;color:var(--dim)">atualizado a cada abastecimento</span>
     </div>
     <div class="card" style="padding:16px 18px;display:flex;flex-direction:column;gap:10px">
       <span class="mono" style="font-size:11px;color:var(--dim);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:15px">oil_barrel</span>próxima troca de óleo</span>

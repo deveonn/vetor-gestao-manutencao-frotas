@@ -69,6 +69,8 @@ Telas: `features/vehicles` (web), `pages/confirm-vehicle` (mobile). Fonte: `vehi
 | Endpoint | Papel |
 |---|---|
 | `GET /veiculos` ✅ — lista da frota (placa, modelo, tipo, motorista vinculado, hodômetro/combustível/km-L vindos da telemetria, status, pneus por posição, km rodados hoje) | `[admin]` |
+| Status e troca de óleo em `GET /veiculos` e `GET /veiculos/:id` são **calculados**: `status` = MANUTENCAO se marcado na oficina, senão RODANDO com motorista vinculado / PARADO sem; `kmParaTroca` = km até a troca de óleo pendente que vence antes (null = nenhuma). `kmHoje`/`nivelCombustivel` só existiriam com rastreamento — o painel não mostra | — |
+| `PATCH /veiculos/:id/oficina` ✅ — `{ naOficina: boolean }`: marca/desmarca como na oficina (status "em manutenção", fora dos disponíveis) | `[admin]` |
 | `POST /veiculos` ✅ — body: `{ placa, modelo, tipo }` | `[admin]` |
 | `GET /veiculos/:id` ✅ — usado pela rota `/veiculos/:placa` | `[admin]` |
 | `DELETE /veiculos/:id` ✅ — remove da frota; a cópia do modal (`delete-vehicle-modal.component.ts:12`) promete arquivamento de 90 dias antes de exclusão definitiva — se isso for levado a sério, é soft-delete, não `DELETE` físico | `[admin]` |

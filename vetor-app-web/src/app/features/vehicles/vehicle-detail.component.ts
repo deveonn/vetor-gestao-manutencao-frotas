@@ -48,6 +48,10 @@ export class VehicleDetailComponent {
     this.modal.open('abast');
   }
 
+  alternarOficina(naOficina: boolean): void {
+    this.store.setVehicleWorkshop(this.placa(), naOficina);
+  }
+
   agendarManutencao(): void {
     this.modal.open('manut', this.placa());
   }

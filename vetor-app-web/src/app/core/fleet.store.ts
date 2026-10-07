@@ -71,7 +71,8 @@ interface VeiculoApi {
   hodometro: number;
   nivelCombustivel: number;
   kmL: number | null;
-  kmParaTroca: number;
+  /** calculado pela API (troca de óleo pendente x hodômetro); null = nenhuma agendada */
+  kmParaTroca: number | null;
   kmHoje: number;
   motoristaAtual: { nome: string } | null;
   pneus: { posicao: string; severidade: 'OK' | 'ATENCAO' | 'CRITICO' }[];
@@ -350,7 +351,7 @@ export class FleetStore {
   // --- veículos enriquecidos ---
   readonly vehiclesEnriched = computed(() => this.vehicles().map((v) => {
     const combCor = v.comb < 25 ? SEVERITY_COLOR.critico : v.comb < 40 ? SEVERITY_COLOR.atencao : 'var(--brand)';
-    const trocaCor = v.troca < 0 ? SEVERITY_COLOR.critico : v.troca < 1500 ? SEVERITY_COLOR.atencao : SEVERITY_COLOR.ok;
+    const trocaCor = v.troca == null ? 'var(--dim)' : v.troca < 0 ? SEVERITY_COLOR.critico : v.troca < 1500 ? SEVERITY_COLOR.atencao : SEVERITY_COLOR.ok;
     return {
       ...v,
       hodF: fmt(v.hod),
@@ -359,16 +360,16 @@ export class FleetStore {
       stCor: v.status === 'rodando' ? SEVERITY_COLOR.ok : v.status === 'manutencao' ? SEVERITY_COLOR.atencao : 'var(--dim)',
       stLabel: v.status === 'rodando' ? 'rodando' : v.status === 'manutencao' ? 'em manutenção' : 'parado',
       combCor,
-      trocaTxt: v.troca < 0 ? `vencida há ${fmt(-v.troca)} km` : `em ${fmt(v.troca)} km`,
+      trocaTxt: v.troca == null ? 'sem troca agendada' : v.troca < 0 ? `vencida há ${fmt(-v.troca)} km` : `em ${fmt(v.troca)} km`,
       trocaCor,
-      trocaPct: clamp(4, 100, Math.round(100 - (v.troca / 10000) * 100)),
+      trocaPct: v.troca == null ? 0 : clamp(4, 100, Math.round(100 - (v.troca / 10000) * 100)),
       pneuDots: v.pneus.map((p, i) => ({
         pos: TIRE_POS_CODE[i], nome: TIRE_POS_NAME[i], cor: severityColor(p),
         lbl: p === 'ok' ? 'ok' : p === 'atencao' ? 'atenção' : 'sinalizado',
       })),
       motTxt: v.mot || 'sem motorista',
       tipoIcon: tipoIcone(v.tipo),
-      temAlerta: v.troca < 1500 || v.pneus.some((p) => p !== 'ok') || v.kml < 7,
+      temAlerta: (v.troca != null && v.troca < 1500) || v.pneus.some((p) => p !== 'ok') || v.kml < 7,
     };
   }));
 
@@ -795,6 +796,20 @@ export class FleetStore {
         return 'Confira os dados — informe o serviço e o km e/ou a data limite.';
       }
       return 'Não foi possível agendar a manutenção. Tente novamente.';
+    }
+  }
+
+  /** Na oficina = "em manutenção" (sai dos disponíveis); ao sair volta a rodando/parado pelo motorista vinculado. */
+  async setVehicleWorkshop(placa: string, naOficina: boolean): Promise<void> {
+    const veiculo = this.vehicles().find((v) => v.placa === placa);
+    if (!veiculo) return;
+    try {
+      const atualizado = await firstValueFrom(this.http.patch<VeiculoApi>(`${environment.apiUrl}/veiculos/${veiculo.id}/oficina`, { naOficina }));
+      this.vehicles.update((list) => list.map((v) => (v.placa === placa ? paraVeiculo(atualizado) : v)));
+      this.toast.show(naOficina ? `${placa} marcado como na oficina` : `${placa} saiu da oficina`);
+      this.refreshDashboard();
+    } catch {
+      this.toast.show(`Não foi possível atualizar o status de ${placa}`, 'info');
     }
   }
 

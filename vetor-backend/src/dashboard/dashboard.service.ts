@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Severidade, StatusManutencao, StatusVeiculo } from '@prisma/client';
 import { situacaoManutencao } from '../manutencoes/situacao';
+import { statusVeiculo } from '../veiculos/estado';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -21,7 +22,8 @@ export class DashboardService {
       this.alertas(empresaId),
     ]);
 
-    const disponiveis = veiculos.filter((v) => v.status !== StatusVeiculo.MANUTENCAO).length;
+    const status = veiculos.map(statusVeiculo);
+    const disponiveis = status.filter((s) => s !== StatusVeiculo.MANUTENCAO).length;
     const kmLValidos = veiculos.map((v) => v.kmL).filter((v): v is number => v != null);
     const kmLMedio = kmLValidos.length ? kmLValidos.reduce((a, b) => a + b, 0) / kmLValidos.length : 0;
 
@@ -32,9 +34,9 @@ export class DashboardService {
       totalVeiculos: veiculos.length,
       totalAlertas: alertas.length,
       porStatus: {
-        rodando: veiculos.filter((v) => v.status === StatusVeiculo.RODANDO).length,
-        manutencao: veiculos.filter((v) => v.status === StatusVeiculo.MANUTENCAO).length,
-        parado: veiculos.filter((v) => v.status === StatusVeiculo.PARADO).length,
+        rodando: status.filter((s) => s === StatusVeiculo.RODANDO).length,
+        manutencao: status.filter((s) => s === StatusVeiculo.MANUTENCAO).length,
+        parado: status.filter((s) => s === StatusVeiculo.PARADO).length,
       },
     };
   }

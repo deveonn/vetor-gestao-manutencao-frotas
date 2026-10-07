@@ -64,13 +64,13 @@ enum AvaliacaoVistoria {
 // --- multi-tenancy / auth --------------------------------------------------
 
 model Empresa {
-  id            String   @id @default(cuid())
-  nome          String
-  cnpj          String   @unique
-  contatoNome   String
-  contatoEmail  String
-  contatoFone   String
-  criadoEm      DateTime @default(now())
+  id           String   @id @default(cuid())
+  nome         String
+  cnpj         String   @unique
+  contatoNome  String
+  contatoEmail String
+  contatoFone  String
+  criadoEm     DateTime @default(now())
 
   usuarios               Usuario[]
   veiculos               Veiculo[]
@@ -85,13 +85,13 @@ model Empresa {
 /// Login único pros três papéis. root/admin entram por e-mail, motorista por usuário —
 /// replica a regra do mock (AuthService.login no web, SessionService.login no mobile).
 model Usuario {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   papel     Papel
-  email     String?   @unique
-  usuario   String?   @unique
+  email     String?  @unique
+  usuario   String?  @unique
   senhaHash String
-  ativo     Boolean   @default(true)
-  criadoEm  DateTime  @default(now())
+  ativo     Boolean  @default(true)
+  criadoEm  DateTime @default(now())
 
   empresaId String?
   empresa   Empresa? @relation(fields: [empresaId], references: [id], onDelete: Cascade)
@@ -129,6 +129,8 @@ model Veiculo {
   placa            String
   modelo           String
   tipo             TipoVeiculo
+  /// Só MANUTENCAO é lido ("na oficina", marcado pelo gestor). Rodando/parado é calculado pelo motorista vinculado
+  /// (src/veiculos/estado.ts) — RODANDO/PARADO gravados aqui são legado do seed.
   status           StatusVeiculo @default(PARADO)
   /// hodômetro e nível de combustível vêm da integração de rastreamento — não são
   /// digitados diretamente, mas ficam cacheados aqui pra não depender do serviço externo
@@ -136,7 +138,9 @@ model Veiculo {
   hodometro        Int           @default(0)
   nivelCombustivel Int           @default(0)
   kmL              Float?
+  /// Legado: a API calcula o km até a troca pela manutenção de óleo pendente (src/veiculos/estado.ts).
   kmParaTroca      Int           @default(10000)
+  /// km hoje e nivelCombustivel só existiriam com a integração de rastreamento (fora do escopo) — o painel não mostra.
   kmHoje           Int           @default(0)
   arquivadoEm      DateTime?
   criadoEm         DateTime      @default(now())
@@ -180,7 +184,7 @@ model Motorista {
   criadoEm     DateTime  @default(now())
 
   usuario      Usuario?
-  veiculoAtual Veiculo[] @relation("VeiculoAtual")
+  veiculoAtual Veiculo[]                 @relation("VeiculoAtual")
   vinculos     VinculoMotoristaVeiculo[]
   vistorias    Vistoria[]
 
@@ -258,7 +262,7 @@ model Manutencao {
   /// km restante, urgência e prazo saem daqui na hora da leitura (ver manutencoes/situacao.ts) — acompanham o
   /// hodômetro, que os abastecimentos atualizam.
   kmAlvo      Int?
-  dataLimite  DateTime?       @db.Date
+  dataLimite  DateTime?        @db.Date
   /// Legado (seed/mock): valores congelados. Só usados se a pendência não tiver meta (kmAlvo/dataLimite).
   kmRestante  Int?
   nivel       Severidade?

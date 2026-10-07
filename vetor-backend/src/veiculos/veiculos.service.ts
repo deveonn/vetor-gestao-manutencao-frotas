@@ -1,8 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { TipoVeiculo } from '@prisma/client';
+import { StatusManutencao, StatusVeiculo, TipoVeiculo } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateVeiculoDto } from './dto/create-veiculo.dto';
 import { CreateVinculoDto } from './dto/create-vinculo.dto';
+import { comEstado } from './estado';
+
+/** Pendências entram pra calcular o km até a troca de óleo (ver estado.ts). */
+const PENDENTES = { manutencoes: { where: { status: StatusManutencao.PENDENTE } } } as const;
 
 /**
  * Posições de pneu por tipo — mesmas labels do app mobile (VEHICLE_TIRE_POSITIONS), que é quem manda as vistorias.
@@ -22,12 +26,13 @@ const POSICOES_PNEU: Record<TipoVeiculo, string[]> = {
 export class VeiculosService {
   constructor(private prisma: PrismaService) {}
 
-  listar(empresaId: string) {
-    return this.prisma.veiculo.findMany({
+  async listar(empresaId: string) {
+    const veiculos = await this.prisma.veiculo.findMany({
       where: { empresaId, arquivadoEm: null },
-      include: { pneus: true, motoristaAtual: true },
+      include: { pneus: true, motoristaAtual: true, ...PENDENTES },
       orderBy: { placa: 'asc' },
     });
+    return veiculos.map(comEstado);
   }
 
   async criar(empresaId: string, dto: CreateVeiculoDto) {
@@ -43,10 +48,20 @@ export class VeiculosService {
   async buscar(empresaId: string, id: string) {
     const veiculo = await this.prisma.veiculo.findFirst({
       where: { id, empresaId },
-      include: { pneus: true, motoristaAtual: true },
+      include: { pneus: true, motoristaAtual: true, ...PENDENTES },
     });
     if (!veiculo) throw new NotFoundException('Veículo não encontrado.');
-    return veiculo;
+    return comEstado(veiculo);
+  }
+
+  /** Na oficina = status "em manutenção" (fora da conta de disponíveis); ao sair, volta ao calculado. */
+  async definirOficina(empresaId: string, id: string, naOficina: boolean) {
+    await this.buscar(empresaId, id);
+    await this.prisma.veiculo.update({
+      where: { id },
+      data: { status: naOficina ? StatusVeiculo.MANUTENCAO : StatusVeiculo.PARADO },
+    });
+    return this.buscar(empresaId, id);
   }
 
   /** Soft-delete — a cópia do mock promete arquivamento de 90 dias antes da exclusão definitiva. */

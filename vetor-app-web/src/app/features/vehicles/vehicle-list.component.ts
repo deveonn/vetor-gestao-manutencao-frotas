@@ -3,7 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FleetStore } from '../../core/fleet.store';
 import { ModalService } from '../../core/modal.service';
-import { InstrumentBarComponent } from '../../shared/instrument-bar/instrument-bar.component';
 
 type Filtro = 'todos' | 'alerta' | 'rodando' | 'parado' | 'manutencao';
 
@@ -17,7 +16,7 @@ const CHIPS: { id: Filtro; label: string }[] = [
 
 @Component({
   selector: 'vetor-vehicle-list',
-  imports: [FormsModule, InstrumentBarComponent],
+  imports: [FormsModule],
   templateUrl: './vehicle-list.component.html',
   styleUrl: './vehicle-list.component.scss',
 })

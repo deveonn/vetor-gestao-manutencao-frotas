@@ -65,4 +65,36 @@ await suite('Veículos (Web #5)', async ({ APP, API, send, evalJs, goto, url, to
   await clicar('Tentar novamente', 1500);
   t = await texto();
   check('"Tentar novamente" recarrega e volta ao normal', !t.includes('Não foi possível carregar') && t.includes('Dados da frota recarregados'));
+
+  // itens 4-6: status calculado, troca de óleo pela manutenção pendente, sem km hoje/combustível
+  const rnd2 = Math.floor(1000 + Math.random() * 9000);
+  const placaEst = 'TST-E' + String(rnd2).slice(1);
+  const vEst = await api('/veiculos', 'POST', { placa: placaEst, tipo: 'UTILITARIO', modelo: 'Teste Estado' });
+  const veics = await api('/veiculos');
+  await goto(`${APP}/veiculos`);
+  t = await texto();
+  const linhaEst = await evalJs(`[...document.querySelectorAll('.row')].find(r => r.textContent.includes(${JSON.stringify(placaEst)}))?.innerText ?? ''`);
+  check('lista: coluna "hodômetro" no lugar de "combustível"; status de cada veículo = API (calculado)', t.includes('hodômetro') && !t.includes('combustível') && veics.every((v) => v.status === (v.status === 'MANUTENCAO' ? 'MANUTENCAO' : v.motoristaAtualId ? 'RODANDO' : 'PARADO')), '');
+  check('veículo novo sem motorista: "parado" e "sem troca agendada"', vEst.status === 'PARADO' && vEst.kmParaTroca === null && linhaEst.includes('sem troca agendada'), linhaEst.replace(/\n/g, ' | '));
+
+  const mot = (await api('/motoristas')).find((m) => !m.veiculoAtual.length) ?? (await api('/motoristas'))[0];
+  await api(`/veiculos/${vEst.id}/vinculos`, 'POST', { motoristaId: mot.id });
+  await api('/manutencoes', 'POST', { veiculoId: vEst.id, item: 'E2E Troca de óleo', kmAlvo: vEst.hodometro + 3000 });
+  await goto(`${APP}/veiculos/${placaEst}`);
+  await sleep(500);
+  t = await texto();
+  check('vincular motorista -> "rodando"; agendar troca de óleo -> "em 3.000 km" no detalhe', t.includes('rodando') && t.includes('em 3.000 km') && (await api(`/veiculos/${vEst.id}`)).kmParaTroca === 3000, '');
+  check('detalhe sem combustível nem "km rodados hoje" (não há rastreamento)', !t.includes('combustível') && !t.includes('rodados hoje') && t.includes('atualizado a cada abastecimento'));
+
+  const disp0 = (await api('/dashboard/resumo')).veiculosDisponiveis;
+  await clicar('Enviar pra oficina', 1500);
+  t = await texto();
+  const disp1 = (await api('/dashboard/resumo')).veiculosDisponiveis;
+  check('"Enviar pra oficina" -> "em manutenção" e sai dos disponíveis do dashboard', t.includes('em manutenção') && (await api(`/veiculos/${vEst.id}`)).status === 'MANUTENCAO' && disp1 === disp0 - 1, `${disp0} -> ${disp1}`);
+  await clicar('Saiu da oficina', 1500);
+  t = await texto();
+  check('"Saiu da oficina" -> volta a "rodando" (tem motorista) e aos disponíveis', t.includes('rodando') && (await api(`/veiculos/${vEst.id}`)).status === 'RODANDO' && (await api('/dashboard/resumo')).veiculosDisponiveis === disp0);
+  await goto(`${APP}/painel`);
+  check('dashboard sem "km hoje"', !(await texto()).includes('km hoje'));
+  sql(`DELETE FROM vinculos_motorista_veiculo WHERE "veiculoId" = '${vEst.id}'; UPDATE veiculos SET "motoristaAtualId" = NULL WHERE id = '${vEst.id}';`);
 });

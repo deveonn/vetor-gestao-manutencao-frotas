@@ -202,6 +202,21 @@ async function main() {
     });
   }
 
+  // o mock tinha "km até a troca de óleo" fixo em todo veículo; agora esse número sai da troca de óleo pendente
+  // (src/veiculos/estado.ts) — quem não tinha uma na lista acima ganha a sua, com a meta no mesmo km
+  for (const v of veiculosSeed) {
+    if (manutencoesPendentesSeed.some((m) => m.placa === v.placa && /óleo/i.test(m.item))) continue;
+    await prisma.manutencao.create({
+      data: {
+        empresaId: empresa.id,
+        veiculoId: veiculos.get(v.placa)!,
+        item: 'Troca de óleo e filtro',
+        status: StatusManutencao.PENDENTE,
+        kmAlvo: v.hod + v.troca,
+      },
+    });
+  }
+
   const manutencoesHistoricoSeed = [
     { placa: 'SBF-6A03', item: 'Corretiva — pastilhas e discos de freio', custo: 1180, oficina: 'Oficina Mecvel', diasAtras: 20 },
     { placa: 'RTX-4B21', item: 'Troca de óleo e filtro', custo: 420, oficina: 'Lubrax Express', diasAtras: 34 },
