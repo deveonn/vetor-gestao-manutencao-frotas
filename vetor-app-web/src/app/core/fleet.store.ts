@@ -111,6 +111,7 @@ function paraMotorista(m: MotoristaApi): Driver {
     v: veiculo?.placa ?? null,
     desde: vinculo ? mesAno(vinculo.de) : null,
     login: m.usuario?.usuario ?? null,
+    validade: m.validadeCnh ? m.validadeCnh.slice(0, 10) : null,
   };
 }
 
@@ -657,6 +658,40 @@ export class FleetStore {
     }
   }
 
+  /** Edita nome e CNH (`val` vazio apaga a validade). Retorna a mensagem de erro, ou null se salvou. */
+  async updateDriver(id: string, payload: { nome: string; cat: string; val: string }): Promise<string | null> {
+    try {
+      const atualizado = await firstValueFrom(this.http.patch<MotoristaApi>(`${environment.apiUrl}/motoristas/${id}`, {
+        nome: payload.nome.trim(), categoriaCnh: payload.cat, validadeCnh: payload.val || null,
+      }));
+      // PATCH não traz veículo/vínculo — mantém os do item atual
+      this.drivers.update((list) => list
+        .map((m) => (m.id === id ? { ...paraMotorista(atualizado), v: m.v, desde: m.desde } : m))
+        .sort((a, b) => a.nome.localeCompare(b.nome)));
+      this.toast.show(`Motorista atualizado — ${atualizado.nome}`);
+      this.refreshDashboard(); // validade da CNH mexe nos alertas
+      return null;
+    } catch (err) {
+      return erroAcesso(err, 'Não foi possível salvar o motorista. Tente novamente.');
+    }
+  }
+
+  /** "Excluir" arquiva na API (vistorias ficam no histórico). Retorna a mensagem de erro, ou null se excluiu. */
+  async archiveDriver(id: string): Promise<string | null> {
+    const m = this.drivers().find((d) => d.id === id);
+    try {
+      await firstValueFrom(this.http.delete(`${environment.apiUrl}/motoristas/${id}`));
+      this.drivers.update((list) => list.filter((d) => d.id !== id));
+      this.toast.show(`Motorista excluído — ${m?.nome ?? ''}`);
+      // o veículo dele fica sem motorista (status "parado")
+      await this.loadVehicles(true);
+      this.refreshDashboard();
+      return null;
+    } catch {
+      return 'Não foi possível excluir o motorista. Tente novamente.';
+    }
+  }
+
   /**
    * Cria o acesso ao app (motorista sem login — `usuario` obrigatório) ou redefine a senha. Redefinir encerra a
    * sessão do celular dele. Retorna a mensagem de erro, ou null se salvou.
@@ -706,6 +741,28 @@ export class FleetStore {
         return 'Dados inválidos — confira a placa e o tipo.';
       }
       return 'Não foi possível adicionar o veículo. Tente novamente.';
+    }
+  }
+
+  /** Edita placa, modelo e tipo. Retorna o erro (ou null) e a placa final — o detalhe navega se ela mudou. */
+  async updateVehicle(placaAtual: string, payload: { placa: string; modelo: string; tipo: Vehicle['tipo'] }): Promise<{ erro: string | null; placa: string }> {
+    const veiculo = this.vehicles().find((v) => v.placa === placaAtual);
+    const placa = payload.placa.trim().toUpperCase();
+    if (!veiculo) return { erro: 'Veículo não encontrado.', placa: placaAtual };
+    try {
+      const atualizado = await firstValueFrom(this.http.patch<VeiculoApi>(`${environment.apiUrl}/veiculos/${veiculo.id}`, {
+        placa, modelo: payload.modelo.trim(), tipo: TIPO_API_INV[payload.tipo],
+      }));
+      this.vehicles.update((list) => list.map((v) => (v.id === veiculo.id ? paraVeiculo(atualizado) : v)).sort((a, b) => a.placa.localeCompare(b.placa)));
+      this.toast.show(`Veículo atualizado — ${atualizado.placa}`);
+      // placa aparece em abastecimentos, manutenções, alertas…
+      if (placa !== placaAtual) await Promise.all([this.loadFuel().catch(() => {}), this.loadMaintenance().catch(() => {}), this.loadTiresAndInspections().catch(() => {})]);
+      this.refreshDashboard();
+      return { erro: null, placa: atualizado.placa };
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && err.status === 409) return { erro: `A placa ${placa} já está cadastrada (ativa ou arquivada).`, placa: placaAtual };
+      if (err instanceof HttpErrorResponse && err.status === 400) return { erro: 'Dados inválidos — confira a placa e o tipo.', placa: placaAtual };
+      return { erro: 'Não foi possível salvar o veículo. Tente novamente.', placa: placaAtual };
     }
   }
 

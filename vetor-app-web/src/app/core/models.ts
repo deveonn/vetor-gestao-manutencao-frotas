@@ -126,6 +126,8 @@ export interface Driver {
   desde: string | null;
   /** usuário do app do motorista; null = ainda sem acesso ao app */
   login: string | null;
+  /** validade da CNH em yyyy-mm-dd (pro form de edição); null = sem validade */
+  validade: string | null;
 }
 
 export interface ReportVehicleCost {

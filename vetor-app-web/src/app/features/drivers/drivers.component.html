@@ -13,7 +13,7 @@
   </div>
   @for (m of store.driversEnriched(); track m.id) {
     <div class="row">
-      <span style="font-weight:500">{{ m.nome }}</span>
+      <button class="nome-btn" (click)="abrirEditar(m.id)" title="Editar ou excluir">{{ m.nome }}</button>
       <span class="mono" style="font-size:12.5px">{{ m.cat }}</span>
       <span class="mono tabular" style="font-size:12.5px;color:var(--mut)">{{ m.val }}</span>
       <span style="justify-self:start;border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:600" [style.background]="m.cnhBg" [style.color]="m.cnhCor">{{ m.cnhTxt }}</span>

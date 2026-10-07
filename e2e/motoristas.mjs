@@ -129,4 +129,39 @@ await suite('Motoristas (Web #6)', async ({ APP, APP_MOBILE, API, send, evalJs, 
   erro = await acesso('criar acesso', semAcesso, `e2e.${rnd}.antigo`, 'senha456');
   const lDepois = await linha(semAcesso);
   check('motorista sem acesso aparece como "sem acesso" e ganha login pelo "criar acesso"', lAntigo?.[6].includes('sem acesso') && !erro && lDepois?.[6].includes(`@e2e.${rnd}.antigo`) && (await loginApi(`e2e.${rnd}.antigo`, 'senha456')) === 201, `${lAntigo?.[6]} -> ${lDepois?.[6]} ${erro}`);
+
+  // editar e excluir (arquivar) motorista
+  const abrirEdicao = (nome) => evalJs(`(async () => { [...document.querySelectorAll('.card .row .nome-btn')].find(b => b.textContent.trim() === ${JSON.stringify(nome)}).click(); await new Promise(r => setTimeout(r, 400)); })()`);
+  await goto(`${APP}/motoristas`);
+  await abrirEdicao(nomes.ok);
+  const semAcessoNoForm = await evalJs(`!document.querySelector('.modal-dialog').innerText.includes('Senha inicial')`);
+  await evalJs(`(async () => {
+    const d = document.querySelector('.modal-dialog');
+    const set = (el, v) => { el.value = v; el.dispatchEvent(new Event(el.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true })); };
+    set(d.querySelector('input'), ${JSON.stringify(nomes.ok + ' Editado')}); set(d.querySelector('select'), 'E'); set(d.querySelector('input[type=date]'), '');
+    await new Promise(r => setTimeout(r, 100));
+    [...d.querySelectorAll('button')].find(b => b.textContent.trim() === 'Salvar alterações').click();
+    await new Promise(r => setTimeout(r, 1500));
+  })()`);
+  const editado = (await api('/motoristas')).find((m) => m.nome === nomes.ok + ' Editado');
+  const lEd = await linha(nomes.ok + ' Editado');
+  check('clicar no nome abre a edição (sem campos de senha); salvar muda nome, CNH e apaga a validade', semAcessoNoForm && editado?.categoriaCnh === 'E' && editado.validadeCnh === null && lEd?.[2] === '—' && lEd?.[6].includes(`@e2e.${rnd}.ok`), JSON.stringify(lEd));
+
+  const vExc = await api('/veiculos', 'POST', { placa: 'TST-X' + String(rnd).slice(1), tipo: 'UTILITARIO' });
+  await api(`/veiculos/${vExc.id}/vinculos`, 'POST', { motoristaId: editado.id });
+  await goto(`${APP}/motoristas`);
+  await abrirEdicao(nomes.ok + ' Editado');
+  const confirma = await evalJs(`(async () => {
+    [...document.querySelectorAll('.modal-dialog button')].find(b => b.textContent.trim() === 'Excluir motorista').click();
+    await new Promise(r => setTimeout(r, 300));
+    const aviso = document.querySelector('.modal-dialog').innerText;
+    [...document.querySelectorAll('.modal-dialog button')].find(b => b.textContent.trim() === 'Sim, excluir motorista').click();
+    await new Promise(r => setTimeout(r, 2000));
+    return aviso;
+  })()`);
+  const vDepois = await api(`/veiculos/${vExc.id}`);
+  check('excluir pede confirmação explicando o efeito; some da lista e o veículo dele fica parado sem motorista', confirma.includes('vistorias que ele fez continuam') && !(await linhas()).some((l) => l[0].startsWith(nomes.ok)) && !(await api('/motoristas')).some((m) => m.id === editado.id) && vDepois.status === 'PARADO' && vDepois.motoristaAtualId === null, vDepois.status);
+  app = await entrarNoApp(`e2e.${rnd}.ok`, 'nova12345');
+  check('motorista excluído não entra mais no app', app.startsWith('/login') && app.includes('usuário ou senha inválidos'), app.slice(0, 100));
+  sql(`DELETE FROM vinculos_motorista_veiculo WHERE "veiculoId" = '${vExc.id}';`);
 });

@@ -64,7 +64,7 @@ export class DashboardService {
         where: { veiculo: frotaAtiva, severidade: { in: [Severidade.ATENCAO, Severidade.CRITICO] } },
         include: { veiculo: true },
       }),
-      this.prisma.motorista.findMany({ where: { empresaId, validadeCnh: { lte: emNoventaDias, not: null } } }),
+      this.prisma.motorista.findMany({ where: { empresaId, arquivadoEm: null, validadeCnh: { lte: emNoventaDias, not: null } } }),
       this.prisma.abastecimento.findMany({
         // anomalia antiga não é mais acionável — só os últimos 30 dias
         where: { empresaId, anomalo: true, data: { gte: trintaDiasAtras }, veiculo: frotaAtiva },

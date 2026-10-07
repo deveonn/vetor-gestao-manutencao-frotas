@@ -552,3 +552,19 @@ Mock na tela — [CONCLUÍDOS 07/10/2026, itens 7-12]:
 
 Faltam no cadastro (não é mock): editar/excluir motorista, editar veículo; recadastrar placa de veículo arquivado
 (409, decisão pendente); foto do veículo no app (não existe campo).
+   - [CONCLUÍDO 07/10/2026] editar/excluir motorista e editar veículo:
+     - PATCH /motoristas/:id (nome, CNH, validade — null apaga). DELETE /motoristas/:id ARQUIVA (Motorista.arquivadoEm,
+       migration 20261007013423): apagar de verdade levaria as vistorias junto (cascata). Arquivar encerra o vínculo
+       aberto, tira o motorista do veículo (fica "parado"), desativa o Usuario e revoga os refresh tokens; some da
+       lista e dos alertas de CNH; não pode mais ser vinculado nem ganhar acesso (404). O login dele continua
+       reservado (usuario é único).
+     - Brecha fechada junto: POST /auth/refresh e GET /auth/me não olhavam Usuario.ativo — usuário desativado
+       renovava a sessão. Agora 401 (o app encerra a sessão ao receber).
+     - PATCH /veiculos/:id (placa, modelo, tipo; placa repetida -> 409). Mudar o tipo ajusta as posições de pneu
+       (caminhão leve = 6): as que existem nos dois tipos ficam, as que sobram saem, as novas nascem OK.
+     - Painel: nome do motorista clicável -> "Editar motorista" (sem campos de senha) com "Excluir motorista" e
+       confirmação explicando o efeito; "Editar veículo" no detalhe (rota segue a placa nova). Texto do form de
+       veículo não promete mais telemetria.
+     - Teste: curl (edição, exclusão com todos os efeitos, login/refresh/me 401 depois, 404 em arquivado, placa
+       duplicada 409, utilitário <-> caminhão 4/6 pneus, tipo inválido 400); e2e motoristas (+3) e veículos (+2).
+       Regressão: web 116/121 (as 5 do painel = dados velhos do seed local), mobile 59/59.

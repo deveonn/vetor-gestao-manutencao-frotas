@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { AcessoMotoristaDto } from './dto/acesso-motorista.dto';
 import { CreateMotoristaDto } from './dto/create-motorista.dto';
+import { UpdateMotoristaDto } from './dto/update-motorista.dto';
 
 /** Só o login do app — nunca o hash da senha. */
 const ACESSO = { usuario: { select: { usuario: true } } } as const;
@@ -19,7 +20,7 @@ export class MotoristasService {
 
   listar(empresaId: string) {
     return this.prisma.motorista.findMany({
-      where: { empresaId },
+      where: { empresaId, arquivadoEm: null },
       include: {
         // veículo arquivado mantém motoristaAtualId, mas não conta mais como vínculo ativo
         veiculoAtual: { where: { arquivadoEm: null } },
@@ -69,7 +70,7 @@ export class MotoristasService {
    * Redefinir encerra as sessões abertas: o celular perde o refresh token e pede login com a senha nova.
    */
   async definirAcesso(empresaId: string, id: string, dto: AcessoMotoristaDto) {
-    const motorista = await this.prisma.motorista.findFirst({ where: { id, empresaId }, include: { usuario: true } });
+    const motorista = await this.prisma.motorista.findFirst({ where: { id, empresaId, arquivadoEm: null }, include: { usuario: true } });
     if (!motorista) throw new NotFoundException('Motorista não encontrado.');
     const senhaHash = await bcrypt.hash(dto.senha, 10);
 
@@ -96,5 +97,41 @@ export class MotoristasService {
       throw err;
     }
     return this.prisma.motorista.findUnique({ where: { id }, include: ACESSO });
+  }
+
+  /** Edita o cadastro (nome, CNH). `validadeCnh: null` apaga a validade. */
+  async atualizar(empresaId: string, id: string, dto: UpdateMotoristaDto) {
+    await this.ativo(empresaId, id);
+    return this.prisma.motorista.update({
+      where: { id },
+      data: {
+        ...(dto.nome !== undefined ? { nome: dto.nome.trim() } : {}),
+        ...(dto.categoriaCnh !== undefined ? { categoriaCnh: dto.categoriaCnh } : {}),
+        ...(dto.validadeCnh !== undefined ? { validadeCnh: dto.validadeCnh ? new Date(dto.validadeCnh) : null } : {}),
+      },
+      include: ACESSO,
+    });
+  }
+
+  /**
+   * "Excluir" = arquivar: some das listas e dos alertas de CNH, o vínculo com o veículo é encerrado (o veículo fica
+   * sem motorista) e o acesso ao app é desativado, com as sessões revogadas. As vistorias dele ficam no histórico.
+   */
+  async arquivar(empresaId: string, id: string): Promise<void> {
+    await this.ativo(empresaId, id);
+    const agora = new Date();
+    await this.prisma.$transaction([
+      this.prisma.motorista.update({ where: { id }, data: { arquivadoEm: agora } }),
+      this.prisma.vinculoMotoristaVeiculo.updateMany({ where: { motoristaId: id, ate: null }, data: { ate: agora } }),
+      this.prisma.veiculo.updateMany({ where: { empresaId, motoristaAtualId: id }, data: { motoristaAtualId: null } }),
+      this.prisma.usuario.updateMany({ where: { motoristaId: id }, data: { ativo: false } }),
+      this.prisma.refreshToken.updateMany({ where: { usuario: { motoristaId: id }, revogadoEm: null }, data: { revogadoEm: agora } }),
+    ]);
+  }
+
+  private async ativo(empresaId: string, id: string) {
+    const motorista = await this.prisma.motorista.findFirst({ where: { id, empresaId, arquivadoEm: null } });
+    if (!motorista) throw new NotFoundException('Motorista não encontrado.');
+    return motorista;
   }
 }

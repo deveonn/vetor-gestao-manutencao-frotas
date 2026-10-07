@@ -49,7 +49,8 @@ export class AuthService {
       where: { tokenHash },
       include: { usuario: { include: { motorista: true } } },
     });
-    if (!registro || registro.revogadoEm || registro.expiraEm < new Date()) {
+    // usuário desativado (ex.: motorista excluído) não renova mais a sessão
+    if (!registro || registro.revogadoEm || registro.expiraEm < new Date() || !registro.usuario.ativo) {
       throw new UnauthorizedException('Refresh token inválido ou expirado.');
     }
 
@@ -72,6 +73,8 @@ export class AuthService {
       where: { id: usuarioId },
       include: { motorista: true },
     });
+    // o access token (15 min) ainda vale depois de desativar — o /me já avisa o app pra encerrar a sessão
+    if (!usuario.ativo) throw new UnauthorizedException('Usuário desativado.');
     return this.paraPublico(usuario);
   }
 

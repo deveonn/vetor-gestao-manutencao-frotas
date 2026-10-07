@@ -72,6 +72,7 @@ Telas: `features/vehicles` (web), `pages/confirm-vehicle` (mobile). Fonte: `vehi
 | `GET /veiculos` ✅ — lista da frota (placa, modelo, tipo, motorista vinculado, hodômetro/combustível/km-L vindos da telemetria, status, pneus por posição, km rodados hoje) | `[admin]` |
 | Status e troca de óleo em `GET /veiculos` e `GET /veiculos/:id` são **calculados**: `status` = MANUTENCAO se marcado na oficina, senão RODANDO com motorista vinculado / PARADO sem; `kmParaTroca` = km até a troca de óleo pendente que vence antes (null = nenhuma). `kmHoje`/`nivelCombustivel` só existiriam com rastreamento — o painel não mostra | — |
 | `PATCH /veiculos/:id/oficina` ✅ — `{ naOficina: boolean }`: marca/desmarca como na oficina (status "em manutenção", fora dos disponíveis) | `[admin]` |
+| `PATCH /veiculos/:id` ✅ — `{ placa?, modelo?, tipo? }`; placa repetida -> 409; mudar o tipo ajusta as posições de pneu | `[admin]` |
 | `POST /veiculos` ✅ — body: `{ placa, modelo, tipo }` | `[admin]` |
 | `GET /veiculos/:id` ✅ — usado pela rota `/veiculos/:placa` | `[admin]` |
 | `DELETE /veiculos/:id` ✅ — remove da frota; a cópia do modal (`delete-vehicle-modal.component.ts:12`) promete arquivamento de 90 dias antes de exclusão definitiva — se isso for levado a sério, é soft-delete, não `DELETE` físico | `[admin]` |
@@ -89,6 +90,8 @@ Tela: `features/drivers` (web). Fonte: `drivers`/`addDriver` (`core/fleet.store.
 | `GET /motoristas` ✅ — nome, categoria/validade da CNH, veículo vinculado (`veiculoAtual`, sem arquivados), vínculo desde (`vinculos` abertos), login do app (`usuario.usuario`, null = sem acesso — nunca a senha) | `[admin]` |
 | `POST /motoristas` ✅ — body: `{ nome, categoriaCnh, validadeCnh?, usuario?, senha? }`. `usuario` + `senha` (juntos) criam o acesso ao app na mesma transação; usuário já usado -> 409 | `[admin]` |
 | `PUT /motoristas/:id/acesso` ✅ — body: `{ usuario?, senha }`. Sem acesso ainda: cria (usuario obrigatório). Com acesso: redefine a senha (e o usuario, se vier) e revoga os refresh tokens dele — o celular pede login de novo | `[admin]` |
+| `PATCH /motoristas/:id` ✅ — `{ nome?, categoriaCnh?, validadeCnh? }` (null apaga a validade) | `[admin]` |
+| `DELETE /motoristas/:id` ✅ — **arquiva** (204): encerra vínculo, tira do veículo, desativa o login e revoga as sessões; vistorias ficam no histórico | `[admin]` |
 
 Sem exclusão/edição no mock — a UI atual (`drivers.component.html`) só cadastra e lista.
 

@@ -7,6 +7,7 @@ import { JwtPayload } from '../common/types/jwt-payload';
 import { CreateVeiculoDto } from './dto/create-veiculo.dto';
 import { CreateVinculoDto } from './dto/create-vinculo.dto';
 import { OficinaVeiculoDto } from './dto/oficina-veiculo.dto';
+import { UpdateVeiculoDto } from './dto/update-veiculo.dto';
 import { VeiculosService } from './veiculos.service';
 
 @ApiTags('veiculos')
@@ -39,6 +40,11 @@ export class VeiculosController {
   @Post(':id/vinculos')
   criarVinculo(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: CreateVinculoDto) {
     return this.service.criarVinculo(user.empresaId!, id, dto);
+  }
+
+  @Patch(':id')
+  atualizar(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: UpdateVeiculoDto) {
+    return this.service.atualizar(user.empresaId!, id, dto);
   }
 
   @Patch(':id/oficina')

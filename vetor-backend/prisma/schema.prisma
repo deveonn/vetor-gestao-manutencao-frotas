@@ -183,6 +183,9 @@ model Motorista {
   nome         String
   categoriaCnh String
   validadeCnh  DateTime?
+  /// "Excluir" arquiva (DELETE /motoristas/:id): some das listas e alertas, perde o acesso ao app, mas as
+  /// vistorias dele ficam no histórico (apagar de verdade levaria as vistorias junto, por cascata).
+  arquivadoEm  DateTime?
   criadoEm     DateTime  @default(now())
 
   usuario      Usuario?

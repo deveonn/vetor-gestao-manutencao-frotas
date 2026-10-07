@@ -22,6 +22,10 @@ export class DriversComponent {
     this.modal.open('mot');
   }
 
+  abrirEditar(id: string): void {
+    this.modal.open('mot', id);
+  }
+
   abrirAcesso(id: string): void {
     this.modal.open('acesso', id);
   }

@@ -97,4 +97,37 @@ await suite('Veículos (Web #5)', async ({ APP, API, send, evalJs, goto, url, to
   await goto(`${APP}/painel`);
   check('dashboard sem "km hoje"', !(await texto()).includes('km hoje'));
   sql(`DELETE FROM vinculos_motorista_veiculo WHERE "veiculoId" = '${vEst.id}'; UPDATE veiculos SET "motoristaAtualId" = NULL WHERE id = '${vEst.id}';`);
+
+  // editar veículo pelo detalhe: placa (a rota acompanha), modelo e tipo (posições de pneu)
+  const placaEd = 'TST-G' + String(rnd2).slice(1);
+  await goto(`${APP}/veiculos/${placaEst}`);
+  await sleep(500);
+  const preenchido = await evalJs(`(async () => {
+    [...document.querySelectorAll('button')].find(b => b.textContent.trim().endsWith('Editar veículo')).click();
+    await new Promise(r => setTimeout(r, 400));
+    const d = document.querySelector('.modal-dialog');
+    const [inPlaca, inModelo] = d.querySelectorAll('input');
+    const antes = { placa: inPlaca.value, modelo: inModelo.value, tipo: d.querySelector('select').value };
+    const set = (el, v) => { el.value = v; el.dispatchEvent(new Event(el.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true })); };
+    set(inPlaca, ${JSON.stringify(placaEd.toLowerCase())}); set(inModelo, 'Iveco Daily Teste'); set(d.querySelector('select'), 'Caminhão leve');
+    await new Promise(r => setTimeout(r, 100));
+    [...d.querySelectorAll('button')].find(b => b.textContent.trim() === 'Salvar alterações').click();
+    await new Promise(r => setTimeout(r, 2500));
+    return antes;
+  })()`);
+  const vEd = await api(`/veiculos/${vEst.id}`);
+  check('"Editar veículo" vem preenchido; salvar troca placa (rota acompanha), modelo e tipo — caminhão ganha 6 pneus', preenchido.placa === placaEst && preenchido.modelo === 'Teste Estado' && vEd.placa === placaEd && vEd.modelo === 'Iveco Daily Teste' && vEd.tipo === 'CAMINHAO_LEVE' && vEd.pneus.length === 6 && (await url()) === `/veiculos/${placaEd}` && (await texto()).includes('Iveco Daily Teste'), `${vEd.placa} ${vEd.tipo} pneus=${vEd.pneus.length} url=${await url()}`);
+  const dup = await evalJs(`(async () => {
+    [...document.querySelectorAll('button')].find(b => b.textContent.trim().endsWith('Editar veículo')).click();
+    await new Promise(r => setTimeout(r, 400));
+    const d = document.querySelector('.modal-dialog'); const el = d.querySelector('input');
+    el.value = 'RTX-4B21'; el.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 100));
+    [...d.querySelectorAll('button')].find(b => b.textContent.trim() === 'Salvar alterações').click();
+    await new Promise(r => setTimeout(r, 1500));
+    const erro = [...document.querySelectorAll('.modal-dialog [role=alert]')].map(a => a.textContent.trim()).join(' / ');
+    [...document.querySelectorAll('.modal-dialog button')].find(b => b.textContent.trim() === 'Cancelar').click();
+    return erro;
+  })()`);
+  check('editar pra uma placa que já existe -> erro no form, nada muda', dup.includes('já está cadastrada') && (await api(`/veiculos/${vEst.id}`)).placa === placaEd, dup);
 });

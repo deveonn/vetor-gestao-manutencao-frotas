@@ -11,6 +11,9 @@
       </div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button (click)="editar()" class="btn btn-ghost">
+        <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;margin-right:6px">edit</span>Editar veículo
+      </button>
       <button (click)="alternarOficina(v.status !== 'manutencao')" class="btn btn-ghost">
         <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;margin-right:6px">{{ v.status === 'manutencao' ? 'check_circle' : 'build' }}</span>{{ v.status === 'manutencao' ? 'Saiu da oficina' : 'Enviar pra oficina' }}
       </button>

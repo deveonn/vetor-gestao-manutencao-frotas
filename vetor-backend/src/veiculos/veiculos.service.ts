@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { StatusManutencao, StatusVeiculo, TipoVeiculo } from '@prisma/client';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma, StatusManutencao, StatusVeiculo, TipoVeiculo } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateVeiculoDto } from './dto/create-veiculo.dto';
 import { CreateVinculoDto } from './dto/create-vinculo.dto';
+import { UpdateVeiculoDto } from './dto/update-veiculo.dto';
 import { comEstado } from './estado';
 
 /** Pendências entram pra calcular o km até a troca de óleo (ver estado.ts). */
@@ -54,6 +55,41 @@ export class VeiculosService {
     return comEstado(veiculo);
   }
 
+  /**
+   * Edita placa, modelo e tipo. Mudar o tipo ajusta as posições de pneu ao novo diagrama (caminhão leve tem traseiro
+   * duplo): posições que existem nos dois tipos mantêm severidade e observação; as que sobram saem, as novas nascem OK.
+   */
+  async atualizar(empresaId: string, id: string, dto: UpdateVeiculoDto) {
+    const atual = await this.prisma.veiculo.findFirst({ where: { id, empresaId, arquivadoEm: null } });
+    if (!atual) throw new NotFoundException('Veículo não encontrado.');
+    try {
+      await this.prisma.veiculo.update({
+        where: { id },
+        data: {
+          ...(dto.placa !== undefined ? { placa: dto.placa.trim().toUpperCase() } : {}),
+          ...(dto.modelo !== undefined ? { modelo: dto.modelo.trim() || '—' } : {}),
+          ...(dto.tipo !== undefined ? { tipo: dto.tipo } : {}),
+        },
+      });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+        throw new ConflictException('Já existe um veículo com essa placa (ativo ou arquivado).');
+      }
+      throw err;
+    }
+    if (dto.tipo && dto.tipo !== atual.tipo) {
+      const novas = POSICOES_PNEU[dto.tipo];
+      const existentes = (await this.prisma.pneuPosicao.findMany({ where: { veiculoId: id } })).map((p) => p.posicao);
+      await this.prisma.$transaction([
+        this.prisma.pneuPosicao.deleteMany({ where: { veiculoId: id, posicao: { notIn: novas } } }),
+        this.prisma.pneuPosicao.createMany({
+          data: novas.filter((p) => !existentes.includes(p)).map((posicao) => ({ veiculoId: id, posicao })),
+        }),
+      ]);
+    }
+    return this.buscar(empresaId, id);
+  }
+
   /** Na oficina = status "em manutenção" (fora da conta de disponíveis); ao sair, volta ao calculado. */
   async definirOficina(empresaId: string, id: string, naOficina: boolean) {
     await this.buscar(empresaId, id);
@@ -82,7 +118,7 @@ export class VeiculosService {
   /** Encerra o vínculo aberto atual (se houver) e cria um novo, atualizando o motorista atual do veículo. */
   async criarVinculo(empresaId: string, veiculoId: string, dto: CreateVinculoDto) {
     await this.buscar(empresaId, veiculoId);
-    const motorista = await this.prisma.motorista.findFirst({ where: { id: dto.motoristaId, empresaId } });
+    const motorista = await this.prisma.motorista.findFirst({ where: { id: dto.motoristaId, empresaId, arquivadoEm: null } });
     if (!motorista) throw new NotFoundException('Motorista não encontrado.');
 
     const agora = new Date();
