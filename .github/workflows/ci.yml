@@ -95,11 +95,17 @@ jobs:
           (cd vetor-app-web && npm ci && nohup npx ng serve --port 4200 > ../web.log 2>&1 &)
           (cd vetor-app-mobile && npm ci && nohup npx ng serve --port 8100 > ../mobile.log 2>&1 &)
 
+      # anotações (públicas) dizem qual servidor não subiu e o fim do log dele — o log do job só abre pra admin
       - name: Esperar API, painel e app responderem
         run: |
-          for url in http://localhost:3000/api/health http://localhost:4200/ http://localhost:8100/; do
-            for i in $(seq 1 120); do curl -sf "$url" > /dev/null && break; sleep 2; done
-            curl -sf "$url" > /dev/null || { echo "não subiu: $url"; exit 1; }
+          for alvo in "http://localhost:3000/api/health api.log" "http://localhost:4200/ web.log" "http://localhost:8100/ mobile.log"; do
+            set -- $alvo
+            for i in $(seq 1 240); do curl -sf "$1" > /dev/null && break; sleep 2; done
+            if ! curl -sf "$1" > /dev/null; then
+              echo "::error title=não subiu::$1 (log: $2)"
+              tail -n 15 "$2" | sed 's/%/%25/g' | while IFS= read -r l; do echo "::error title=$2::$l"; done
+              exit 1
+            fi
           done
 
       - name: Suíte e2e
