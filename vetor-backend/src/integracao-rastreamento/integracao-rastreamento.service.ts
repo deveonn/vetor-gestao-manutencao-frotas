@@ -36,7 +36,8 @@ export class IntegracaoRastreamentoService {
     }
     // Fora de escopo por decisão consciente (22/09/2026): sem credencial real de terceiro
     // disponível pra este portfólio. A chamada real à API entraria aqui. Ver PENDENCIAS_DEPLOY.txt #4.
-    return { ok: true, mensagem: 'Conexão OK.' };
+    // A mensagem diz o que de fato foi verificado (o painel mostra ela pro gestor).
+    return { ok: true, mensagem: 'Token cadastrado. A consulta automática à plataforma ainda não está ativa.' };
   }
 
   async remover(empresaId: string): Promise<void> {

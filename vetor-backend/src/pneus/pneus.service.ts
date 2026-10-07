@@ -21,7 +21,7 @@ export class PneusService {
       pneus.map(async (p) => {
         const item = await this.prisma.vistoriaItem.findFirst({
           where: { stepId: 'pneus', label: p.posicao, vistoria: { veiculoId: p.veiculoId } },
-          include: { vistoria: { select: { iniciadoEm: true } } },
+          include: { vistoria: { select: { iniciadoEm: true } }, midia: { select: { url: true } } },
           orderBy: { vistoria: { iniciadoEm: 'desc' } },
         });
         return {
@@ -30,6 +30,8 @@ export class PneusService {
           severidade: p.severidade,
           observacao: p.observacao ?? item?.observacao ?? null,
           vistoriaEm: item?.vistoria.iniciadoEm ?? null,
+          // foto tirada no app (R2 em produção: URL absoluta; disco em dev: /uploads/... relativo à API)
+          fotoUrl: item?.midia?.url ?? null,
         };
       }),
     );

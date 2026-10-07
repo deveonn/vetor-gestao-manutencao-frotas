@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "empresas" ADD COLUMN     "metaKmL" DOUBLE PRECISION NOT NULL DEFAULT 9;

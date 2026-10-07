@@ -15,6 +15,9 @@
       <label class="field">Nome do administrador <input [(ngModel)]="form.nome"></label>
       <label class="field">E-mail de contato <input type="email" [(ngModel)]="form.email"></label>
       <label class="field">Telefone <input [(ngModel)]="form.fone" class="mono"></label>
+      <label class="field">Meta de consumo da frota (km/L)
+        <input type="number" min="1" max="50" step="0.1" [(ngModel)]="form.metaKml" class="mono">
+      </label>
     </div>
     @if (contaErr()) {
       <div role="alert" class="form-error">
@@ -32,14 +35,14 @@
   <div class="card" style="display:flex;flex-direction:column;gap:18px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px">
       <div style="display:flex;flex-direction:column;gap:4px">
-        <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:17px;margin:0">Rastreamento — Hapolo</h2>
-        <p style="margin:0;color:var(--mut);font-size:13px;line-height:1.55;max-width:480px">Telemetria e hodômetro dos veículos vêm da Hapolo. Cadastre o token de integração da sua empresa — ele é gerado no painel Hapolo em Conta → API → Tokens.</p>
+        <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:17px;margin:0">Plataforma de rastreamento</h2>
+        <p style="margin:0;color:var(--mut);font-size:13px;line-height:1.55;max-width:480px">Cadastre o token de integração da plataforma de rastreamento da sua empresa. A leitura automática de hodômetro e posição entra quando a integração for ativada — até lá, o hodômetro é atualizado pelos abastecimentos.</p>
       </div>
       <span style="display:flex;align-items:center;gap:7px;border-radius:6px;padding:4px 10px;font-size:11.5px;font-weight:600;white-space:nowrap"
         [style.background]="store.hapoloStatus() === 'conectado' ? 'var(--ok-bg)' : 'var(--warn-bg)'"
         [style.color]="store.hapoloStatus() === 'conectado' ? 'var(--ok)' : 'var(--warn)'">
         <span style="width:6px;height:6px;border-radius:50%" [style.background]="store.hapoloStatus() === 'conectado' ? 'var(--ok)' : 'var(--warn)'"></span>
-        {{ store.hapoloStatus() === 'conectado' ? 'conectada' : 'sem token' }}
+        {{ store.hapoloStatus() === 'conectado' ? 'token cadastrado' : 'sem token' }}
       </span>
     </div>
 
@@ -48,11 +51,11 @@
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
           <span class="mono" style="font-size:13px">hap_ ····· ····· {{ store.hapoloTokenTail() }}</span>
           <div style="display:flex;gap:10px">
-            <button (click)="hapTestar()" class="btn btn-ghost">Testar conexão</button>
+            <button (click)="hapTestar()" class="btn btn-ghost">Verificar token</button>
             <button (click)="hapRemover()" class="btn btn-ghost" style="color:var(--crit)">Remover token</button>
           </div>
         </div>
-        <span class="mono" style="font-size:11.5px;color:var(--dim)">conectado desde {{ store.hapoloConectadoEm() }}</span>
+        <span class="mono" style="font-size:11.5px;color:var(--dim)">cadastrado desde {{ store.hapoloConectadoEm() }}</span>
       </div>
     } @else {
       <div style="display:flex;flex-direction:column;gap:12px">
@@ -67,11 +70,11 @@
             <input [(ngModel)]="hapToken" placeholder="hap_live_..." class="mono" style="flex:1">
             <button (click)="hapConectar()" [disabled]="store.hapoloValidating()" class="btn btn-primary" style="display:flex;align-items:center;gap:8px;white-space:nowrap">
               @if (store.hapoloValidating()) { <span class="spinner"></span> }
-              {{ store.hapoloValidating() ? 'Validando…' : 'Conectar' }}
+              {{ store.hapoloValidating() ? 'Salvando…' : 'Cadastrar' }}
             </button>
           </div>
         </label>
-        <p class="mono" style="font-size:11.5px;color:var(--dim);margin:0">o token dá acesso somente-leitura à telemetria · a validação leva alguns segundos</p>
+        <p class="mono" style="font-size:11.5px;color:var(--dim);margin:0">o token fica guardado só como hash — depois de salvo, aparecem apenas os 4 últimos caracteres</p>
       </div>
     }
   </div>

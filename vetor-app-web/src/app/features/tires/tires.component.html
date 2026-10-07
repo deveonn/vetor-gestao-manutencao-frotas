@@ -6,9 +6,15 @@
   <div class="flagged-grid">
     @for (p of store.flaggedTiresEnriched(); track p.v + p.pos) {
       <div style="display:flex;gap:14px;background:var(--surf2);border:1px solid var(--line);border-radius:12px;padding:14px">
-        <div class="photo-placeholder">
-          <span class="mono" style="font-size:9.5px;color:var(--dim);line-height:1.4">foto da<br>vistoria</span>
-        </div>
+        @if (p.foto) {
+          <a [href]="p.foto" target="_blank" rel="noopener" class="photo" [title]="'Abrir a foto — ' + p.pos">
+            <img [src]="p.foto" [alt]="'Foto do pneu ' + p.pos + ' de ' + p.v" loading="lazy">
+          </a>
+        } @else {
+          <div class="photo-placeholder">
+            <span class="mono" style="font-size:9.5px;color:var(--dim);line-height:1.4">sem<br>foto</span>
+          </div>
+        }
         <div style="display:flex;flex-direction:column;gap:5px;flex:1">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <span class="mono" style="font-size:12.5px">{{ p.v }}</span>
@@ -51,6 +57,13 @@
             </div>
           }
         </div>
+        @if (vi.fotos.length) {
+          <div class="insp-fotos">
+            @for (f of vi.fotos; track f.url) {
+              <a [href]="f.url" target="_blank" rel="noopener" [title]="f.lbl"><img [src]="f.url" [alt]="f.lbl" loading="lazy"></a>
+            }
+          </div>
+        }
       </div>
     }
   </div>

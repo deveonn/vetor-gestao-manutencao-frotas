@@ -10,7 +10,7 @@ await suite('Integração de rastreamento (Web #4)', async ({ APP, API, send, ev
   const conectar = (tok) => evalJs(`(async () => {
     const el = document.querySelector('input[placeholder^=hap_live]'); el.value = ${JSON.stringify(tok)}; el.dispatchEvent(new Event('input', { bubbles: true }));
     await new Promise(r => setTimeout(r, 100));
-    [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Conectar').click();
+    [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Cadastrar').click();
     await new Promise(r => setTimeout(r, 1500));
     return [...document.querySelectorAll('[role=alert]')].map(a => a.textContent.trim()).join(' / ');
   })()`);
@@ -19,10 +19,10 @@ await suite('Integração de rastreamento (Web #4)', async ({ APP, API, send, ev
   const i0 = await apiInteg();
   await abrirIntegracoes();
   let t = await texto();
-  check('estado inicial vem da API (seed conectado)', i0.status === 'CONECTADO' && t.includes('conectada') && t.includes(i0.tokenCauda) && /conectado desde \d{2} \w{3} \d{4}/.test(t) && !t.includes('Rastreamento desconectado'), `cauda=${i0.tokenCauda}`);
+  check('estado inicial vem da API (seed conectado)', i0.status === 'CONECTADO' && t.includes('token cadastrado') && t.includes(i0.tokenCauda) && /cadastrado desde \d{2} \w{3} \d{4}/.test(t) && !t.includes('Hapolo') && !t.includes('Rastreamento desconectado'), `cauda=${i0.tokenCauda}`);
 
-  await clicar('Testar conexão');
-  check('testar conexão chama a API e mostra toast', (await texto()).includes('Conexão com a Hapolo OK'));
+  await clicar('Verificar token');
+  check('verificar token chama a API e diz o que foi verificado (sem prometer consulta à plataforma)', (await texto()).includes('Token cadastrado. A consulta automática à plataforma ainda não está ativa.'));
 
   await clicar('Remover token');
   t = await texto();

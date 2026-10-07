@@ -94,6 +94,8 @@ export interface FlaggedTire {
   obs: string;
   vist: string;
   nv: AlertLevel;
+  /** foto tirada no app na vistoria que sinalizou o pneu; null = sem foto */
+  foto: string | null;
 }
 
 export interface InspectionItem {
@@ -110,6 +112,8 @@ export interface Inspection {
   data: string;
   mot: string;
   itens: InspectionItem[];
+  /** fotos tiradas no app nessa vistoria (o que foi sinalizado), com o rótulo do item */
+  fotos: { url: string; lbl: string }[];
 }
 
 export interface Driver {
@@ -145,6 +149,8 @@ export interface CompanyAccount {
   nome: string;
   email: string;
   fone: string;
+  /** meta de consumo da frota (km/L) */
+  metaKml: number;
 }
 
 export type ReportId = 'comparativo' | 'veiculo' | 'consumo' | 'disponibilidade' | 'manutencao';

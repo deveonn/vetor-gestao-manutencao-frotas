@@ -8,7 +8,6 @@ import { buildDisponibilidadeChart, buildTrendChart } from '../../shared/chart/c
 import { ModalService } from '../../core/modal.service';
 
 /** Meta de consumo da frota (km/L). Configuração fixa por enquanto — não há tela nem endpoint pra ela. */
-const META_KML = 9;
 /** Escala das barras de km/L (a mesma do gráfico semanal da tela de combustível). */
 const KML_ESCALA = 13;
 
@@ -70,9 +69,9 @@ export class DashboardComponent {
       cor: d != null && d < 0 ? 'var(--warn)' : 'var(--ok)',
       bg: d != null && d < 0 ? 'var(--warn-bg)' : 'var(--ok-bg)',
       pct: Math.min(100, Math.round((kml / KML_ESCALA) * 100)),
-      markerPct: Math.round((META_KML / KML_ESCALA) * 100),
-      metaTxt: `meta ${dec(META_KML.toFixed(1))} km/L`,
-      naMeta: kml >= META_KML,
+      markerPct: Math.min(100, Math.round((this.store.metaKml() / KML_ESCALA) * 100)),
+      metaTxt: `meta ${dec(this.store.metaKml().toFixed(1))} km/L`,
+      naMeta: kml >= this.store.metaKml(),
     };
   });
 

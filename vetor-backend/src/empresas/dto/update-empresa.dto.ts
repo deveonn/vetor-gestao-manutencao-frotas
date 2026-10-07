@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class UpdateEmpresaDto {
   @ApiPropertyOptional()
@@ -26,4 +26,11 @@ export class UpdateEmpresaDto {
   @IsOptional()
   @IsString()
   contatoFone?: string;
+
+  @ApiPropertyOptional({ example: 9, description: 'meta de consumo da frota em km/L' })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 1 })
+  @Min(1)
+  @Max(50)
+  metaKmL?: number;
 }

@@ -220,3 +220,42 @@ input, select, textarea {
   gap: 16px;
   padding: 26px;
 }
+
+/* Exportar PDF (relatórios) = imprimir: só o conteúdo da página, em cores claras, sem menu/cabeçalho/botões. */
+@media print {
+  :root,
+  [data-theme] {
+    --bg: #ffffff;
+    --surf: #ffffff;
+    --surf2: #f3f6fb;
+    --line: #d9e0eb;
+    --line2: #c4cfdf;
+    --txt: #17212f;
+    --mut: #57687f;
+    --dim: #6b7a8f;
+    --brand: #1873c4;
+    --shadow: none;
+  }
+  .side,
+  .topbar,
+  .no-print,
+  .offline-banner,
+  vetor-toast-host,
+  vetor-modal-host {
+    display: none !important;
+  }
+  .shell,
+  .content {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+  body {
+    background: #ffffff;
+  }
+  .card {
+    break-inside: avoid;
+  }
+}

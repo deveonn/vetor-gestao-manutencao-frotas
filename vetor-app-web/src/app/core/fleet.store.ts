@@ -32,16 +32,20 @@ function tipoIcone(tipo: Vehicle['tipo']): string {
 }
 
 /** Empresa como vem de GET/PATCH /empresa (nomes do schema Prisma). */
+/** Meta de km/L de quem ainda não definiu outra (o valor que era fixo no dashboard). */
+const META_KML_PADRAO = 9;
+
 interface EmpresaApi {
   nome: string;
   cnpj: string;
   contatoNome: string;
   contatoEmail: string;
   contatoFone: string;
+  metaKmL: number;
 }
 
 function paraConta(e: EmpresaApi): CompanyAccount {
-  return { empresa: e.nome, cnpj: e.cnpj, nome: e.contatoNome, email: e.contatoEmail, fone: e.contatoFone };
+  return { empresa: e.nome, cnpj: e.cnpj, nome: e.contatoNome, email: e.contatoEmail, fone: e.contatoFone, metaKml: e.metaKmL ?? META_KML_PADRAO };
 }
 
 function paraEmpresaApi(c: Partial<CompanyAccount>): Partial<EmpresaApi> {
@@ -51,6 +55,7 @@ function paraEmpresaApi(c: Partial<CompanyAccount>): Partial<EmpresaApi> {
   if (c.nome !== undefined) body.contatoNome = c.nome;
   if (c.email !== undefined) body.contatoEmail = c.email;
   if (c.fone !== undefined) body.contatoFone = c.fone;
+  if (c.metaKml !== undefined) body.metaKmL = Number(c.metaKml);
   return body;
 }
 
@@ -193,6 +198,7 @@ interface PneuSinalizadoApi {
   severidade: 'ATENCAO' | 'CRITICO';
   observacao: string | null;
   vistoriaEm: string | null;
+  fotoUrl?: string | null;
 }
 
 /** GET /vistorias — itens vêm por sub-item (ex.: um por pneu); a tela agrupa por etapa do checklist. */
@@ -201,7 +207,12 @@ interface VistoriaApi {
   iniciadoEm: string;
   veiculo: { placa: string };
   motorista: { nome: string };
-  itens: { stepId: string; label: string; avaliacao: 'OK' | 'ATENCAO' | 'TROCAR'; observacao: string | null }[];
+  itens: { stepId: string; label: string; avaliacao: 'OK' | 'ATENCAO' | 'TROCAR'; observacao: string | null; midia?: { url: string } | null }[];
+}
+
+/** Foto no bucket (produção) já vem com URL absoluta; no disco da API (dev) vem /uploads/... relativa à API. */
+function urlMidia(url: string): string {
+  return /^https?:\/\//.test(url) ? url : environment.apiUrl.replace(/\/api\/?$/, '') + url;
 }
 
 /** Etapas do checklist do app (CHECKLIST_CONFIG em vetor-app-mobile/.../inspection.model.ts), na ordem do app. */
@@ -215,6 +226,7 @@ function paraPneuSinalizado(p: PneuSinalizadoApi): FlaggedTire {
   return {
     v: p.veiculo.placa, pos: capitalizar(p.posicao), obs: p.observacao ?? '—',
     vist: p.vistoriaEm ? diaMes(p.vistoriaEm) : '—', nv: p.severidade === 'CRITICO' ? 'critico' : 'atencao',
+    foto: p.fotoUrl ? urlMidia(p.fotoUrl) : null,
   };
 }
 
@@ -228,7 +240,10 @@ function paraVistoria(vi: VistoriaApi): Inspection {
     const obs = sub.filter((i) => i.avaliacao !== 'OK').map((i) => i.observacao || i.label).join('; ');
     return { n: ETAPAS_VISTORIA[stepId] ?? stepId, ok: nv === 'ok', nv, obs };
   });
-  return { id: vi.id, v: vi.veiculo.placa, data: diaMesHora(vi.iniciadoEm), mot: vi.motorista.nome, itens };
+  const fotos = vi.itens
+    .filter((i) => i.midia?.url)
+    .map((i) => ({ url: urlMidia(i.midia!.url), lbl: `${ETAPAS_VISTORIA[i.stepId] ?? i.stepId} · ${i.label}` }));
+  return { id: vi.id, v: vi.veiculo.placa, data: diaMesHora(vi.iniciadoEm), mot: vi.motorista.nome, itens, fotos };
 }
 
 interface AlertaApi {
@@ -291,7 +306,7 @@ function paraVeiculo(v: VeiculoApi): Vehicle {
   };
 }
 
-const CONTA_VAZIA: CompanyAccount = { empresa: '', cnpj: '', nome: '', email: '', fone: '' };
+const CONTA_VAZIA: CompanyAccount = { empresa: '', cnpj: '', nome: '', email: '', fone: '', metaKml: META_KML_PADRAO };
 
 function severityColor(s: Severity | AlertLevel): string {
   return SEVERITY_COLOR[s as AlertLevel] ?? SEVERITY_COLOR.ok;
@@ -328,6 +343,9 @@ export class FleetStore {
   readonly reportCosts = signal<ReportVehicleCost[]>([]);
   /** Vem da API (GET /empresa) — carregada pelo shell ao entrar no painel. */
   readonly account = signal<CompanyAccount>(CONTA_VAZIA);
+  /** Meta de consumo da empresa; abaixo de ~78% dela (7 de 9 km/L, a régua original) o consumo é "abaixo". */
+  readonly metaKml = computed(() => this.account().metaKml);
+  readonly kmlBaixo = computed(() => Math.round(this.metaKml() * (7 / 9) * 10) / 10);
   /** null até GET /integracoes/rastreamento responder (carregada pelo shell, junto com a conta). */
   readonly hapoloStatus = signal<HapoloStatus | null>(null);
   readonly hapoloValidating = signal(false);
@@ -369,7 +387,7 @@ export class FleetStore {
       })),
       motTxt: v.mot || 'sem motorista',
       tipoIcon: tipoIcone(v.tipo),
-      temAlerta: (v.troca != null && v.troca < 1500) || v.pneus.some((p) => p !== 'ok') || v.kml < 7,
+      temAlerta: (v.troca != null && v.troca < 1500) || v.pneus.some((p) => p !== 'ok') || v.kml < this.kmlBaixo(),
     };
   }));
 
@@ -852,6 +870,7 @@ export class FleetStore {
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.status === 400) {
         const msg = err.error?.message;
+        if (Array.isArray(msg) && msg.some((m: string) => m.includes('metaKmL'))) return 'Meta de consumo inválida — use um valor entre 1 e 50 km/L.';
         return Array.isArray(msg) && msg.some((m: string) => m.includes('contatoEmail'))
           ? 'E-mail inválido — confira o formato.'
           : 'Dados inválidos — confira os campos.';
@@ -869,14 +888,14 @@ export class FleetStore {
 
   async hapoloConnect(token: string): Promise<{ error: string } | null> {
     const t = token.trim();
-    if (!t) return { error: 'Cole o token gerado no painel Hapolo — o campo está vazio.' };
-    if (!t.startsWith('hap_')) return { error: 'Token não reconhecido — tokens Hapolo começam com "hap_live_" ou "hap_test_". Confira se copiou o valor inteiro.' };
+    if (!t) return { error: 'Cole o token gerado na plataforma de rastreamento — o campo está vazio.' };
+    if (!t.startsWith('hap_')) return { error: 'Token não reconhecido — os tokens da plataforma começam com "hap_live_" ou "hap_test_". Confira se copiou o valor inteiro.' };
     this.hapoloValidating.set(true);
     try {
       this.aplicarIntegracao(
         await firstValueFrom(this.http.post<IntegracaoApi>(`${environment.apiUrl}/integracoes/rastreamento/conectar`, { token: t })),
       );
-      this.toast.show('Token Hapolo conectado — telemetria sincronizando');
+      this.toast.show('Token de rastreamento cadastrado');
       return null;
     } catch {
       return { error: 'Não foi possível conectar o token. Tente novamente.' };
@@ -890,7 +909,8 @@ export class FleetStore {
       const res = await firstValueFrom(
         this.http.post<{ ok: boolean; mensagem: string }>(`${environment.apiUrl}/integracoes/rastreamento/testar`, {}),
       );
-      this.toast.show(res.ok ? 'Conexão com a Hapolo OK' : `Teste falhou — ${res.mensagem}`, res.ok ? 'ok' : 'info');
+      // a API só confere o token cadastrado — a consulta à plataforma ainda não existe (PENDENCIAS backend #4)
+      this.toast.show(res.mensagem, res.ok ? 'ok' : 'info');
     } catch {
       this.toast.show('Não foi possível testar a conexão agora', 'info');
     }

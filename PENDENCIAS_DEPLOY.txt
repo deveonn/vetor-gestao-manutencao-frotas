@@ -524,13 +524,31 @@ Campos do veículo que nunca mudam (eram pra vir do rastreamento — fora do esc
      Regressão: web 101/106 (as 5 do painel = dados velhos do seed local), mobile 59/59. Banco local e de produção
      ganharam as 5 trocas de óleo que faltavam (SQL idempotente, mesma regra do seed).
 
-Mock na tela:
+Mock na tela — [CONCLUÍDOS 07/10/2026, itens 7-12]:
 7. Pneus: "foto da vistoria" é um quadro cinza — a foto está no R2/banco mas /pneus/sinalizados não devolve a URL.
+   - Feito: /pneus/sinalizados devolve fotoUrl; o card do pneu mostra a foto (clique abre inteira) ou "sem foto".
+     De quebra, "Vistorias recebidas" mostra as miniaturas de todas as fotos da vistoria (as de lataria não
+     apareciam em lugar nenhum). Fotos do disco em dev (/uploads/...) viram URL absoluta da API no painel.
 8. Relatórios: exportar CSV/PDF só mostra toast. Gerar no navegador (CSV direto, PDF pela impressão).
-9. Relatórios: "gerar" tem atraso artificial de 650 ms (os dados já são reais).
+   - Feito: CSV do relatório na tela com o escopo aplicado (frota ou veículo), ";" + vírgula decimal + BOM (abre
+     direto no Excel em português), nome vetor-<relatório>-<escopo>-<data>.csv. PDF = window.print() com CSS de
+     impressão (styles.scss): some menu, cabeçalho, botões e toasts; cores claras.
+9. Relatórios: "gerar" tem atraso artificial de 650 ms (os dados já são reais). — Feito: removido (e o spinner).
 10. Login do painel: "7 veículos rodando · 1.284 km hoje · sincronizado 09:12" é texto fixo.
+   - Feito: virou "abastecimento e consumo · manutenção preventiva · vistoria pelo app". Removido também o link
+     morto "acesso do provedor ↗" (href javascript:void(0)) do menu lateral.
 11. Dashboard: "meta 9,0 km/L" fixa no código — campo de meta na empresa (PATCH /empresa já existe).
+   - Feito: Empresa.metaKmL (migration 20261007010836, padrão 9), campo em Configurações; dashboard, relatório de
+     consumo (eficiente >= meta; abaixo < 7/9 da meta, a régua original) e alerta de consumo baixo usam a meta.
 12. Conta -> Rastreamento: título "Hapolo" (nome interno) e "testar" que não chama nada (backend #4).
+   - Feito: "Plataforma de rastreamento"; textos dizem o que o sistema faz (guarda o token; hodômetro vem dos
+     abastecimentos); "Verificar token" mostra a mensagem da API, que agora diz que a consulta à plataforma ainda
+     não está ativa (antes respondia "Conexão OK" sem chamar nada); chip "token cadastrado"; banner e topo sem
+     prometer telemetria.
+   - Teste (7-12): e2e/mock-painel.mjs (10 cenários: foto no card e miniaturas carregando da API, gerar
+     instantâneo, CSV capturado e conferido byte a byte, impressão emulada sem menu/botões e fundo branco, sem link
+     morto, meta 10 salva e no dashboard, sem "Hapolo", login sem números fixos); e2e/rastreamento.mjs atualizado.
+     Regressão: web 111/116 (as 5 do painel = dados velhos do seed local), mobile 59/59.
 
 Faltam no cadastro (não é mock): editar/excluir motorista, editar veículo; recadastrar placa de veículo arquivado
 (409, decisão pendente); foto do veículo no app (não existe campo).

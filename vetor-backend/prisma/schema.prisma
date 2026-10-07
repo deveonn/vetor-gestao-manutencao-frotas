@@ -70,6 +70,8 @@ model Empresa {
   contatoNome  String
   contatoEmail String
   contatoFone  String
+  /// meta de consumo da frota (km/L) — dashboard e relatórios comparam o consumo com ela; editável em Configurações
+  metaKmL      Float    @default(9)
   criadoEm     DateTime @default(now())
 
   usuarios               Usuario[]

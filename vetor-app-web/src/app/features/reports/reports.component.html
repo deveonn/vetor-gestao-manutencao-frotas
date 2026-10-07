@@ -67,13 +67,9 @@
     </div>
 
     <div style="display:flex;justify-content:flex-end;align-items:center;gap:14px">
-      <span style="font-size:12.5px;color:var(--dim)">Relatório selecionado será processado agora.</span>
+      <span style="font-size:12.5px;color:var(--dim)">Com os dados atuais da frota.</span>
       <button (click)="gerar()" class="btn" style="background:var(--brand);color:#fff;font-weight:600;padding:11px 20px;display:flex;align-items:center;gap:8px">
-        @if (gerando()) {
-          <span class="material-symbols-outlined" style="font-size:17px;animation:spin 1s linear infinite">progress_activity</span>
-        } @else {
-          <span class="material-symbols-outlined" style="font-size:17px">play_arrow</span>
-        }
+        <span class="material-symbols-outlined" style="font-size:17px">play_arrow</span>
         Gerar relatório
       </button>
     </div>
@@ -82,7 +78,7 @@
   <div style="display:flex;flex-direction:column;gap:16px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:12px">
-        <button (click)="trocar()" title="Escolher outro relatório" class="back-btn">
+        <button (click)="trocar()" title="Escolher outro relatório" class="back-btn no-print">
           <span class="material-symbols-outlined" style="font-size:19px">arrow_back</span>
         </button>
         <span style="width:38px;height:38px;border-radius:9px;background:var(--brand-bg);color:var(--brand);display:flex;align-items:center;justify-content:center">
@@ -93,7 +89,7 @@
           <span class="mono" style="font-size:11.5px;color:var(--dim)">{{ relDef().periodo }} · {{ escopoLabel() }} · gerado {{ geradoEm() }}</span>
         </div>
       </div>
-      <div style="display:flex;gap:10px">
+      <div class="no-print" style="display:flex;gap:10px">
         <button (click)="exportCsv()" class="btn btn-ghost"><span class="material-symbols-outlined" style="font-size:15px;vertical-align:-3px;margin-right:6px">download</span>Exportar CSV</button>
         <button (click)="exportPdf()" class="btn btn-primary"><span class="material-symbols-outlined" style="font-size:15px;vertical-align:-3px;margin-right:6px">picture_as_pdf</span>Exportar PDF</button>
       </div>

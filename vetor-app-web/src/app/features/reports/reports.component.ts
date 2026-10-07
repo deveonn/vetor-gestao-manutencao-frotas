@@ -30,7 +30,6 @@ export class ReportsComponent {
   tipoSelecionado = signal<ReportId>('comparativo');
   escopo = signal<ReportScope>('frota');
   veiculoSelecionado = signal<string | null>(null);
-  gerando = signal(false);
   relatorioGerado = signal<ReportId | null>(null);
   geradoEm = signal('');
 
@@ -68,8 +67,8 @@ export class ReportsComponent {
     .map((v) => ({
       placa: v.placa, modelo: v.modelo, kmlF: v.kmlF, kml: v.kml,
       pct: Math.min(100, Math.round((v.kml / 13) * 100)),
-      cor: v.kml >= 9 ? 'var(--ok)' : v.kml >= 7 ? 'var(--warn)' : 'var(--crit)',
-      lbl: v.kml >= 9 ? 'eficiente' : v.kml >= 7 ? 'na média' : 'abaixo',
+      cor: v.kml >= this.store.metaKml() ? 'var(--ok)' : v.kml >= this.store.kmlBaixo() ? 'var(--warn)' : 'var(--crit)',
+      lbl: v.kml >= this.store.metaKml() ? 'eficiente' : v.kml >= this.store.kmlBaixo() ? 'na média' : 'abaixo',
     }))
     .sort((a, b) => b.kml - a.kml));
 
@@ -131,24 +130,63 @@ export class ReportsComponent {
     this.modal.open('buscaVeic', this.veiculoSelecionado());
   }
 
+  /** Os dados já estão carregados da API (loadReports) — gerar é só mostrar, sem espera. */
   gerar(): void {
-    this.gerando.set(true);
-    setTimeout(() => {
-      this.gerando.set(false);
-      this.geradoEm.set(dataCurta(new Date().toISOString()));
-      this.relatorioGerado.set(this.tipoSelecionado());
-    }, 650);
+    this.geradoEm.set(dataCurta(new Date().toISOString()));
+    this.relatorioGerado.set(this.tipoSelecionado());
   }
 
   trocar(): void {
     this.relatorioGerado.set(null);
   }
 
-  exportCsv(): void {
-    this.toast.show(`Relatório exportado (CSV) — ${this.relDef().titulo.toLowerCase()}`);
+  /** Tabela do relatório na tela (com o escopo aplicado) — base do CSV. */
+  private tabela(): { cab: string[]; linhas: (string | number | null)[][] } {
+    const pct = (a: number, b: number) => (b > 0 ? Math.round((a / b - 1) * 1000) / 10 : null);
+    switch (this.relDef().id) {
+      case 'comparativo':
+        return {
+          cab: ['Categoria', `${this.mesAnteriorCurto} (R$)`, `${this.mesAtualCurto} (R$)`, 'Variação (%)'],
+          linhas: this.store.reportCategories().map((c) => [c.n, c.ant, c.atu, pct(c.atu, c.ant)]),
+        };
+      case 'veiculo':
+        return { cab: ['Placa', 'Km rodados', 'Custo (R$)', 'R$/km'], linhas: this.relFilt().map((r) => [r.placa, r.km, r.custo, r.ckm]) };
+      case 'consumo':
+        return { cab: ['Placa', 'Modelo', 'km/L', 'Situação'], linhas: this.relConsumo().map((r) => [r.placa, r.modelo, r.kml, r.lbl]) };
+      case 'disponibilidade':
+        return { cab: ['Status', 'Veículos', '%'], linhas: this.relDisp().map((d) => [d.k, d.n, d.pct]) };
+      case 'manutencao':
+        return {
+          cab: ['Placa', 'Serviço', 'Prazo', 'Urgência'],
+          linhas: this.manFilt().map((m) => [m.v, m.item, m.prazo, m.nv === 'critico' ? 'crítico' : m.nv === 'atencao' ? 'atenção' : 'ok']),
+        };
+    }
   }
 
+  /** CSV no formato que o Excel em português abre direto: ";" entre colunas, vírgula decimal, UTF-8 com BOM. */
+  exportCsv(): void {
+    const { cab, linhas } = this.tabela();
+    const cel = (v: string | number | null) => {
+      if (v == null) return '';
+      const s = typeof v === 'number' ? String(v).replace('.', ',') : v;
+      return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [cab, ...linhas].map((l) => l.map(cel).join(';')).join('\r\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `vetor-${this.relDef().id}-${this.escopoArquivo()}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    this.toast.show(`CSV baixado — ${this.relDef().titulo.toLowerCase()}`);
+  }
+
+  private escopoArquivo(): string {
+    return this.escopo() === 'veiculo' && this.veiculoSelecionado() ? this.veiculoSelecionado()!.toLowerCase() : 'frota';
+  }
+
+  /** PDF pela impressão do navegador ("Salvar como PDF"): o CSS de impressão (styles.scss) deixa só o relatório. */
   exportPdf(): void {
-    this.toast.show(`Relatório exportado (PDF) — ${this.relDef().titulo.toLowerCase()}`);
+    window.print();
   }
 }

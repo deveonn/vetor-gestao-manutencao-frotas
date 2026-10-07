@@ -18,7 +18,6 @@
         <span style="font-size:13px;font-weight:600">{{ store.account().empresa }}</span>
         <span style="font-size:12px;color:var(--side-dim)">admin · {{ store.account().nome }}</span>
       </div>
-      <a href="javascript:void(0)" class="mono" style="font-size:11px;color:var(--side-dim)">acesso do provedor ↗</a>
     </div>
   </aside>
 
@@ -28,7 +27,7 @@
       <div style="display:flex;align-items:center;gap:14px">
         <span class="mono" style="font-size:12px;color:var(--dim);display:flex;align-items:center;gap:7px">
           <span style="width:6px;height:6px;border-radius:50%" [style.background]="store.offline() ? 'var(--warn)' : 'var(--ok)'"></span>
-          {{ store.offline() ? 'sem rastreamento' : 'rastreamento ok' }}
+          {{ store.offline() ? 'sem rastreamento' : 'rastreamento: token cadastrado' }}
         </span>
         <button routerLink="/painel" class="chip-btn" style="color:var(--warn)">
           <span class="material-symbols-outlined" style="font-size:15px;animation:pulse 2.2s infinite">warning</span>
@@ -64,7 +63,7 @@
     @if (store.offline()) {
       <div role="alert" class="offline-banner">
         <span class="material-symbols-outlined" style="color:var(--warn);font-size:18px;flex-shrink:0">cloud_off</span>
-        <span><strong>Rastreamento desconectado</strong> — nenhum token de integração cadastrado. Hodômetro e posição ficam pausados na última leitura; combustível, manutenção e vistorias seguem operando. Conecte um token em Configurações da conta → Integrações.</span>
+        <span><strong>Rastreamento desconectado</strong> — nenhum token de integração cadastrado. O hodômetro segue sendo atualizado pelos abastecimentos; combustível, manutenção e vistorias operam normalmente. Conecte um token em Configurações da conta → Integrações.</span>
       </div>
     }
 

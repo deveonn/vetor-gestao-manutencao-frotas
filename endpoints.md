@@ -46,6 +46,7 @@ Tela: `features/account` (web). Fonte: `FleetStore.account` / `updateAccount` (`
 |---|---|
 | `GET /empresa` ✅ | `[admin]` |
 | `PATCH /empresa` ✅ — body: `Partial<{ nome, cnpj, contatoNome, contatoEmail, contatoFone }>` (nomes do schema; o web mapeia de/para `CompanyAccount` `{ empresa, cnpj, nome, email, fone }` em `fleet.store.ts`) | `[admin]` |
+| `metaKmL` (empresa) ✅ — meta de consumo da frota em km/L (padrão 9), em `GET/PATCH /empresa`; o painel compara o consumo com ela (dashboard, relatório de consumo, alerta de consumo baixo) | `[admin]` |
 
 ---
 
@@ -128,7 +129,7 @@ Telas: `features/tires` (web), fluxo `pages/checklist*` + `pages/review` (mobile
 
 | Endpoint | Papel |
 |---|---|
-| `GET /pneus/sinalizados` ✅ — pneus sinalizados pra troca/monitorar, originados de vistorias (`flaggedTires`). Resposta: `[{ veiculo: { id, placa }, posicao, severidade, observacao, vistoriaEm }]`, críticos primeiro; ignora veículos arquivados (módulo `pneus/`) | `[admin]` |
+| `GET /pneus/sinalizados` ✅ — pneus sinalizados pra troca/monitorar, originados de vistorias (`flaggedTires`). Resposta: `[{ veiculo: { id, placa }, posicao, severidade, observacao, vistoriaEm, fotoUrl }]` (`fotoUrl` = foto da vistoria mais recente daquela posição; absoluta no R2, `/uploads/...` relativa à API em dev)`, críticos primeiro; ignora veículos arquivados (módulo `pneus/`) | `[admin]` |
 | `GET /vistorias` ✅ — vistorias recebidas do app, com itens do checklist e observações (`inspections`) | `[admin]` |
 | `POST /vistorias` ✅ — chamado pelo `SyncService` por item da fila, depois de subir as fotos. Body: `{ clienteId?, veiculoId, iniciadoEm?, concluidoEm?, itens: [{ stepId, label, avaliacao: 'OK'\|'ATENCAO'\|'TROCAR', observacao?, midiaId? }] }`. `clienteId` = id do item da fila: reenviar o mesmo devolve a vistoria já criada (idempotente). `concluidoEm` = quando o motorista finalizou (futuro vira agora). `midiaId` de outra empresa/inexistente -> 400 | `[motorista]` |
 | `POST /midia` 🆕 *(multipart/form-data)* — upload da foto tirada com `PhotoCaptureService` (`core/services/photo-capture.service.ts`), que hoje só produz um `dataUrl` base64 local; precisa subir antes de `POST /vistorias` referenciar o `midiaId`. Resposta: `{ id, url }` | `[motorista]` |
