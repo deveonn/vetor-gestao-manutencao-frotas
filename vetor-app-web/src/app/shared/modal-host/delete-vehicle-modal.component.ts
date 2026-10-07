@@ -9,7 +9,7 @@ import { ModalService } from '../../core/modal.service';
     <div class="modal-backdrop">
       <div class="modal-dialog" role="dialog" aria-modal="true" style="max-width:430px">
         <h2 style="font-family:'Saira',sans-serif;font-weight:600;font-size:18px;margin:0">Excluir o veículo {{ placa() }}?</h2>
-        <p style="color:var(--mut);font-size:13.5px;line-height:1.6;margin:0">O veículo sai da frota e para de receber telemetria. O histórico de abastecimentos, manutenções e vistorias fica arquivado por 90 dias antes da exclusão definitiva.</p>
+        <p style="color:var(--mut);font-size:13.5px;line-height:1.6;margin:0">O veículo sai da frota e o motorista vinculado fica sem veículo. Nada é apagado: abastecimentos, manutenções e vistorias ficam guardados, e cadastrar a mesma placa de novo reativa o veículo com todo o histórico.</p>
         <div style="display:flex;justify-content:flex-end;gap:10px">
           <button class="btn btn-ghost" (click)="modal.close()">Cancelar</button>
           <button class="btn" style="background:var(--crit);color:#fff;font-weight:600" (click)="confirmar()" [disabled]="excluindo()">{{ excluindo() ? 'Excluindo…' : 'Excluir veículo' }}</button>

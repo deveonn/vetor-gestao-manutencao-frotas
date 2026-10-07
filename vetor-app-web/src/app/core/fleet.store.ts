@@ -726,16 +726,19 @@ export class FleetStore {
   async addVehicle(payload: { placa: string; modelo: string; tipo: Vehicle['tipo'] }): Promise<string | null> {
     const placa = payload.placa.trim().toUpperCase();
     try {
-      const criado = await firstValueFrom(this.http.post<VeiculoApi>(`${environment.apiUrl}/veiculos`, {
+      const criado = await firstValueFrom(this.http.post<VeiculoApi & { reativado?: boolean }>(`${environment.apiUrl}/veiculos`, {
         placa, tipo: TIPO_API_INV[payload.tipo], ...(payload.modelo.trim() ? { modelo: payload.modelo.trim() } : {}),
       }));
       this.vehicles.update((list) => [...list, paraVeiculo(criado)].sort((a, b) => a.placa.localeCompare(b.placa)));
-      this.toast.show(`Veículo adicionado à frota — ${placa}`);
+      this.toast.show(criado.reativado
+        ? `Veículo ${placa} reativado — o histórico anterior foi mantido`
+        : `Veículo adicionado à frota — ${placa}`);
+      if (criado.reativado) await Promise.all([this.loadFuel().catch(() => {}), this.loadMaintenance().catch(() => {}), this.loadTiresAndInspections().catch(() => {})]);
       this.refreshDashboard();
       return null;
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.status === 409) {
-        return `A placa ${placa} já está cadastrada (ativa ou arquivada nos últimos 90 dias).`;
+        return `A placa ${placa} já está na frota.`;
       }
       if (err instanceof HttpErrorResponse && err.status === 400) {
         return 'Dados inválidos — confira a placa e o tipo.';
@@ -760,7 +763,8 @@ export class FleetStore {
       this.refreshDashboard();
       return { erro: null, placa: atualizado.placa };
     } catch (err) {
-      if (err instanceof HttpErrorResponse && err.status === 409) return { erro: `A placa ${placa} já está cadastrada (ativa ou arquivada).`, placa: placaAtual };
+      // editar pra placa de um veículo arquivado também é 409 — pra reaproveitar, cadastre a placa (reativa o antigo)
+      if (err instanceof HttpErrorResponse && err.status === 409) return { erro: `A placa ${placa} já está cadastrada (ativa ou excluída — pra trazer de volta uma excluída, cadastre a placa).`, placa: placaAtual };
       if (err instanceof HttpErrorResponse && err.status === 400) return { erro: 'Dados inválidos — confira a placa e o tipo.', placa: placaAtual };
       return { erro: 'Não foi possível salvar o veículo. Tente novamente.', placa: placaAtual };
     }

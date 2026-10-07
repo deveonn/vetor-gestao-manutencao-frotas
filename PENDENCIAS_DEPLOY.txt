@@ -168,9 +168,22 @@ WEB (vetor-app-web) — trocar FleetStore mock por chamadas reais, endpoint por 
      placa duplicada -> 409 no modal, criar (tipo/modelo/4 pneus conferidos na API) e persistir após reload, excluir
      pelo detalhe, dashboard normal, /api/veiculos bloqueado -> estado de erro, "Tentar novamente" recupera.
      Regressão rastreamento (7) + conta (7) + login (12) ok. Veículo de teste removido do banco depois.
-   - PENDENTE DE DECISÃO: @@unique([empresaId, placa]) conta veículos arquivados, então recadastrar uma placa
-     excluída dá 409 (a mensagem do modal já explica). Opções: reativar o arquivado no POST, ou unique parcial só
-     para arquivadoEm IS NULL (exige migration SQL manual, Prisma não expressa índice parcial no schema).
+   - [DECIDIDO E FEITO 07/10/2026 — revisar] PENDENTE DE DECISÃO: @@unique([empresaId, placa]) conta veículos
+     arquivados, então recadastrar uma placa excluída dá 409 (a mensagem do modal já explica). Opções: reativar o
+     arquivado no POST, ou unique parcial só para arquivadoEm IS NULL (exige migration SQL manual, Prisma não expressa
+     índice parcial no schema).
+     - Escolhido (autônomo, durante a madrugada): REATIVAR. POST /veiculos com a placa de um veículo arquivado da
+       empresa traz ele de volta (mesmo id, com abastecimentos, manutenções, vistorias e vínculos), com modelo/tipo
+       novos, sem motorista e "parado"; resposta com `reativado: true` e o painel avisa "reativado — histórico
+       mantido". Motivo: placa identifica o veículo; um índice parcial criaria dois registros do mesmo carro e
+       espalharia o histórico. Editar (PATCH) pra placa de um arquivado continua 409, com a dica de cadastrar.
+     - Junto: excluir veículo agora encerra o vínculo com o motorista (antes o arquivado ficava "preso" a ele), e o
+       texto do modal de exclusão deixou de prometer "exclusão definitiva em 90 dias" (não existe) e telemetria.
+     - Bug achado e corrigido: vincular um motorista a um veículo não encerrava o vínculo dele com o veículo anterior
+       — ele ficava como motorista atual de dois veículos (aconteceu no banco local por causa de testes; produção
+       estava íntegra, conferido). Agora o vínculo novo encerra o do veículo E o do motorista.
+     - Teste: e2e/veiculos.mjs 22 cenários (+3: excluir encerra vínculo, reativação com histórico, um veículo por
+       motorista).
    - Obs: métricas por veículo (hodômetro, combustível, km/L, km hoje) vêm do cache no banco, populado pelo seed —
      não há telemetria real atualizando (depende do backend #4).
 

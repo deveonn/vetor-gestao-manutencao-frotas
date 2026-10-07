@@ -36,7 +36,7 @@ await suite('Veículos (Web #5)', async ({ APP, API, send, evalJs, goto, url, to
   let r = await preencherVeiculo('', 'x', 'Utilitário');
   check('placa vazia bloqueada no form', r.modalAberto && r.erro.includes('Informe a placa'), r.erro);
   r = await preencherVeiculo(lista0[0].placa, 'dup', 'Utilitário');
-  check('placa duplicada -> erro 409 no modal', r.modalAberto && r.erro.includes('já está cadastrada'), r.erro);
+  check('placa duplicada -> erro 409 no modal', r.modalAberto && r.erro.includes('já está na frota'), r.erro);
   r = await preencherVeiculo(placaTeste.toLowerCase(), 'Modelo Teste', 'Van de carga');
   placas = await placasNaLista();
   const criado = (await api('/veiculos')).find((v) => v.placa === placaTeste);
@@ -130,4 +130,34 @@ await suite('Veículos (Web #5)', async ({ APP, API, send, evalJs, goto, url, to
     return erro;
   })()`);
   check('editar pra uma placa que já existe -> erro no form, nada muda', dup.includes('já está cadastrada') && (await api(`/veiculos/${vEst.id}`)).placa === placaEd, dup);
+
+  // excluir encerra o vínculo; cadastrar a mesma placa reativa o veículo com o histórico (decisão de 07/10/2026)
+  const placaRe = 'TST-R' + String(rnd2).slice(1);
+  const vRe = await api('/veiculos', 'POST', { placa: placaRe, tipo: 'UTILITARIO', modelo: 'Antigo' });
+  const motRe = (await api('/motoristas'))[0];
+  await api(`/veiculos/${vRe.id}/vinculos`, 'POST', { motoristaId: motRe.id });
+  const fornRe = (await api('/fornecedores'))[0];
+  await api('/abastecimentos', 'POST', { veiculoId: vRe.id, fornecedorId: fornRe.id, litros: 30, valor: 180, hodometro: 1000 });
+  await api(`/veiculos/${vRe.id}`, 'DELETE');
+  const vincRe = await api(`/veiculos/${vRe.id}/vinculos`);
+  check('excluir veículo encerra o vínculo com o motorista', vincRe.length > 0 && vincRe.every((v) => v.ate), JSON.stringify(vincRe.map((v) => v.ate)));
+  await goto(`${APP}/veiculos`);
+  await clicar('Adicionar veículo', 400);
+  const rRe = await preencherVeiculo(placaRe, 'Novo Modelo', 'Van de carga');
+  const vDepoisRe = await api(`/veiculos/${vRe.id}`);
+  const abastRe = (await api('/abastecimentos')).filter((a) => a.veiculo?.placa === placaRe || a.veiculoId === vRe.id);
+  t = await texto();
+  check('cadastrar a placa de um veículo excluído reativa o mesmo veículo (mesmo id, histórico de abastecimento junto, sem motorista, modelo/tipo novos)', !rRe.modalAberto && !vDepoisRe.arquivadoEm && vDepoisRe.modelo === 'Novo Modelo' && vDepoisRe.tipo === 'VAN_CARGA' && vDepoisRe.motoristaAtualId === null && abastRe.length === 1 && t.includes('reativado'), `${rRe.erro} arquivado=${vDepoisRe.arquivadoEm} abast=${abastRe.length}`);
+
+  // um motorista dirige um veículo por vez: vincular a outro libera o anterior
+  const vA = await api('/veiculos', 'POST', { placa: 'TST-A' + String(rnd2).slice(1, 4) + '1', tipo: 'UTILITARIO' });
+  const vB = await api('/veiculos', 'POST', { placa: 'TST-B' + String(rnd2).slice(1, 4) + '1', tipo: 'UTILITARIO' });
+  const motUm = (await api('/motoristas')).find((m) => !m.veiculoAtual.length) ?? (await api('/motoristas'))[0];
+  const veicAntes = motUm.veiculoAtual[0]?.id ?? null;
+  await api(`/veiculos/${vA.id}/vinculos`, 'POST', { motoristaId: motUm.id });
+  await api(`/veiculos/${vB.id}/vinculos`, 'POST', { motoristaId: motUm.id });
+  const [a2, b2] = [await api(`/veiculos/${vA.id}`), await api(`/veiculos/${vB.id}`)];
+  const doMot = (await api('/veiculos')).filter((v) => v.motoristaAtualId === motUm.id).map((v) => v.placa);
+  check('vincular o motorista a outro veículo libera o anterior (um veículo por motorista)', a2.motoristaAtualId === null && b2.motoristaAtualId === motUm.id && doMot.length === 1 && (await api(`/veiculos/${vA.id}/vinculos`)).every((v) => v.ate), doMot.join(','));
+  if (veicAntes) await api(`/veiculos/${veicAntes}/vinculos`, 'POST', { motoristaId: motUm.id }); // devolve ao veículo do seed
 });
