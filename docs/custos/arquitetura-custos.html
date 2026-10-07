@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Vetor — arquitetura e custos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Saira:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=block" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1320; --surf: #151d2c; --surf2: #1c2638; --line: #26334a; --line2: #33425f;
+    --txt: #e9eef7; --mut: #8fa0b8; --dim: #66778f; --brand: #5cb3ff; --ok: #46c98f; --warn: #e6a23c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; background: var(--bg); color: var(--txt); font-family: 'IBM Plex Sans', sans-serif; overflow: hidden; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .page { padding: 34px 44px 26px; height: 100%; display: flex; flex-direction: column; gap: 22px; }
+
+  header { display: flex; justify-content: space-between; align-items: flex-end; }
+  .brand { font-family: 'Saira', sans-serif; font-weight: 700; letter-spacing: .18em; color: var(--brand); font-size: 18px; }
+  h1 { font-family: 'Saira', sans-serif; font-weight: 600; font-size: 44px; line-height: 1.05; margin-top: 6px; }
+  .sub { color: var(--mut); font-size: 16px; margin-top: 8px; }
+  .hoje { text-align: right; }
+  .hoje .big { font-family: 'Saira', sans-serif; font-weight: 700; font-size: 64px; color: var(--ok); line-height: 1; }
+  .hoje .lbl { color: var(--mut); font-size: 15px; margin-bottom: 6px; }
+
+  main { flex: 1; display: grid; grid-template-columns: 820px 1fr; gap: 26px; min-height: 0; }
+  .card { background: var(--surf); border: 1px solid var(--line); border-radius: 16px; padding: 22px 24px; }
+  .card h2 { font-family: 'Saira', sans-serif; font-weight: 600; font-size: 20px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: baseline; }
+  .card h2 small { font-family: 'IBM Plex Mono', monospace; font-weight: 400; font-size: 12px; color: var(--dim); }
+  .col { display: flex; flex-direction: column; gap: 22px; min-height: 0; }
+
+  /* diagrama */
+  svg text { font-family: 'IBM Plex Sans', sans-serif; fill: var(--txt); }
+  svg .t1 { font-weight: 600; font-size: 16px; }
+  svg .t2 { font-size: 12.5px; fill: var(--mut); }
+  svg .pill { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; font-weight: 600; }
+  svg .seta { font-family: 'IBM Plex Mono', monospace; font-size: 11px; fill: var(--mut); }
+
+  /* limites */
+  .limites { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; }
+  .lim { display: flex; gap: 10px; font-size: 13.5px; line-height: 1.45; color: var(--mut); }
+  .lim b { color: var(--txt); font-weight: 600; }
+  .lim .dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+
+  /* tabela */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-weight: 500; color: var(--mut); font-size: 13px; padding: 0 12px 10px; border-bottom: 1px solid var(--line2); }
+  th.cen { font-family: 'Saira', sans-serif; font-weight: 600; font-size: 17px; color: var(--txt); }
+  th.cen span { display: block; font-family: 'IBM Plex Sans', sans-serif; font-weight: 400; font-size: 12.5px; color: var(--mut); margin-top: 2px; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.35; }
+  td.comp b { display: block; font-weight: 600; font-size: 14.5px; }
+  td.comp span { color: var(--dim); font-size: 12px; }
+  .v { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; }
+  .v.free { color: var(--ok); }
+  .v.pago { color: var(--warn); }
+  .n { display: block; color: var(--dim); font-size: 11.5px; margin-top: 2px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 400; }
+  tr.total td { border-bottom: none; padding-top: 12px; }
+  tr.total td.comp b { font-family: 'Saira', sans-serif; font-size: 16px; }
+  tr.total .v { font-size: 19px; }
+  tr.total.mes td { border-top: 2px solid var(--line2); }
+  .usd { display: block; font-size: 12px; color: var(--mut); font-weight: 400; }
+  col.c1 { width: 25%; } col.c2, col.c3, col.c4 { width: 25%; }
+  th.hoje-col, td.hoje-col { background: rgba(70, 201, 143, .06); }
+
+  footer { color: var(--dim); font-size: 11.5px; line-height: 1.5; display: flex; justify-content: space-between; gap: 30px; }
+  footer b { color: var(--mut); font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div>
+      <div class="brand">VETOR · GESTÃO DE FROTAS</div>
+      <h1>Arquitetura e custos de operação</h1>
+      <div class="sub">Preços consultados em 07/10/2026 · US$ 1 = R$ 4,9866 (cotação do dia) · valores mensais, sem impostos</div>
+    </div>
+    <div class="hoje">
+      <div class="lbl">custo atual do sistema no ar</div>
+      <div class="big">R$ 0<span style="font-size:26px;color:var(--mut);font-weight:500">/mês</span></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="col">
+      <div class="card" style="padding-bottom:14px">
+        <h2>Como o sistema está montado <small>tudo em planos gratuitos hoje</small></h2>
+        <svg width="770" height="440" viewBox="0 0 770 440">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5cb3ff"/></marker>
+            <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#66778f"/></marker>
+          </defs>
+
+          <!-- setas -->
+          <line x1="240" y1="70" x2="300" y2="150" stroke="#5cb3ff" stroke-width="2" marker-end="url(#ar)"/>
+          <line x1="240" y1="250" x2="300" y2="190" stroke="#5cb3ff" stroke-width="2" marker-end="url(#ar)"/>
+          <text class="seta" x="252" y="174">HTTPS</text>
+          <line x1="510" y1="150" x2="560" y2="85" stroke="#5cb3ff" stroke-width="2" marker-end="url(#ar)"/>
+          <line x1="510" y1="190" x2="560" y2="255" stroke="#5cb3ff" stroke-width="2" marker-end="url(#ar)"/>
+          <text class="seta" x="540" y="100" text-anchor="end">dados</text>
+          <text class="seta" x="545" y="252" text-anchor="end">fotos</text>
+          <line x1="410" y1="345" x2="410" y2="232" stroke="#66778f" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#ag)"/>
+          <path d="M300,380 C150,380 130,330 130,302" fill="none" stroke="#66778f" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#ag)"/>
+          <text class="seta" x="398" y="290" text-anchor="end">deploy automático</text>
+          <text class="seta" x="398" y="305" text-anchor="end">a cada push</text>
+
+          <!-- App -->
+          <rect x="10" y="20" width="230" height="100" rx="12" fill="#1c2638" stroke="#33425f"/>
+          <text class="t1" x="28" y="50">App do motorista</text>
+          <text class="t2" x="28" y="70">Android · funciona offline</text>
+          <text class="t2" x="28" y="88">APK instalado no aparelho</text>
+          <rect x="146" y="98" width="82" height="20" rx="10" fill="rgba(70,201,143,.14)"/>
+          <text class="pill" x="187" y="112" text-anchor="middle" fill="#46c98f">R$ 0</text>
+
+          <!-- Painel -->
+          <rect x="10" y="200" width="230" height="100" rx="12" fill="#1c2638" stroke="#33425f"/>
+          <text class="t1" x="28" y="230">Painel do gestor</text>
+          <text class="t2" x="28" y="250">Angular · site estático</text>
+          <text class="t2" x="28" y="268">Render Static Site</text>
+          <rect x="146" y="278" width="82" height="20" rx="10" fill="rgba(70,201,143,.14)"/>
+          <text class="pill" x="187" y="292" text-anchor="middle" fill="#46c98f">R$ 0</text>
+
+          <!-- API -->
+          <rect x="300" y="110" width="210" height="120" rx="12" fill="#1c2638" stroke="#5cb3ff" stroke-width="1.5"/>
+          <text class="t1" x="318" y="140">API</text>
+          <text class="t2" x="318" y="160">NestJS + Prisma · Docker</text>
+          <text class="t2" x="318" y="178">Render Web Service (Free)</text>
+          <text class="t2" x="318" y="196">regras, login, multiempresa</text>
+          <rect x="416" y="206" width="82" height="20" rx="10" fill="rgba(70,201,143,.14)"/>
+          <text class="pill" x="457" y="220" text-anchor="middle" fill="#46c98f">R$ 0</text>
+
+          <!-- Neon -->
+          <rect x="560" y="20" width="200" height="100" rx="12" fill="#1c2638" stroke="#33425f"/>
+          <text class="t1" x="578" y="50">Banco de dados</text>
+          <text class="t2" x="578" y="70">Postgres + PostGIS</text>
+          <text class="t2" x="578" y="88">Neon (Free) · EUA</text>
+          <rect x="666" y="98" width="82" height="20" rx="10" fill="rgba(70,201,143,.14)"/>
+          <text class="pill" x="707" y="112" text-anchor="middle" fill="#46c98f">R$ 0</text>
+
+          <!-- R2 -->
+          <rect x="560" y="200" width="200" height="100" rx="12" fill="#1c2638" stroke="#33425f"/>
+          <text class="t1" x="578" y="230">Fotos</text>
+          <text class="t2" x="578" y="250">vistorias e veículos</text>
+          <text class="t2" x="578" y="268">Cloudflare R2 (Free)</text>
+          <rect x="666" y="278" width="82" height="20" rx="10" fill="rgba(70,201,143,.14)"/>
+          <text class="pill" x="707" y="292" text-anchor="middle" fill="#46c98f">R$ 0</text>
+
+          <!-- GitHub -->
+          <rect x="300" y="345" width="210" height="80" rx="12" fill="#1c2638" stroke="#33425f"/>
+          <text class="t1" x="318" y="374">Código + testes (CI)</text>
+          <text class="t2" x="318" y="394">GitHub + Actions · repo público</text>
+          <rect x="416" y="401" width="82" height="20" rx="10" fill="rgba(70,201,143,.14)"/>
+          <text class="pill" x="457" y="415" text-anchor="middle" fill="#46c98f">R$ 0</text>
+        </svg>
+      </div>
+
+      <div class="card" style="flex:1">
+        <h2>Limites do plano gratuito <small>o que muda quando o uso cresce</small></h2>
+        <div class="limites">
+          <div class="lim"><span class="dot" style="background:var(--warn)"></span><div><b>API "dorme"</b> após 15 min sem uso; a 1ª requisição depois leva ~1 min. 750 h/mês por conta.</div></div>
+          <div class="lim"><span class="dot" style="background:var(--ok)"></span><div><b>Banco:</b> 1 GB e 100 h de computação/mês; desliga após 5 min parado (religa sozinho).</div></div>
+          <div class="lim"><span class="dot" style="background:var(--ok)"></span><div><b>Fotos:</b> 10 GB grátis (~30 mil fotos de 300 KB); download sem custo.</div></div>
+          <div class="lim"><span class="dot" style="background:var(--ok)"></span><div><b>Painel e CI:</b> site estático e testes do repositório público sem custo.</div></div>
+          <div class="lim"><span class="dot" style="background:var(--warn)"></span><div><b>Endereços</b> são subdomínios do Render (…onrender.com); domínio próprio é opcional.</div></div>
+          <div class="lim"><span class="dot" style="background:var(--warn)"></span><div><b>App</b> é instalado por APK; loja (Google Play) é opcional.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="display:flex;flex-direction:column">
+      <h2>Custos por cenário <small>R$ com a cotação do dia · US$ entre parênteses</small></h2>
+      <table>
+        <colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"></colgroup>
+        <thead>
+          <tr>
+            <th>componente</th>
+            <th class="cen hoje-col">Hoje<span>demonstração</span></th>
+            <th class="cen">Produção pequena<span>API sempre ligada + loja + domínio</span></th>
+            <th class="cen">Crescimento<span>mais uso, dados e fotos</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="comp"><b>API</b><span>Render Web Service</span></td>
+            <td class="hoje-col"><span class="v free">R$ 0</span><span class="n">Free (dorme)</span></td>
+            <td><span class="v pago">R$ 34,91</span><span class="n">Starter US$ 7/mês · 512 MB</span></td>
+            <td><span class="v pago">R$ 159,57</span><span class="n">Starter US$ 7 + workspace Pro US$ 25</span></td>
+          </tr>
+          <tr>
+            <td class="comp"><b>Painel web</b><span>Render Static Site</span></td>
+            <td class="hoje-col"><span class="v free">R$ 0</span></td>
+            <td><span class="v free">R$ 0</span></td>
+            <td><span class="v free">R$ 0</span></td>
+          </tr>
+          <tr>
+            <td class="comp"><b>Banco de dados</b><span>Neon Postgres</span></td>
+            <td class="hoje-col"><span class="v free">R$ 0</span><span class="n">Free · 1 GB</span></td>
+            <td><span class="v free">R$ 0</span><span class="n">Free ainda comporta</span></td>
+            <td><span class="v pago">≈ R$ 103,87</span><span class="n">Launch ≈ US$ 20,83 · estimativa: 0,5 CU por 12 h/dia + 5 GB</span></td>
+          </tr>
+          <tr>
+            <td class="comp"><b>Fotos</b><span>Cloudflare R2</span></td>
+            <td class="hoje-col"><span class="v free">R$ 0</span><span class="n">até 10 GB</span></td>
+            <td><span class="v free">R$ 0</span></td>
+            <td><span class="v pago">≈ R$ 2,99</span><span class="n">50 GB · US$ 0,015/GB além de 10</span></td>
+          </tr>
+          <tr>
+            <td class="comp"><b>Código e CI</b><span>GitHub + Actions</span></td>
+            <td class="hoje-col"><span class="v free">R$ 0</span></td>
+            <td><span class="v free">R$ 0</span></td>
+            <td><span class="v free">R$ 0</span><span class="n">repositório público</span></td>
+          </tr>
+          <tr>
+            <td class="comp"><b>Domínio</b><span>.com.br · Registro.br</span></td>
+            <td class="hoje-col"><span class="v free">R$ 0</span><span class="n">subdomínio grátis</span></td>
+            <td><span class="v pago">R$ 40/ano</span></td>
+            <td><span class="v pago">R$ 40/ano</span></td>
+          </tr>
+          <tr>
+            <td class="comp"><b>App Android</b><span>distribuição</span></td>
+            <td class="hoje-col"><span class="v free">R$ 0</span><span class="n">APK direto</span></td>
+            <td><span class="v pago">R$ 124,67 único</span><span class="n">Google Play US$ 25, uma vez</span></td>
+            <td><span class="v pago">R$ 124,67 único</span></td>
+          </tr>
+
+          <tr class="total mes">
+            <td class="comp"><b>Total por mês</b></td>
+            <td class="hoje-col"><span class="v free">R$ 0</span></td>
+            <td><span class="v pago">R$ 34,91</span><span class="usd">(US$ 7,00)</span></td>
+            <td><span class="v pago">≈ R$ 266,43</span><span class="usd">(≈ US$ 53,43)</span></td>
+          </tr>
+          <tr class="total">
+            <td class="comp"><b>Total por ano</b><span style="color:var(--dim);font-size:12px">mensal × 12 + domínio</span></td>
+            <td class="hoje-col"><span class="v free">R$ 0</span></td>
+            <td><span class="v pago">R$ 458,87</span></td>
+            <td><span class="v pago">≈ R$ 3.237,21</span></td>
+          </tr>
+          <tr class="total">
+            <td class="comp"><b>Custo único</b></td>
+            <td class="hoje-col"><span class="v free">—</span></td>
+            <td><span class="v pago">R$ 124,67</span><span class="usd">cadastro na Google Play</span></td>
+            <td><span class="v pago">R$ 124,67</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:auto;padding-top:14px;color:var(--mut);font-size:12.5px;line-height:1.5">
+        <b style="color:var(--txt)">Versão iOS (opcional):</b> Apple Developer Program US$ 99/ano ≈ R$ 493,67/ano, fora dos totais. ·
+        <b style="color:var(--txt)">≈</b> = estimativa de uso, cobrança real conforme o consumo.
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div><b>Fontes:</b> neon.com/pricing · developers.cloudflare.com/r2/pricing · render.com/docs/free · docs.github.com (billing de Actions) ·
+      support.google.com/googleplay (taxa de US$ 25) · developer.apple.com/programs · Registro.br (R$ 40/ano) · cotação: AwesomeAPI USD-BRL 07/10/2026 10:26.</div>
+    <div style="white-space:nowrap"><b>Render Starter e workspace Pro:</b> valores de fontes secundárias — confirmar no painel do Render.</div>
+  </footer>
+</div>
+</body>
+</html>
