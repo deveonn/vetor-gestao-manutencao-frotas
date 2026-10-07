@@ -1,0 +1,116 @@
+# CI do Vetor: build + testes de unidade dos três projetos e, em seguida, a suíte e2e inteira (API, painel e app no
+# navegador) contra um Postgres novo com o seed. Ver e2e/README.md e vetor-backend/README-backend.md.
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NG_CLI_ANALYTICS: 'false'
+
+jobs:
+  build:
+    name: Build e testes de unidade
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            vetor-backend/package-lock.json
+            vetor-app-web/package-lock.json
+            vetor-app-mobile/package-lock.json
+
+      - name: Backend — instalar, gerar o Prisma Client, build e testes de unidade
+        working-directory: vetor-backend
+        run: |
+          npm ci
+          npx prisma generate
+          npm run build
+          npm test
+
+      - name: Painel web — build de produção
+        working-directory: vetor-app-web
+        run: |
+          npm ci
+          npm run build
+
+      - name: App mobile — build de produção
+        working-directory: vetor-app-mobile
+        run: |
+          npm ci
+          npm run build
+
+  e2e:
+    name: e2e (API + painel + app no Chrome)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: vetor
+          POSTGRES_PASSWORD: vetor
+          POSTGRES_DB: vetor
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vetor -d vetor"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            vetor-backend/package-lock.json
+            vetor-app-web/package-lock.json
+            vetor-app-mobile/package-lock.json
+
+      - name: API — banco do zero (migrations + seed) e subir
+        working-directory: vetor-backend
+        run: |
+          cp .env.example .env
+          npm ci
+          npx prisma migrate deploy
+          npm run prisma:seed
+          npm run build
+          nohup node dist/main > ../api.log 2>&1 &
+
+      - name: Painel e app — subir os servidores de desenvolvimento
+        run: |
+          (cd vetor-app-web && npm ci && nohup npx ng serve --port 4200 > ../web.log 2>&1 &)
+          (cd vetor-app-mobile && npm ci && nohup npx ng serve --port 8100 > ../mobile.log 2>&1 &)
+
+      - name: Esperar API, painel e app responderem
+        run: |
+          for url in http://localhost:3000/api/health http://localhost:4200/ http://localhost:8100/; do
+            for i in $(seq 1 120); do curl -sf "$url" > /dev/null && break; sleep 2; done
+            curl -sf "$url" > /dev/null || { echo "não subiu: $url"; exit 1; }
+          done
+
+      - name: Suíte e2e
+        run: CHROME_BIN=google-chrome node e2e/run-all.mjs
+
+      - name: Logs dos servidores (se falhar)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-servidores
+          path: |
+            api.log
+            web.log
+            mobile.log

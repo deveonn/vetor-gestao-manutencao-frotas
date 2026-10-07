@@ -41,11 +41,18 @@ BACKEND (vetor-backend)
      idênticos ao enviado, nada no disco local, /uploads 404. Leitura anônima deu 403 no moto (bucket privado) —
      no R2 é a opção de acesso público do bucket, não código.
 
-6. Testes automatizados básicos
+6. [CONCLUÍDO 07/10/2026] Testes automatizados básicos
    - Hoje zero cobertura. Pelo menos e2e do fluxo de auth + isolamento multi-tenant (empresaId).
    - Base já existe (23/09/2026): e2e/ na raiz — 9 suítes, 86 cenários do painel web contra a API real (as mesmas
      usadas pra validar Web #1-#10), `node e2e/run-all.mjs`. Falta: isolamento multi-tenant (precisa de uma 2ª
      empresa no seed), testes de unidade do backend (km/L, anomalia, alertas) e rodar isso em CI (item 7).
+   - Feito: testes de unidade com Jest no backend (`npm test`, em vetor-backend/test/ — fora do src/ pra não
+     reiniciar a API em watch): urgência/prazo das manutenções (km, data, fuso de Brasília, fronteiras, ordenação),
+     status e troca de óleo do veículo, km/L + consumo anômalo + hodômetro retroativo (Prisma simulado) e validação
+     de ambiente — 28 testes. Isolamento multi-tenant: e2e/multi-tenant.mjs (grupo "api", 11 cenários): cria uma 2ª
+     empresa com gestor e motorista direto no banco e confere listas/dashboard/relatórios vazios, 14 rotas com ids
+     da outra empresa -> 404, dados intactos, mesma placa em empresas diferentes, motorista sem acesso a veículo e
+     foto alheios, e o inverso. Não precisou mexer no seed (a 2ª empresa nasce e morre no teste).
 
 7. [EM ANDAMENTO 05/10/2026] Dockerfile de produção + pipeline CI
    - Só depois de tudo acima validado manualmente via Swagger.
@@ -74,7 +81,10 @@ BACKEND (vetor-backend)
    - Painel publicado como site estático no Render (render.yaml, serviço vetor-painel: rootDir vetor-app-web,
      npm ci && npm run build, dist/app/browser, rewrite /* -> /index.html pro roteamento do Angular). Build
      conferido antes numa cópia limpa do repositório. O domínio dele entra no CORS_ORIGIN da API.
-   - Falta: CI (rodar build + e2e a cada push).
+   - [FEITO 07/10/2026] CI: .github/workflows/ci.yml — job "Build e testes de unidade" (backend build + npm test,
+     painel e app com build de produção) e job "e2e" (Postgres/PostGIS como serviço, migrations + seed do zero, API,
+     painel e app no ar, node e2e/run-all.mjs com tudo: api + web + mobile; logs dos servidores como artefato se
+     falhar). Roda a cada push na master e em PR. Com o banco nascendo do seed no dia, a suíte "painel" passa.
 
 8. [CONCLUÍDO 05/10/2026] Preparação pra produção (avaliação de 05/10/2026)
    - Decidido: API no Render (plano grátis — dorme sem uso, 1ª requisição ~30-50 s), Postgres no Neon (tem PostGIS),

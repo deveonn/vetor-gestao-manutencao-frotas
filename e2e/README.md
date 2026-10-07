@@ -15,8 +15,8 @@ Nasceram da migração do painel do mock pra API (Web #1–#10 em `PENDENCIAS_DE
 ## Rodar
 
 ```bash
-node e2e/run-all.mjs                      # todas (web + mobile), na ordem do checklist
-node e2e/run-all.mjs web                  # só o painel (ou: mobile)
+node e2e/run-all.mjs                      # todas (api + web + mobile), na ordem do checklist
+node e2e/run-all.mjs web                  # só o painel (ou: mobile, api)
 node e2e/run-all.mjs veiculos combustivel  # só algumas
 node e2e/veiculos.mjs                      # uma suíte direto
 ```
@@ -40,3 +40,11 @@ Depois de uma rodada completa, o banco volta ao estado do seed. **Não rode cont
 - Uma suíte por módulo do painel: `login`, `conta`, `rastreamento`, `veiculos`, `motoristas`, `combustivel`, `manutencao`, `pneus`, `painel`, mais `mock-painel` (fotos nos pneus, CSV/PDF dos relatórios, meta de km/L, textos sem mock).
 - Mobile: `mobile-login` (login real, reabrir o app com e sem internet, sessão revogada, logout) `mobile-veiculo` (veículo do dia, cache offline, motorista sem veículo, vínculo feito pelo gestor durante o teste) `mobile-fotos` (fotos da fila subindo pra `POST /midia`: com rede, API fora, retomada sem reenviar, arquivo recusado) `mobile-fotos-arquivo` (fotos guardadas como arquivo no Filesystem — no navegador, IndexedDB "Disc": captura pela tela entregando um PNG no `<input type=file>` da câmera web, refazer, logout, conversão da fila antiga em base64, arquivo sumido) e `mobile-vistoria` (vistoria inteira feita pelas telas até `POST /vistorias`, vistoria offline, idempotência, saída bloqueada com pendência, fila de outro motorista, caminhão de 6 pneus até o diagrama do painel web — precisa do painel em :4200 também) e `mobile-historico` (histórico vindo de `GET /vistorias/minhas` + fila local: app recém-instalado, cache offline, sem duplicar, fila limpa depois de confirmada, troca de motorista). A câmera não roda em headless, então `mobile-fotos` grava as vistorias direto na fila local; as fotos que ela sobe são apagadas de `vetor-backend/uploads` no fim.
 - `run-all.mjs`: roda as suítes em sequência e soma os resultados.
+
+## Isolamento entre empresas (`multi-tenant`)
+
+Só API (grupo `api`). Cria uma 2ª empresa direto no banco — não existe rota de cadastro de empresa —, com gestor e motorista, e confere: listas, dashboard e relatórios da empresa nova vazios; 14 rotas de leitura/escrita com ids da empresa do seed respondendo 404 (nunca 403); dados do seed intactos depois; mesma placa permitida em empresas diferentes; motorista da empresa B sem acesso a veículo e foto da A; e o inverso. Apaga a empresa de teste no fim (cascata).
+
+## CI
+
+`.github/workflows/ci.yml`: job de build + testes de unidade dos três projetos, depois um job que sobe um Postgres/PostGIS novo, aplica as migrations, roda o seed, sobe API, painel e app e roda `node e2e/run-all.mjs` (tudo). Como o banco nasce do seed no dia, a suíte `painel` (resumo da semana) passa — localmente ela falha quando o seed tem mais de ~1 semana.

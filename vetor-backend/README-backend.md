@@ -61,7 +61,9 @@ npm run prisma:studio       # abre o Prisma Studio (GUI do banco)
 npm run prisma:seed         # cenário demo num banco vazio (com dados, é ignorado — em dev: npx prisma migrate reset)
 ```
 
-Não há `test`/`test:e2e`/`lint` ainda — o projeto não tem suíte de testes nem linter configurado.
+npm test                    # testes de unidade (Jest, em test/): urgência das manutenções, status/troca de óleo dos veículos, km/L e consumo anômalo, validação de ambiente
+
+Os testes de ponta a ponta (API + painel + app no navegador, inclusive o isolamento entre empresas) ficam em `/e2e` na raiz — ver `e2e/README.md`. O CI (`.github/workflows/ci.yml`) roda build + `npm test` dos três projetos e depois a suíte e2e inteira num Postgres novo. Não há linter configurado.
 
 ### Migrações
 
