@@ -1,5 +1,18 @@
 @if (d(); as v) {
   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;gap:16px;align-items:flex-start">
+    <div class="foto-veiculo">
+      @if (v.foto) {
+        <a [href]="v.foto" target="_blank" rel="noopener" title="Abrir a foto"><img [src]="v.foto" [alt]="'Foto do ' + v.placa"></a>
+      } @else {
+        <span class="material-symbols-outlined" style="font-size:30px;color:var(--dim)">{{ v.tipoIcon }}</span>
+      }
+      <input #arquivoFoto type="file" accept="image/*" hidden (change)="enviarFoto(arquivoFoto)">
+      <div class="foto-acoes">
+        <button (click)="arquivoFoto.click()" [disabled]="enviandoFoto()">{{ enviandoFoto() ? 'enviando…' : v.foto ? 'trocar' : 'adicionar foto' }}</button>
+        @if (v.foto) { <button (click)="removerFoto()" style="color:var(--crit)">remover</button> }
+      </div>
+    </div>
     <div style="display:flex;flex-direction:column;gap:4px">
       <button (click)="irVeiculos()" style="background:none;border:none;color:var(--brand);font-size:12.5px;padding:0;text-align:left">← Veículos</button>
       <div style="display:flex;align-items:baseline;gap:12px">
@@ -9,6 +22,8 @@
           <span style="width:7px;height:7px;border-radius:50%" [style.background]="v.stCor"></span>{{ v.stLabel }}
         </span>
       </div>
+      @if (erroFoto()) { <span role="alert" style="font-size:12.5px;color:var(--crit)">{{ erroFoto() }}</span> }
+    </div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button (click)="editar()" class="btn btn-ghost">

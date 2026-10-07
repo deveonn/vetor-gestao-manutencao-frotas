@@ -48,6 +48,23 @@ export class VehicleDetailComponent {
     this.modal.open('abast');
   }
 
+  enviandoFoto = signal(false);
+  erroFoto = signal('');
+
+  async enviarFoto(input: HTMLInputElement): Promise<void> {
+    const arquivo = input.files?.[0];
+    input.value = ''; // permite escolher o mesmo arquivo de novo
+    if (!arquivo) return;
+    this.enviandoFoto.set(true);
+    this.erroFoto.set((await this.store.setVehiclePhoto(this.placa(), arquivo)) ?? '');
+    this.enviandoFoto.set(false);
+  }
+
+  removerFoto(): void {
+    this.erroFoto.set('');
+    this.store.removeVehiclePhoto(this.placa());
+  }
+
   editar(): void {
     this.modal.open('veic', this.placa());
   }

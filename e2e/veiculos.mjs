@@ -160,4 +160,21 @@ await suite('Veículos (Web #5)', async ({ APP, API, send, evalJs, goto, url, to
   const doMot = (await api('/veiculos')).filter((v) => v.motoristaAtualId === motUm.id).map((v) => v.placa);
   check('vincular o motorista a outro veículo libera o anterior (um veículo por motorista)', a2.motoristaAtualId === null && b2.motoristaAtualId === motUm.id && doMot.length === 1 && (await api(`/veiculos/${vA.id}/vinculos`)).every((v) => v.ate), doMot.join(','));
   if (veicAntes) await api(`/veiculos/${veicAntes}/vinculos`, 'POST', { motoristaId: motUm.id }); // devolve ao veículo do seed
+
+  // foto do veículo pelo detalhe: adicionar (input de arquivo), aparece carregada, remover
+  await goto(`${APP}/veiculos/${placaEd}`);
+  await sleep(600);
+  const enviada = await evalJs(`(async () => {
+    const input = document.querySelector('.foto-veiculo input[type=file]');
+    const blob = await (await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')).blob();
+    const dt = new DataTransfer(); dt.items.add(new File([blob], 'carro.png', { type: 'image/png' }));
+    input.files = dt.files; input.dispatchEvent(new Event('change'));
+    await new Promise(r => setTimeout(r, 2000));
+    const img = document.querySelector('.foto-veiculo img');
+    return { img: img ? img.complete && img.naturalWidth > 0 : false, botao: document.querySelector('.foto-acoes').innerText };
+  })()`);
+  const comFoto = await api(`/veiculos/${vEst.id}`);
+  check('detalhe: "adicionar foto" envia a imagem, ela aparece e a API guarda a URL', enviada.img && !!comFoto.fotoUrl && enviada.botao.includes('trocar'), JSON.stringify(enviada));
+  await evalJs(`(async () => { [...document.querySelectorAll('.foto-acoes button')].find(b => b.textContent.trim() === 'remover').click(); await new Promise(r => setTimeout(r, 1500)); })()`);
+  check('"remover" tira a foto (volta o ícone do tipo)', !(await api(`/veiculos/${vEst.id}`)).fotoUrl && !(await evalJs(`!!document.querySelector('.foto-veiculo img')`)));
 });

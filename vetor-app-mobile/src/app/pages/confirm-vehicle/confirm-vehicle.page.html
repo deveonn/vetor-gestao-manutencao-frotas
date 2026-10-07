@@ -11,8 +11,8 @@
 
     <div class="cv__card">
       <div class="cv__photo">
-        @if (v.photoDataUrl) {
-          <img [src]="v.photoDataUrl" [alt]="'foto ' + typeMeta?.articleDe" />
+        @if (v.photoDataUrl && !vehicle.fotoFalhou()) {
+          <img [src]="v.photoDataUrl" [alt]="'foto ' + typeMeta?.articleDe" (error)="vehicle.fotoFalhou.set(true)" />
         } @else {
           <span class="ms">{{ typeMeta?.icon }}</span>
           <span class="tabular">foto {{ typeMeta?.articleDe }}</span>

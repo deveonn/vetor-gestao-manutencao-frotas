@@ -130,6 +130,8 @@ model Veiculo {
   empresa          Empresa       @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   placa            String
   modelo           String
+  /// foto do veículo (POST /veiculos/:id/foto, pelo gestor) — o app mostra no "você está com este carro?"
+  fotoUrl          String?
   tipo             TipoVeiculo
   /// Só MANUTENCAO é lido ("na oficina", marcado pelo gestor). Rodando/parado é calculado pelo motorista vinculado
   /// (src/veiculos/estado.ts) — RODANDO/PARADO gravados aqui são legado do seed.

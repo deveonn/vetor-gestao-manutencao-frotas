@@ -1,8 +1,8 @@
 <div class="tabs-header">
   <div class="tabs-header__photo">
     @if (vehicle.todaysVehicle(); as v) {
-      @if (v.photoDataUrl; as photo) {
-        <img [src]="photo" alt="" />
+      @if (v.photoDataUrl && !vehicle.fotoFalhou()) {
+        <img [src]="v.photoDataUrl" alt="" (error)="vehicle.fotoFalhou.set(true)" />
       } @else {
         <span class="ms">{{ typeMeta(v).icon }}</span>
       }

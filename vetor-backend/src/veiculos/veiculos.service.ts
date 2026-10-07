@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, StatusManutencao, StatusVeiculo, TipoVeiculo } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 import { CreateVeiculoDto } from './dto/create-veiculo.dto';
 import { CreateVinculoDto } from './dto/create-vinculo.dto';
 import { UpdateVeiculoDto } from './dto/update-veiculo.dto';
@@ -25,7 +26,10 @@ const POSICOES_PNEU: Record<TipoVeiculo, string[]> = {
 
 @Injectable()
 export class VeiculosService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private storage: StorageService,
+  ) {}
 
   async listar(empresaId: string) {
     const veiculos = await this.prisma.veiculo.findMany({
@@ -122,6 +126,24 @@ export class VeiculosService {
       where: { id },
       data: { status: naOficina ? StatusVeiculo.MANUTENCAO : StatusVeiculo.PARADO },
     });
+    return this.buscar(empresaId, id);
+  }
+
+  /** Foto do veículo (substitui a anterior, que é apagada do storage). */
+  async definirFoto(empresaId: string, id: string, conteudo: Buffer, mimetype: string) {
+    const atual = await this.prisma.veiculo.findFirst({ where: { id, empresaId, arquivadoEm: null } });
+    if (!atual) throw new NotFoundException('Veículo não encontrado.');
+    const fotoUrl = await this.storage.salvar(empresaId, conteudo, mimetype, 'veiculos');
+    await this.prisma.veiculo.update({ where: { id }, data: { fotoUrl } });
+    if (atual.fotoUrl) await this.storage.apagar(atual.fotoUrl);
+    return this.buscar(empresaId, id);
+  }
+
+  async removerFoto(empresaId: string, id: string) {
+    const atual = await this.prisma.veiculo.findFirst({ where: { id, empresaId, arquivadoEm: null } });
+    if (!atual) throw new NotFoundException('Veículo não encontrado.');
+    await this.prisma.veiculo.update({ where: { id }, data: { fotoUrl: null } });
+    if (atual.fotoUrl) await this.storage.apagar(atual.fotoUrl);
     return this.buscar(empresaId, id);
   }
 

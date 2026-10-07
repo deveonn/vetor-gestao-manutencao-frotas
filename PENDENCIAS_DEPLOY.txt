@@ -565,6 +565,12 @@ Mock na tela — [CONCLUÍDOS 07/10/2026, itens 7-12]:
 
 Faltam no cadastro (não é mock): editar/excluir motorista, editar veículo; recadastrar placa de veículo arquivado
 (409, decisão pendente); foto do veículo no app (não existe campo).
+   - [CONCLUÍDO 07/10/2026] foto do veículo: Veiculo.fotoUrl (migration 20261007020016); POST /veiculos/:id/foto
+     (multipart "arquivo", só imagem, 8 MB, só ADMIN) e DELETE /veiculos/:id/foto. Vai pro mesmo storage (R2 em
+     produção, pasta veiculos/<empresa>/); trocar ou remover apaga a anterior do storage (StorageService.apagar —
+     testado no disco e no simulador S3). Painel: foto no topo do detalhe com "adicionar foto"/"trocar"/"remover".
+     App: "você está com este carro?" e o cabeçalho mostram a foto; sem internet (a URL fica no cache, a imagem não)
+     voltam pro desenho do tipo. Teste: curl + e2e veiculos (+2) e mobile-veiculo (+2, inclusive offline).
    - [CONCLUÍDO 07/10/2026] editar/excluir motorista e editar veículo:
      - PATCH /motoristas/:id (nome, CNH, validade — null apaga). DELETE /motoristas/:id ARQUIVA (Motorista.arquivadoEm,
        migration 20261007013423): apagar de verdade levaria as vistorias junto (cascata). Arquivar encerra o vínculo

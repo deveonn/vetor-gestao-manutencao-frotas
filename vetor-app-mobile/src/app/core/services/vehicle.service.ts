@@ -16,6 +16,12 @@ interface VeiculoApi {
   modelo: string;
   tipo: 'UTILITARIO' | 'VAN_CARGA' | 'CAMINHAO_LEVE';
   hodometro: number;
+  fotoUrl?: string | null;
+}
+
+/** Foto no bucket (produção) vem com URL absoluta; no disco da API (dev), /uploads/... relativa à API. */
+function urlFoto(url: string): string {
+  return /^https?:\/\//.test(url) ? url : environment.apiUrl.replace(/\/api\/?$/, '') + url;
 }
 
 /** Mesma correspondência documentada no enum TipoVeiculo (vetor-backend/prisma/schema.prisma). */
@@ -33,7 +39,7 @@ function paraVeiculo(v: VeiculoApi): Vehicle {
     model: v.modelo.toLowerCase(),
     color: null,
     odometerKm: v.hodometro,
-    photoDataUrl: null,
+    photoDataUrl: v.fotoUrl ? urlFoto(v.fotoUrl) : null,
     type: TIPO_API[v.tipo],
   };
 }
@@ -49,6 +55,8 @@ export class VehicleService {
 
   readonly todaysVehicle = signal<Vehicle | null>(null);
   readonly loading = signal(false);
+  /** a foto não carregou (sem internet: a URL fica no cache, a imagem não) — as telas voltam pro desenho */
+  readonly fotoFalhou = signal(false);
 
   constructor() {
     // acompanha a sessão: entrou (ou reabriu logado) -> cache + API; saiu -> esquece o veículo do motorista anterior.
@@ -80,6 +88,7 @@ export class VehicleService {
       const veiculo = paraVeiculo(
         await firstValueFrom(this.http.get<VeiculoApi>(`${environment.apiUrl}/motorista/veiculo-do-dia`)),
       );
+      if (veiculo.photoDataUrl !== this.todaysVehicle()?.photoDataUrl) this.fotoFalhou.set(false);
       this.todaysVehicle.set(veiculo);
       await Preferences.set({ key: VEHICLE_KEY, value: JSON.stringify(veiculo) });
     } catch (err) {

@@ -78,6 +78,7 @@ interface VeiculoApi {
   kmL: number | null;
   /** calculado pela API (troca de óleo pendente x hodômetro); null = nenhuma agendada */
   kmParaTroca: number | null;
+  fotoUrl?: string | null;
   kmHoje: number;
   motoristaAtual: { nome: string } | null;
   pneus: { posicao: string; severidade: 'OK' | 'ATENCAO' | 'CRITICO' }[];
@@ -304,6 +305,7 @@ function paraVeiculo(v: VeiculoApi): Vehicle {
       return (sevs.includes('CRITICO') ? 'critico' : sevs.includes('ATENCAO') ? 'atencao' : 'ok') as Severity;
     }),
     kmHoje: v.kmHoje,
+    foto: v.fotoUrl ? urlMidia(v.fotoUrl) : null,
   };
 }
 
@@ -875,6 +877,36 @@ export class FleetStore {
         return 'Confira os dados — informe o serviço e o km e/ou a data limite.';
       }
       return 'Não foi possível agendar a manutenção. Tente novamente.';
+    }
+  }
+
+  /** Envia (ou troca) a foto do veículo. Retorna a mensagem de erro, ou null se salvou. */
+  async setVehiclePhoto(placa: string, arquivo: File): Promise<string | null> {
+    const veiculo = this.vehicles().find((v) => v.placa === placa);
+    if (!veiculo) return 'Veículo não encontrado.';
+    const form = new FormData();
+    form.append('arquivo', arquivo);
+    try {
+      const atualizado = await firstValueFrom(this.http.post<VeiculoApi>(`${environment.apiUrl}/veiculos/${veiculo.id}/foto`, form));
+      this.vehicles.update((list) => list.map((v) => (v.id === veiculo.id ? paraVeiculo(atualizado) : v)));
+      this.toast.show(`Foto do veículo atualizada — ${placa}`);
+      return null;
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && err.status === 400) return 'Use uma imagem (JPG, PNG ou WebP).';
+      if (err instanceof HttpErrorResponse && err.status === 413) return 'A foto passa de 8 MB — use uma menor.';
+      return 'Não foi possível enviar a foto. Tente novamente.';
+    }
+  }
+
+  async removeVehiclePhoto(placa: string): Promise<void> {
+    const veiculo = this.vehicles().find((v) => v.placa === placa);
+    if (!veiculo) return;
+    try {
+      const atualizado = await firstValueFrom(this.http.delete<VeiculoApi>(`${environment.apiUrl}/veiculos/${veiculo.id}/foto`));
+      this.vehicles.update((list) => list.map((v) => (v.id === veiculo.id ? paraVeiculo(atualizado) : v)));
+      this.toast.show(`Foto removida — ${placa}`);
+    } catch {
+      this.toast.show(`Não foi possível remover a foto — ${placa}`, 'info');
     }
   }
 

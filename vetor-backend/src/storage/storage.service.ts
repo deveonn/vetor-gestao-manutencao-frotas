@@ -1,9 +1,9 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
-import { mkdir, writeFile } from 'fs/promises';
-import { join } from 'path';
+import { mkdir, unlink, writeFile } from 'fs/promises';
+import { basename, join } from 'path';
 
 const EXTENSAO: Record<string, string> = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/heic': '.heic' };
 
@@ -58,11 +58,11 @@ export class StorageService {
     return this.config.get<string>('UPLOADS_DIR', './uploads');
   }
 
-  /** Guarda a foto e devolve a URL pela qual ela é lida. Nome aleatório, separado por empresa. */
-  async salvar(empresaId: string, conteudo: Buffer, mimetype: string): Promise<string> {
+  /** Guarda a foto e devolve a URL pela qual ela é lida. Nome aleatório, separado por empresa (e por pasta no bucket). */
+  async salvar(empresaId: string, conteudo: Buffer, mimetype: string, pasta: 'midia' | 'veiculos' = 'midia'): Promise<string> {
     const nome = `${randomUUID()}${EXTENSAO[mimetype] ?? ''}`;
     if (this.driver === 's3') {
-      const chave = `midia/${empresaId}/${nome}`;
+      const chave = `${pasta}/${empresaId}/${nome}`;
       await this.s3!.send(
         new PutObjectCommand({
           Bucket: this.config.get<string>('S3_BUCKET')!,
@@ -76,5 +76,20 @@ export class StorageService {
     await mkdir(this.diretorioLocal, { recursive: true });
     await writeFile(join(this.diretorioLocal, nome), conteudo);
     return `/uploads/${nome}`;
+  }
+
+  /** Apaga um arquivo salvo por `salvar` (pela URL devolvida). Falha ao apagar não derruba quem chamou. */
+  async apagar(url: string): Promise<void> {
+    try {
+      if (this.driver === 's3') {
+        const base = this.config.get<string>('S3_PUBLIC_URL')!.replace(/\/+$/, '') + '/';
+        if (!url.startsWith(base)) return;
+        await this.s3!.send(new DeleteObjectCommand({ Bucket: this.config.get<string>('S3_BUCKET')!, Key: url.slice(base.length) }));
+      } else if (url.startsWith('/uploads/')) {
+        await unlink(join(this.diretorioLocal, basename(url)));
+      }
+    } catch {
+      // arquivo órfão no storage é melhor que erro pro usuário
+    }
   }
 }

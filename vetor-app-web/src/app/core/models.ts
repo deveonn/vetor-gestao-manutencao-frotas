@@ -17,6 +17,8 @@ export interface Vehicle {
   status: VehicleStatus;
   pneus: Severity[];
   kmHoje: number;
+  /** foto do veículo (URL pronta pra <img>); null = sem foto */
+  foto: string | null;
 }
 
 export interface Alert {

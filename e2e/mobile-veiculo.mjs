@@ -95,4 +95,25 @@ await suite('Mobile: veículo do dia (Mobile #3)', async ({ API, APP_MOBILE, sen
     await new Promise(r => setTimeout(r, 1500));
   })()`);
   check('sair limpa o cache do veículo do dia', (await url()) === '/login' && (await prefs('vetor.veiculo-do-dia')) === null);
+
+  // foto do veículo cadastrada pelo gestor aparece no app; sem internet volta pro desenho
+  const form = new FormData();
+  form.append('arquivo', new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')], { type: 'image/png' }), 'foto.png');
+  await fetch(`${API}/veiculos/${doJoao.id}/foto`, { method: 'POST', headers: { Authorization: `Bearer ${adminToken}` }, body: form });
+  try {
+    await entrar(MOTORISTA.login);
+    await abrirApp('/confirmar-veiculo');
+    const foto = await evalJs(`(() => { const i = document.querySelector('.cv__photo img'); return i ? i.complete && i.naturalWidth > 0 : false; })()`);
+    await abrirApp('/tabs');
+    const noCabecalho = await evalJs(`(() => { const i = document.querySelector('.tabs-header__photo img'); return i ? i.complete && i.naturalWidth > 0 : false; })()`);
+    check('foto do veículo cadastrada no painel aparece no "você está com este carro?" e no cabeçalho do app', foto && noCabecalho, `confirmar=${foto} cabeçalho=${noCabecalho}`);
+    await send('Network.setBlockedURLs', { urls: [`${API}/*`, `${API.replace(/\/api$/, '')}/uploads/*`] });
+    await abrirApp('/confirmar-veiculo');
+    await sleep(800);
+    const off = await evalJs(`({ img: !!document.querySelector('.cv__photo img'), desenho: !!document.querySelector('.cv__photo .ms'), placa: document.body.innerText.includes(${JSON.stringify(doJoao.placa)}) })`);
+    check('sem internet: a foto não carrega e o app volta pro desenho do tipo (placa continua do cache)', !off.img && off.desenho && off.placa, JSON.stringify(off));
+  } finally {
+    await bloquearApi(false);
+    await admin(`/veiculos/${doJoao.id}/foto`, 'DELETE');
+  }
 });

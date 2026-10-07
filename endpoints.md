@@ -73,6 +73,7 @@ Telas: `features/vehicles` (web), `pages/confirm-vehicle` (mobile). Fonte: `vehi
 | Status e troca de óleo em `GET /veiculos` e `GET /veiculos/:id` são **calculados**: `status` = MANUTENCAO se marcado na oficina, senão RODANDO com motorista vinculado / PARADO sem; `kmParaTroca` = km até a troca de óleo pendente que vence antes (null = nenhuma). `kmHoje`/`nivelCombustivel` só existiriam com rastreamento — o painel não mostra | — |
 | `PATCH /veiculos/:id/oficina` ✅ — `{ naOficina: boolean }`: marca/desmarca como na oficina (status "em manutenção", fora dos disponíveis) | `[admin]` |
 | `PATCH /veiculos/:id` ✅ — `{ placa?, modelo?, tipo? }`; placa repetida -> 409; mudar o tipo ajusta as posições de pneu | `[admin]` |
+| `POST /veiculos/:id/foto` ✅ — multipart `arquivo` (imagem, até 8 MB): foto do veículo (`fotoUrl`), substitui e apaga a anterior; `DELETE /veiculos/:id/foto` remove. `GET /motorista/veiculo-do-dia` devolve `fotoUrl` pro app | `[admin]` |
 | `POST /veiculos` com placa de veículo **arquivado** ✅ — reativa o mesmo veículo (histórico junto), `reativado: true`; placa de veículo ativo -> 409. `DELETE /veiculos/:id` encerra o vínculo com o motorista. `POST /veiculos/:id/vinculos` encerra também o vínculo do motorista com outro veículo (um por vez) | `[admin]` |
 | `POST /veiculos` ✅ — body: `{ placa, modelo, tipo }` | `[admin]` |
 | `GET /veiculos/:id` ✅ — usado pela rota `/veiculos/:placa` | `[admin]` |
