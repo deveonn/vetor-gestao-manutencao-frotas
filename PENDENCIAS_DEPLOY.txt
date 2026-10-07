@@ -3,6 +3,43 @@ Gerado em 15/09/2026. Ordem sugerida: Backend #1-#3 -> Web #1-#2 (login) -> Web 
 Fazer uma task por vez e testar antes de seguir pra próxima.
 
 ===========================================
+ESTADO EM 07/10/2026 — O QUE FALTA (ler isto primeiro ao retomar)
+===========================================
+No ar: API https://vetor-api-wviu.onrender.com (Render) + painel https://vetor-painel.onrender.com + banco Neon +
+fotos no Cloudflare R2. CI verde no GitHub Actions. APK de release 1.0.0 em ~/vetor-entregas/ (com COMO-INSTALAR.txt).
+Todos os itens de Backend, Web, Mobile e a varredura de mock (1-12) estão concluídos — detalhes nas seções abaixo.
+
+Ações SUAS (não dá pra fazer por aqui):
+1. Backup da chave de release do app: ~/.android/vetor-release.jks e ~/.android/vetor-release.properties.
+   Sem ela não dá pra atualizar o app no celular do cliente nem publicar na Google Play.
+2. Trocar a senha do banco no Neon (foi colada no chat) e atualizar DATABASE_URL no Render (Environment).
+3. Conferir na página oficial do Render os valores usados no infográfico de custos (Starter US$ 7, workspace Pro
+   US$ 25) — vieram de fontes secundárias. Arquivo: docs/custos/arquitetura-custos.png (+ .html editável).
+4. Revisar a decisão tomada sozinho na madrugada: cadastrar a placa de um veículo excluído REATIVA o veículo com o
+   histórico (ver Web #5, "DECIDIDO E FEITO 07/10/2026 — revisar").
+
+Antes de mandar pro cliente / da demonstração:
+5. Testar o APK de release (~/vetor-entregas/vetor-motorista-1.0.0.apk) num aparelho. No celular de testes não
+   instala por cima do debug (assinaturas diferentes): desinstalar o app antes (perde só a sessão/fila local).
+6. Em produção: adicionar uma foto de veículo (painel > veículo > "adicionar foto") e fazer uma vistoria com foto
+   pelo app — hoje os pneus sinalizados de produção aparecem "sem foto" (vieram do seed).
+7. Antes de cada demonstração: abrir https://vetor-api-wviu.onrender.com/api/health (a API grátis dorme após 15 min).
+
+Melhorias opcionais / decisões futuras:
+8. Dados demo de produção envelhecem: o resumo semanal do dashboard fica zerado ~2 semanas depois do seed (06/10 ->
+   por volta de 20/10). Opção: criar um jeito de renovar os dados demo (rota/script que reposiciona as datas).
+9. Banco LOCAL com seed velho: as 5 falhas da suíte e2e "painel" são só isso (o CI, com banco novo, passa). Resolver
+   = `npx prisma migrate reset` no banco de dev — precisa da sua confirmação explícita (apaga o banco local).
+10. CORS de produção (render.yaml) ainda libera http://localhost:4200 e :8100 (usados nos testes) — tirar quando não
+    precisar mais.
+11. Fotos no R2 são públicas pra quem tiver a URL (nome aleatório) — URL assinada fica pra uma versão "de verdade".
+12. API sem dormir: Render Starter (US$ 7/mês) ou um "ping" a cada 10 min (ex.: UptimeRobot).
+13. Domínio próprio (.com.br, R$ 40/ano), publicação na Google Play (US$ 25 único), versão iOS (US$ 99/ano).
+14. Dependências: 3 avisos restantes (prisma CLI via deepmerge-ts; @nestjs/swagger via js-yaml — correção na major 12).
+15. CI: o runner ubuntu-latest migra pro Ubuntu 26 a partir de 19/10/2026 — se o CI quebrar, fixar ubuntu-24.04.
+16. Integração real com a plataforma de rastreamento (backend #4): fora do escopo por decisão de 22/09/2026.
+
+===========================================
 BACKEND (vetor-backend)
 ===========================================
 
