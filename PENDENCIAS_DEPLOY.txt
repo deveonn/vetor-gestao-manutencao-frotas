@@ -26,17 +26,29 @@ Antes de mandar pro cliente / da demonstração:
 7. Antes de cada demonstração: abrir https://vetor-api-wviu.onrender.com/api/health (a API grátis dorme após 15 min).
 
 Melhorias opcionais / decisões futuras:
-8. Dados demo de produção envelhecem: o resumo semanal do dashboard fica zerado ~2 semanas depois do seed (06/10 ->
-   por volta de 20/10). Opção: criar um jeito de renovar os dados demo (rota/script que reposiciona as datas).
+8. [CONCLUÍDO 07/10/2026] Dados demo de produção envelheciam (o resumo semanal do dashboard zerava dias depois do seed).
+   Feito: `npm run demo:renovar` (vetor-backend/prisma/renovar-demo.ts) avança, em dias inteiros, as datas da empresa
+   demo (abastecimentos, manutenções, vistorias, validade de CNH, vínculos) pra a atividade mais recente voltar a "6
+   dias atrás", como no seed. Nunca volta datas pra trás; sem nada a fazer, não mexe em nada. Roda todo dia pelo
+   GitHub Actions (.github/workflows/renovar-demo.yml, 06:17 de Brasília, também manual em Actions > "Renovar dados
+   demo"). Teste: banco descartável com migrations + seed; renovar logo depois do seed não mexeu em nada; datas
+   jogadas 20 dias pra trás -> renovar avançou 20 dias e todas as datas voltaram exatamente às do seed novo; rodar de
+   novo não mexeu em nada.
+   AÇÃO SUA: criar o segredo DEMO_DATABASE_URL no GitHub (Settings > Secrets and variables > Actions) com a
+   connection string do Neon — de preferência já com a senha nova (item 2). Sem ele o job só avisa e não faz nada.
+   Depois rodar uma vez à mão (Actions > Renovar dados demo > Run workflow) pra conferir.
 9. Banco LOCAL com seed velho: as 5 falhas da suíte e2e "painel" são só isso (o CI, com banco novo, passa). Resolver
    = `npx prisma migrate reset` no banco de dev — precisa da sua confirmação explícita (apaga o banco local).
+   Alternativa sem apagar nada (07/10/2026): `cd vetor-backend && npm run demo:renovar` no banco de dev só avança as
+   datas (dados criados à mão no banco local continuam lá, mas podem atrapalhar a suíte do mesmo jeito).
 10. CORS de produção (render.yaml) ainda libera http://localhost:4200 e :8100 (usados nos testes) — tirar quando não
     precisar mais.
 11. Fotos no R2 são públicas pra quem tiver a URL (nome aleatório) — URL assinada fica pra uma versão "de verdade".
 12. API sem dormir: Render Starter (US$ 7/mês) ou um "ping" a cada 10 min (ex.: UptimeRobot).
 13. Domínio próprio (.com.br, R$ 40/ano), publicação na Google Play (US$ 25 único), versão iOS (US$ 99/ano).
 14. Dependências: 3 avisos restantes (prisma CLI via deepmerge-ts; @nestjs/swagger via js-yaml — correção na major 12).
-15. CI: o runner ubuntu-latest migra pro Ubuntu 26 a partir de 19/10/2026 — se o CI quebrar, fixar ubuntu-24.04.
+15. [CONCLUÍDO 07/10/2026] CI fixado em ubuntu-24.04 (ci.yml e renovar-demo.yml) — a migração do ubuntu-latest pro
+    Ubuntu 26 (a partir de 19/10/2026) não afeta mais o CI. Trocar quando quiser atualizar de propósito.
 16. Integração real com a plataforma de rastreamento (backend #4): fora do escopo por decisão de 22/09/2026.
 
 ===========================================

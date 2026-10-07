@@ -1,0 +1,47 @@
+# Renova os dados demo do banco de produção todo dia (vetor-backend/prisma/renovar-demo.ts): avança as datas da
+# empresa do seed pra o painel não ficar com a semana zerada. Precisa do segredo DEMO_DATABASE_URL (Settings >
+# Secrets and variables > Actions) com a connection string do Neon; sem ele o job só avisa e termina.
+name: Renovar dados demo
+
+on:
+  schedule:
+    - cron: '17 9 * * *' # 06:17 em Brasília
+  workflow_dispatch:
+
+concurrency:
+  group: renovar-demo
+
+jobs:
+  renovar:
+    name: Avançar as datas do cenário demo
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DEMO_DATABASE_URL }}
+    steps:
+      - name: Conferir o segredo
+        id: segredo
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::warning title=renovar-demo::segredo DEMO_DATABASE_URL não configurado — nada feito"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v5
+        if: steps.segredo.outputs.ok == 'true'
+      - uses: actions/setup-node@v5
+        if: steps.segredo.outputs.ok == 'true'
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: vetor-backend/package-lock.json
+
+      - name: Renovar
+        if: steps.segredo.outputs.ok == 'true'
+        working-directory: vetor-backend
+        run: |
+          npm ci
+          npx prisma generate
+          npm run demo:renovar

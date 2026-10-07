@@ -59,6 +59,7 @@ npm run prisma:migrate      # cria/aplica uma migration em dev
 npm run prisma:deploy       # aplica migrations pendentes (produção/CI)
 npm run prisma:studio       # abre o Prisma Studio (GUI do banco)
 npm run prisma:seed         # cenário demo num banco vazio (com dados, é ignorado — em dev: npx prisma migrate reset)
+npm run demo:renovar        # avança as datas do cenário demo pra ficar como se o seed tivesse rodado hoje
 ```
 
 npm test                    # testes de unidade (Jest, em test/): urgência das manutenções, status/troca de óleo dos veículos, km/L e consumo anômalo, validação de ambiente
@@ -99,6 +100,7 @@ A API não sobe se faltar algo obrigatório (`src/config/env.validation.ts`): se
 - **Banco:** Postgres **com a extensão PostGIS disponível** (a migration inicial roda `CREATE EXTENSION postgis`; Neon e Supabase têm). Nenhuma tabela usa geometria ainda — a extensão está lá pra rastreamento.
 - **Fotos:** `STORAGE_DRIVER=s3` com um bucket de acesso público de leitura (ex.: Cloudflare R2 com URL pública `r2.dev` ou domínio). Chave `midia/<empresaId>/<uuid>.<ext>`; o banco guarda a URL pública absoluta.
 - **Dados:** `npm run prisma:seed` com o `DATABASE_URL` de produção cria o cenário demo (senha `demo123` pra todos) — só num banco vazio.
+- **Dados demo envelhecem** (o abastecimento mais recente do seed é de 6 dias atrás, então o custo da semana do dashboard zera poucos dias depois): `.github/workflows/renovar-demo.yml` roda `npm run demo:renovar` todo dia contra o banco do segredo `DEMO_DATABASE_URL` do repositório. Só avança datas da empresa demo, nunca volta pra trás, e não faz nada se houver atividade nos últimos 6 dias.
 - **Health check:** `GET /api/health` faz `SELECT 1` no banco (503 se o banco cair).
 - **Segurança:** login limitado por IP (`LOGIN_LIMITE_POR_MINUTO`, 429 com mensagem em português), `trust proxy` ligado (IP real atrás do proxy da hospedagem), desligamento limpo no SIGTERM (`enableShutdownHooks`). O Swagger (`/api/docs`) continua público.
 - **Dependências:** `npm audit --omit=dev` em 05/10/2026 deixa 3 avisos não exploráveis pela internet — `prisma` (via `deepmerge-ts`, só na CLI de migration) e `@nestjs/swagger` (via `js-yaml`, só gera o documento). A correção do swagger é a major 12.
@@ -110,7 +112,8 @@ A API não sobe se faltar algo obrigatório (`src/config/env.validation.ts`): se
 ```
 prisma/
 ├── schema.prisma     # todas as entidades — cada modelo comenta de qual mock (web/mobile) ele vem
-└── seed.ts           # popula um banco vazio com os dados do mock do painel web
+├── seed.ts           # popula um banco vazio com os dados do mock do painel web
+└── renovar-demo.ts   # avança as datas do cenário demo (npm run demo:renovar)
 
 src/
 ├── main.ts                     # bootstrap: prefixo /api, CORS, ValidationPipe, Swagger, static /uploads (storage local)
