@@ -54,7 +54,7 @@ BACKEND (vetor-backend)
      da outra empresa -> 404, dados intactos, mesma placa em empresas diferentes, motorista sem acesso a veículo e
      foto alheios, e o inverso. Não precisou mexer no seed (a 2ª empresa nasce e morre no teste).
 
-7. [EM ANDAMENTO 05/10/2026] Dockerfile de produção + pipeline CI
+7. [CONCLUÍDO 07/10/2026] Dockerfile de produção + pipeline CI
    - Só depois de tudo acima validado manualmente via Swagger.
    - Hoje só existe docker-compose.yml de dev (sobe só o Postgres).
    - Feito: vetor-backend/Dockerfile (multi-stage, node 24 slim, roda como usuário `node`) — na subida aplica
@@ -85,6 +85,11 @@ BACKEND (vetor-backend)
      painel e app com build de produção) e job "e2e" (Postgres/PostGIS como serviço, migrations + seed do zero, API,
      painel e app no ar, node e2e/run-all.mjs com tudo: api + web + mobile; logs dos servidores como artefato se
      falhar). Roda a cada push na master e em PR. Com o banco nascendo do seed no dia, a suíte "painel" passa.
+     - 1ª execução: build ok, e2e com 4 falhas de ambiente (Chrome lento na 1ª abertura; vistoria offline já
+       confirmada e retirada da fila antes do teste olhar) — corrigidas nos testes. Log do Actions exige admin do
+       repositório, então o workflow publica cada FAIL/ERRO como anotação (pública, API de check-runs).
+     - Execução verde em 07/10/2026 (run 37567937163): build + unidade ok, e2e 198 PASS · 0 FAIL (api 11, web 126,
+       mobile 61) — inclusive a suíte "painel", que localmente falha por causa do seed velho.
 
 8. [CONCLUÍDO 05/10/2026] Preparação pra produção (avaliação de 05/10/2026)
    - Decidido: API no Render (plano grátis — dorme sem uso, 1ª requisição ~30-50 s), Postgres no Neon (tem PostGIS),
