@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -70,8 +70,8 @@ jobs:
           --health-timeout 5s
           --health-retries 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -103,7 +103,15 @@ jobs:
           done
 
       - name: Suíte e2e
-        run: CHROME_BIN=google-chrome node e2e/run-all.mjs
+        run: |
+          set -o pipefail
+          CHROME_BIN=google-chrome node e2e/run-all.mjs 2>&1 | tee e2e.log
+
+      # o log do Actions só abre pra quem administra o repositório; anotações são públicas (API de check-runs)
+      - name: Resultado do e2e como anotações
+        if: always()
+        run: |
+          awk '/^== /{suite=substr($0,4)} /^(FAIL|ERRO) /{gsub(/%/,"%25"); print "::error title=" suite "::" $0} /PASS · /{print "::notice title=e2e::" $0}' e2e.log || true
 
       - name: Logs dos servidores (se falhar)
         if: failure()
@@ -114,3 +122,4 @@ jobs:
             api.log
             web.log
             mobile.log
+            e2e.log
